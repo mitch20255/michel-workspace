@@ -1,0 +1,23 @@
+{
+  "name": "Bibliothèque centralisée",
+  "short_name": "MaLib",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "share_target": {
+    "action": "/api/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "files": [
+        { "name": "file", "accept": ["image/*", "application/pdf", "text/plain"] }
+      ]
+    }
+  }
+}

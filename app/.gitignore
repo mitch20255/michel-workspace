@@ -1,0 +1,8 @@
+node_modules/
+.env
+data/library.db
+data/library.db-*
+data/files/*
+!data/files/.gitkeep
+watched/*
+!watched/.gitkeep

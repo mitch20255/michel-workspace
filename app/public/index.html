@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bibliothèque centralisée</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icon.svg" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>📚 Bibliothèque centralisée</h1>
+    <div class="actions">
+      <input id="search" type="search" placeholder="Rechercher..." />
+      <label class="upload-btn">
+        ➕ Ajouter
+        <input id="upload-input" type="file" multiple hidden />
+      </label>
+      <button id="sync-drive-btn" title="Importer les nouveaux fichiers depuis Google Drive">🔄 Drive</button>
+    </div>
+  </header>
+
+  <div id="dropzone" class="dropzone-overlay" hidden>Dépose tes fichiers ici</div>
+
+  <main>
+    <aside id="categories">
+      <h2>Catégories</h2>
+      <ul id="category-list"></ul>
+    </aside>
+
+    <section id="grid"></section>
+  </main>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-content">
+      <button id="modal-close">✕</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
