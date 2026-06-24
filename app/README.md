@@ -29,15 +29,41 @@ npm start
 
 Ouvre http://localhost:3000
 
+## Accès depuis ton téléphone (Tailscale, recommandé)
+
+L'app doit tourner sur une machine que tu contrôles (ton PC/Mac, un Raspberry Pi, un petit serveur...) — elle ne peut pas rester sur un environnement cloud éphémère type ce sandbox Claude. Une fois sur ta machine, **Tailscale** est le plus simple pour y accéder depuis ton téléphone avec une vraie URL HTTPS (nécessaire pour installer le PWA et utiliser le bouton Partager) :
+
+1. **Récupère le code sur ta machine** (celle qui restera allumée) :
+   ```bash
+   git clone https://github.com/mitch20255/michel-workspace.git
+   cd michel-workspace
+   git checkout claude/centralized-data-db-rhuy5n
+   cd app
+   npm install
+   cp .env.example .env   # puis ajoute ANTHROPIC_API_KEY
+   npm start
+   ```
+2. **Installe Tailscale** sur cette machine et sur ton téléphone : https://tailscale.com/download — connecte les deux avec le même compte (Google/GitHub/email).
+3. Sur la machine qui fait tourner l'app, active le partage HTTPS :
+   ```bash
+   tailscale serve https / http://localhost:3000
+   ```
+   Tailscale te donne une URL du type `https://ton-pc.ton-tailnet.ts.net`.
+4. Sur ton téléphone, ouvre cette URL dans Chrome (Android) ou Safari (iPhone) — l'app est maintenant accessible de partout, même hors de ton wifi.
+5. **Android** : menu ⋮ → "Ajouter à l'écran d'accueil" → utilise ensuite le bouton **Partager** de n'importe quelle app pour envoyer un fichier directement dans ta bibliothèque (voir section suivante).
+6. **iPhone** : ajoute l'URL à l'écran d'accueil (bouton Partager → "Sur l'écran d'accueil") pour y accéder comme une app, mais le partage direct depuis d'autres apps ne fonctionne pas (voir limitation iOS ci-dessous).
+
+**Pour juste tester rapidement sans Tailscale** : `npx ngrok http 3000` te donne une URL HTTPS temporaire (change à chaque relance, gratuite, suffisant pour un essai).
+
+**Pour un accès permanent sans garder un ordinateur personnel allumé 24/7** : déploie l'app sur un petit serveur cloud toujours actif (Railway, Render, Fly.io...) — demande-moi si tu veux le faire, ça change le stockage des fichiers (il faudra un disque persistant plutôt que le dossier local).
+
 ## Dossier surveillé
 
 Par défaut : `app/watched/`. Dépose-y n'importe quel screenshot/document et il sera importé + catégorisé automatiquement en quelques secondes. Change l'emplacement avec `WATCH_DIR=/chemin/vers/ton/dossier` dans `.env` (ex: ton dossier de screenshots macOS/Windows).
 
 ## Partage depuis ton téléphone (Android)
 
-1. Héberge l'app sur un serveur accessible depuis ton téléphone (ou via un tunnel type Tailscale/ngrok si tu testes en local)
-2. Ouvre l'app dans Chrome sur ton téléphone, menu ⋮ → **"Ajouter à l'écran d'accueil"**
-3. Depuis n'importe quelle app (Photos, navigateur...), utilise le bouton **Partager** → choisis "Bibliothèque centralisée"
+Une fois l'app accessible en HTTPS (voir section précédente) et ajoutée à l'écran d'accueil, utilise le bouton **Partager** depuis n'importe quelle app (Photos, navigateur...) → choisis "Bibliothèque centralisée" pour envoyer un fichier directement dans ta bibliothèque.
 
 **Limitation iOS** : Safari/iOS ne supporte pas encore l'API Web Share Target, donc cette méthode ne fonctionne que sur Android. Pour iPhone, deux alternatives :
 - Utilise l'app **Raccourcis (Shortcuts)** : crée un raccourci "Partager" qui fait un `POST` du fichier vers `https://ton-serveur/api/share` (action "Obtenir le contenu de l'URL")
