@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import crypto from 'node:crypto';
 import express from 'express';
 import multer from 'multer';
 import { randomUUID } from 'node:crypto';
@@ -21,6 +22,35 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+function safeEqual(a, b) {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+// Protège toute l'app par mot de passe quand APP_USERNAME/APP_PASSWORD sont définis.
+// Indispensable dès que l'app est exposée publiquement (ex: Fly.io) — sinon n'importe
+// qui avec l'URL peut voir/uploader des fichiers. Optionnel si l'accès passe déjà par
+// un réseau privé (Tailscale).
+function basicAuth(req, res, next) {
+  const { APP_USERNAME, APP_PASSWORD } = process.env;
+  if (!APP_USERNAME || !APP_PASSWORD) return next();
+
+  const header = req.headers.authorization || '';
+  const [scheme, encoded] = header.split(' ');
+  if (scheme === 'Basic' && encoded) {
+    const decoded = Buffer.from(encoded, 'base64').toString('utf-8');
+    const sep = decoded.indexOf(':');
+    const user = decoded.slice(0, sep);
+    const pass = decoded.slice(sep + 1);
+    if (safeEqual(user, APP_USERNAME) && safeEqual(pass, APP_PASSWORD)) return next();
+  }
+  res.set('WWW-Authenticate', 'Basic realm="Bibliotheque centralisee"');
+  res.status(401).send('Authentification requise');
+}
+
+app.use(basicAuth);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 
@@ -77,5 +107,8 @@ app.post('/api/import/drive', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Centralized Data DB en écoute sur http://localhost:${PORT}`);
+  if (!process.env.APP_USERNAME || !process.env.APP_PASSWORD) {
+    console.warn('[auth] APP_USERNAME/APP_PASSWORD non définis — l\'app est accessible sans mot de passe. À ne configurer ainsi que sur un réseau privé (ex: Tailscale).');
+  }
   startWatcher();
 });

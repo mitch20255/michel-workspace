@@ -1,0 +1,21 @@
+# Configuration de déploiement Fly.io — voir README.md section "Hébergement cloud (Fly.io)"
+# Le nom ci-dessous doit être unique sur Fly.io : change-le si la commande `fly launch` te dit qu'il est pris.
+app = "michel-bibliotheque"
+primary_region = "yyz" # Toronto — la région la plus proche du Québec, change si besoin
+
+[build]
+
+[mounts]
+source = "data"
+destination = "/app/data"
+
+[http_service]
+internal_port = 3000
+force_https = true
+auto_stop_machines = true
+auto_start_machines = true
+min_machines_running = 0
+
+[[vm]]
+size = "shared-cpu-1x"
+memory = "256mb"

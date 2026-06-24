@@ -29,33 +29,55 @@ npm start
 
 Ouvre http://localhost:3000
 
-## Accès depuis ton téléphone (Tailscale, recommandé)
+## Mot de passe d'accès
 
-L'app doit tourner sur une machine que tu contrôles (ton PC/Mac, un Raspberry Pi, un petit serveur...) — elle ne peut pas rester sur un environnement cloud éphémère type ce sandbox Claude. Une fois sur ta machine, **Tailscale** est le plus simple pour y accéder depuis ton téléphone avec une vraie URL HTTPS (nécessaire pour installer le PWA et utiliser le bouton Partager) :
+Dès que l'app est accessible depuis l'extérieur (cloud, ou même Tailscale), protège-la avec un mot de passe : ajoute dans `.env` :
 
-1. **Récupère le code sur ta machine** (celle qui restera allumée) :
+```
+APP_USERNAME=michel
+APP_PASSWORD=choisis-un-mot-de-passe-solide
+```
+
+Sans ça, l'app demande l'authentification HTTP de base avant chaque page/requête. Sans ces variables, elle reste accessible sans mot de passe (acceptable seulement si rien d'autre que toi ne peut l'atteindre).
+
+## Hébergement cloud permanent (Fly.io) — recommandé
+
+Pas besoin de garder un ordinateur allumé : l'app tourne sur un serveur Fly.io 24/7, avec stockage persistant (SQLite + fichiers survivent aux redéploiements). Le palier gratuit de Fly.io couvre largement un usage personnel à faible trafic comme celui-ci, mais une carte de crédit est requise à l'inscription (facturé seulement en cas de dépassement — improbable ici).
+
+1. **Installe flyctl** : `curl -L https://fly.io/install.sh | sh`
+2. **Crée un compte / connecte-toi** : `fly auth signup` (ou `fly auth login` si tu en as déjà un)
+3. Depuis `app/`, **lance le déploiement** (le `fly.toml` fourni configure déjà le port, le volume persistant et le HTTPS) :
    ```bash
-   git clone https://github.com/mitch20255/michel-workspace.git
-   cd michel-workspace
-   git checkout claude/centralized-data-db-rhuy5n
    cd app
-   npm install
-   cp .env.example .env   # puis ajoute ANTHROPIC_API_KEY
-   npm start
+   fly launch --copy-config --name ton-nom-d-app-unique --no-deploy
    ```
-2. **Installe Tailscale** sur cette machine et sur ton téléphone : https://tailscale.com/download — connecte les deux avec le même compte (Google/GitHub/email).
-3. Sur la machine qui fait tourner l'app, active le partage HTTPS :
+   Si le nom `michel-bibliotheque` du `fly.toml` est déjà pris par quelqu'un d'autre, `--name` te permet d'en choisir un autre — sinon tu peux laisser `fly launch` te le proposer.
+4. **Crée le volume persistant** (1 Go suffit largement pour des screenshots/documents) :
    ```bash
-   tailscale serve https / http://localhost:3000
+   fly volumes create data --region yyz --size 1
    ```
-   Tailscale te donne une URL du type `https://ton-pc.ton-tailnet.ts.net`.
-4. Sur ton téléphone, ouvre cette URL dans Chrome (Android) ou Safari (iPhone) — l'app est maintenant accessible de partout, même hors de ton wifi.
-5. **Android** : menu ⋮ → "Ajouter à l'écran d'accueil" → utilise ensuite le bouton **Partager** de n'importe quelle app pour envoyer un fichier directement dans ta bibliothèque (voir section suivante).
-6. **iPhone** : ajoute l'URL à l'écran d'accueil (bouton Partager → "Sur l'écran d'accueil") pour y accéder comme une app, mais le partage direct depuis d'autres apps ne fonctionne pas (voir limitation iOS ci-dessous).
+5. **Configure tes secrets** (ne vont jamais dans le code, uniquement sur Fly) :
+   ```bash
+   fly secrets set ANTHROPIC_API_KEY=sk-ton-cle
+   fly secrets set APP_USERNAME=michel APP_PASSWORD=ton-mot-de-passe
+   ```
+   Ajoute aussi `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REFRESH_TOKEN`/`DRIVE_FOLDER_ID` en secrets si tu utilises l'import Drive (section plus bas).
+6. **Déploie** :
+   ```bash
+   fly deploy
+   ```
+7. Ton app est en ligne sur `https://ton-nom-d-app-unique.fly.dev`. Ouvre cette URL sur ton téléphone (Chrome sur Android, Safari sur iPhone), connecte-toi avec ton mot de passe, puis **Android** : menu ⋮ → "Ajouter à l'écran d'accueil" pour pouvoir utiliser le bouton **Partager** depuis n'importe quelle app.
 
-**Pour juste tester rapidement sans Tailscale** : `npx ngrok http 3000` te donne une URL HTTPS temporaire (change à chaque relance, gratuite, suffisant pour un essai).
+**Note** : le dossier surveillé (`watched/`) n'a pas de sens sur Fly.io — il n'y a pas de dossier local à surveiller sur un serveur cloud. Pour ajouter des fichiers depuis ton ordinateur, utilise l'upload web ou l'import Google Drive ; depuis ton téléphone, utilise le bouton Partager.
 
-**Pour un accès permanent sans garder un ordinateur personnel allumé 24/7** : déploie l'app sur un petit serveur cloud toujours actif (Railway, Render, Fly.io...) — demande-moi si tu veux le faire, ça change le stockage des fichiers (il faudra un disque persistant plutôt que le dossier local).
+### Alternative : sur ton propre ordinateur via Tailscale
+
+Si tu préfères garder les fichiers chez toi plutôt que sur un serveur cloud tiers :
+
+1. Lance l'app localement (`npm start`, voir Installation ci-dessus) sur une machine que tu laisses allumée.
+2. Installe [Tailscale](https://tailscale.com/download) sur cette machine et sur ton téléphone (même compte des deux côtés).
+3. Sur la machine, lance `tailscale serve https / http://localhost:3000` → tu obtiens une URL du type `https://ton-pc.ton-tailnet.ts.net`, accessible depuis ton téléphone même hors wifi.
+4. Pour tester vite sans rien installer : `npx ngrok http 3000` (URL temporaire, change à chaque relance).
 
 ## Dossier surveillé
 
@@ -99,10 +121,12 @@ data/
   library.db     Base SQLite (créée automatiquement)
   files/         Fichiers stockés
 watched/         Dossier surveillé pour l'import automatique
+Dockerfile       Image pour déploiement cloud (Fly.io)
+fly.toml         Configuration de déploiement Fly.io
 ```
 
 ## Limites connues (MVP)
 
 - Types de fichiers supportés pour l'analyse de contenu : images (png/jpg/gif/webp), PDF, texte (.txt/.md). Les autres types sont catégorisés par nom de fichier uniquement.
 - Images limitées à ~4.5 Mo pour l'analyse vision (limite API Claude).
-- Pas d'authentification — à n'exposer publiquement que derrière un reverse proxy avec login (ex: Tailscale, Caddy + auth basique).
+- Authentification HTTP basique uniquement (un seul couple identifiant/mot de passe pour toute l'app, voir section "Mot de passe d'accès") — suffisant pour un usage solo, pas pour plusieurs comptes.
