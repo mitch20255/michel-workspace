@@ -9,9 +9,13 @@ App web auto-hébergée pour stocker screenshots, documents et images dans une b
   - **Dossier surveillé** : tout fichier déposé dans `watched/` est importé automatiquement
   - **Import Google Drive** : synchronise les nouveaux fichiers d'un dossier Drive
   - **Partage depuis le téléphone** (Android) : installe l'app sur l'écran d'accueil, puis utilise le bouton "Partager" de n'importe quelle app
-- 🤖 **Catégorisation automatique** : chaque fichier est analysé par Claude (catégorie, tags, description, texte détecté/OCR)
+- 🔗 **Capture de liens et de texte** (via le même bouton Partager) :
+  - **Vidéo YouTube** : résumé long et structuré + transcript complet archivé et cherchable
+  - **Page web** : résumé court + lien vers la source (le contenu n'est pas archivé, seulement résumé)
+  - **Texte copié-collé / note** : stocké tel quel, avec résumé automatique si le texte est long (≥500 caractères)
+- 🤖 **Catégorisation automatique** : chaque fichier/lien/note est analysé par Claude (catégorie, tags, description, texte détecté/OCR ou transcript)
 - 🔍 Recherche et filtrage par catégorie
-- 🗄️ Stockage local (SQLite), rien ne quitte ta machine sauf l'appel à l'API Claude pour l'analyse
+- 🗄️ Stockage local (SQLite), rien ne quitte ta machine sauf l'appel à l'API Claude pour l'analyse et la requête vers la page/vidéo partagée
 
 ## Installation
 
@@ -85,7 +89,15 @@ Par défaut : `app/watched/`. Dépose-y n'importe quel screenshot/document et il
 
 ## Partage depuis ton téléphone (Android)
 
-Une fois l'app accessible en HTTPS (voir section précédente) et ajoutée à l'écran d'accueil, utilise le bouton **Partager** depuis n'importe quelle app (Photos, navigateur...) → choisis "Bibliothèque centralisée" pour envoyer un fichier directement dans ta bibliothèque.
+Une fois l'app accessible en HTTPS (voir section précédente) et ajoutée à l'écran d'accueil, utilise le bouton **Partager** depuis n'importe quelle app (Photos, navigateur, YouTube...) → choisis "Bibliothèque centralisée".
+
+Le même bouton gère plusieurs types de contenu, détectés automatiquement :
+- **Fichier** (photo, screenshot, PDF...) → importé et catégorisé comme avant
+- **Lien YouTube** → résumé long structuré (sections, points clés, citations) + transcript complet archivé
+- **Lien vers une page web** → résumé court (2-4 phrases) + lien cliquable vers la source, sans archiver le contenu complet
+- **Texte sélectionné/collé** (ex: depuis Notes, un article, un message) → stocké intégralement, avec résumé automatique seulement si le texte dépasse ~500 caractères
+
+Le contenu est visible dans la bibliothèque avec le statut "⏳ analyse..." pendant le traitement, puis se met à jour automatiquement (icône 🎬 pour YouTube, 🔗 pour les pages web, 🗒️ pour les notes).
 
 **Limitation iOS** : Safari/iOS ne supporte pas encore l'API Web Share Target, donc cette méthode ne fonctionne que sur Android. Pour iPhone, deux alternatives :
 - Utilise l'app **Raccourcis (Shortcuts)** : crée un raccourci "Partager" qui fait un `POST` du fichier vers `https://ton-serveur/api/share` (action "Obtenir le contenu de l'URL")
@@ -110,6 +122,8 @@ server/
   index.js       Serveur Express + routes API
   db.js          Schéma et requêtes SQLite (better-sqlite3)
   categorize.js  Appels Claude API (vision pour images, texte pour PDF/txt)
+  anthropic.js   Client Claude partagé (clé API, modèle, parsing JSON)
+  links.js       Ingestion des liens YouTube/pages web et des notes collées
   ingest.js      Logique commune: stocker un fichier + déclencher la catégorisation
   watcher.js     Surveillance du dossier `watched/`
   drive.js       Import Google Drive
@@ -130,3 +144,5 @@ fly.toml         Configuration de déploiement Fly.io
 - Types de fichiers supportés pour l'analyse de contenu : images (png/jpg/gif/webp), PDF, texte (.txt/.md). Les autres types sont catégorisés par nom de fichier uniquement.
 - Images limitées à ~4.5 Mo pour l'analyse vision (limite API Claude).
 - Authentification HTTP basique uniquement (un seul couple identifiant/mot de passe pour toute l'app, voir section "Mot de passe d'accès") — suffisant pour un usage solo, pas pour plusieurs comptes.
+- Transcript YouTube : nécessite que la vidéo ait des sous-titres (générés automatiquement ou ajoutés par le créateur) ; sinon l'import échoue avec un message d'erreur explicite.
+- Pages web : certains sites bloquent les requêtes serveur (anti-bot) ou nécessitent du JavaScript pour afficher leur contenu — l'extraction peut alors échouer.

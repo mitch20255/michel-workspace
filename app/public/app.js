@@ -15,9 +15,22 @@ const ICONS = {
   'text/markdown': '📝',
 };
 
+const CONTENT_TYPE_ICONS = {
+  youtube: '🎬',
+  webpage: '🔗',
+  note: '🗒️',
+};
+
 function iconFor(item) {
+  if (CONTENT_TYPE_ICONS[item.content_type]) return CONTENT_TYPE_ICONS[item.content_type];
   if (item.mimetype?.startsWith('image/')) return null;
   return ICONS[item.mimetype] || '📁';
+}
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
 }
 
 async function fetchItems() {
@@ -45,7 +58,7 @@ function renderCategories(categories) {
     const li = document.createElement('li');
     li.className = activeCategory === c.category ? 'active' : '';
     li.onclick = () => { activeCategory = c.category; refresh(); };
-    li.innerHTML = `<span>${c.category}</span><span class="count">${c.count}</span>`;
+    li.innerHTML = `<span>${escapeHtml(c.category)}</span><span class="count">${c.count}</span>`;
     categoryList.appendChild(li);
   }
 }
@@ -59,8 +72,8 @@ function renderGrid(items) {
     card.innerHTML = `
       <div class="thumb">${icon ? icon : `<img src="/api/files/${item.id}" loading="lazy" />`}</div>
       <div class="info">
-        <div class="filename">${item.filename}</div>
-        <span class="category-badge">${item.category || (item.status === 'pending' ? '⏳ analyse...' : 'sans catégorie')}</span>
+        <div class="filename">${escapeHtml(item.filename)}</div>
+        <span class="category-badge">${escapeHtml(item.category || (item.status === 'pending' ? '⏳ analyse...' : 'sans catégorie'))}</span>
       </div>
     `;
     card.onclick = () => openModal(item);
@@ -68,17 +81,25 @@ function renderGrid(items) {
   }
 }
 
+const OCR_LABELS = {
+  youtube: 'Transcript complet',
+  note: 'Texte original',
+};
+
 function openModal(item) {
   const tags = JSON.parse(item.tags || '[]');
   const icon = iconFor(item);
+  const isFile = item.content_type === 'file' || !item.content_type;
+  const ocrLabel = OCR_LABELS[item.content_type] || 'Texte détecté';
   modalBody.innerHTML = `
     ${icon ? `<div style="font-size:4rem">${icon}</div>` : `<img src="/api/files/${item.id}" />`}
-    <h3>${item.filename}</h3>
-    <p>${item.description || ''}</p>
-    <div>${tags.map((t) => `<span class="tag">#${t}</span>`).join('')}</div>
-    ${item.ocr_text ? `<details style="margin-top:10px"><summary>Texte détecté</summary><pre style="white-space:pre-wrap">${item.ocr_text}</pre></details>` : ''}
-    <p style="color:#9ca3af;font-size:0.8rem;margin-top:10px">Source: ${item.source} · ${new Date(item.created_at).toLocaleString('fr-CA')}</p>
-    <a href="/api/files/${item.id}" download="${item.filename}"><button>⬇️ Télécharger</button></a>
+    <h3>${escapeHtml(item.filename)}</h3>
+    ${item.source_url ? `<p><a href="${escapeHtml(item.source_url)}" target="_blank" rel="noopener noreferrer">🔗 Ouvrir la source</a></p>` : ''}
+    <p style="white-space:pre-wrap">${escapeHtml(item.description)}</p>
+    <div>${tags.map((t) => `<span class="tag">#${escapeHtml(t)}</span>`).join('')}</div>
+    ${item.ocr_text ? `<details style="margin-top:10px"><summary>${ocrLabel}</summary><pre style="white-space:pre-wrap">${escapeHtml(item.ocr_text)}</pre></details>` : ''}
+    <p style="color:#9ca3af;font-size:0.8rem;margin-top:10px">Source: ${escapeHtml(item.source)} · ${new Date(item.created_at).toLocaleString('fr-CA')}</p>
+    ${isFile ? `<a href="/api/files/${item.id}" download="${escapeHtml(item.filename)}"><button>⬇️ Télécharger</button></a>` : ''}
     <button class="delete-btn" data-id="${item.id}">🗑️ Supprimer</button>
   `;
   modalBody.querySelector('.delete-btn').onclick = async () => {

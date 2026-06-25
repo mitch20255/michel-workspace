@@ -34,16 +34,31 @@ db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_items_drive_file_id ON items(drive_file_id) WHERE drive_file_id IS NOT NULL;
 `);
 
-export function insertItem({ filename, filepath, mimetype, size, source, driveFileId = null }) {
+function ensureColumn(table, column, definition) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+ensureColumn('items', 'content_type', "TEXT NOT NULL DEFAULT 'file'");
+ensureColumn('items', 'source_url', 'TEXT');
+
+export function insertItem({
+  filename, filepath, mimetype, size, source, driveFileId = null,
+  contentType = 'file', sourceUrl = null,
+}) {
   const stmt = db.prepare(`
-    INSERT INTO items (filename, filepath, mimetype, size, source, drive_file_id, status)
-    VALUES (?, ?, ?, ?, ?, ?, 'pending')
+    INSERT INTO items (filename, filepath, mimetype, size, source, drive_file_id, content_type, source_url, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
   `);
-  const info = stmt.run(filename, filepath, mimetype, size, source, driveFileId);
+  const info = stmt.run(filename, filepath, mimetype, size, source, driveFileId, contentType, sourceUrl);
   return info.lastInsertRowid;
 }
 
-export function updateItemCategorization(id, { category, tags, description, ocrText, status = 'categorized', error = null }) {
+export function updateItemCategorization(id, { category, tags, description, ocrText, status = 'categorized', error = null, filename = null }) {
+  if (filename) {
+    db.prepare('UPDATE items SET filename = ? WHERE id = ?').run(filename, id);
+  }
   db.prepare(`
     UPDATE items
     SET category = ?, tags = ?, description = ?, ocr_text = ?, status = ?, error = ?, updated_at = datetime('now')

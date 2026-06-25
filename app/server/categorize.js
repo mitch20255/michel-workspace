@@ -1,21 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import Anthropic from '@anthropic-ai/sdk';
 import pdfParse from 'pdf-parse';
-
-const MODEL = process.env.CATEGORIZE_MODEL || 'claude-sonnet-4-6';
+import { getClient, MODEL, extractJson } from './anthropic.js';
 
 const IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
 const TEXT_TYPES = new Set(['text/plain', 'text/markdown']);
-
-let client = null;
-function getClient() {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY manquante dans .env — la catégorisation automatique est désactivée.');
-  }
-  if (!client) client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  return client;
-}
 
 const SYSTEM_PROMPT = `Tu organises une bibliothèque personnelle de fichiers (screenshots, documents, images).
 Pour chaque fichier, retourne UNIQUEMENT un objet JSON avec ces champs:
@@ -24,12 +13,6 @@ Pour chaque fichier, retourne UNIQUEMENT un objet JSON avec ces champs:
 - "description": une phrase résumant le contenu, en français.
 - "ocr_text": le texte visible dans l'image/document, tel quel (vide si aucun texte significatif).
 Ne retourne rien d'autre que le JSON.`;
-
-function extractJson(text) {
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error(`Réponse IA non-JSON: ${text.slice(0, 200)}`);
-  return JSON.parse(match[0]);
-}
 
 async function categorizeImage(filePath, filename) {
   const buffer = await fs.readFile(filePath);

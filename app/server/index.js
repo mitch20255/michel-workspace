@@ -9,6 +9,7 @@ import { listItems, listCategories, getItem, deleteItem } from './db.js';
 import { ingestExisting, FILES_DIR } from './ingest.js';
 import { startWatcher } from './watcher.js';
 import { importFromDrive } from './drive.js';
+import { extractUrl, isYoutubeUrl, ingestYoutube, ingestWebpage, ingestNote } from './links.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -86,13 +87,30 @@ app.post('/api/upload', upload.array('file'), async (req, res) => {
   res.json({ ids });
 });
 
-// Endpoint PWA Web Share Target (Android: "Partager" -> choisir cette app)
+// Endpoint PWA Web Share Target (Android: "Partager" -> choisir cette app).
+// Reçoit soit un/des fichiers, soit un lien (YouTube ou page web), soit du texte collé.
 app.post('/api/share', upload.array('file'), async (req, res) => {
   const ids = [];
   for (const file of req.files || []) {
-    const id = await ingestExisting(file.path, file.originalname, 'phone-share');
-    ids.push(id);
+    ids.push(await ingestExisting(file.path, file.originalname, 'phone-share'));
   }
+
+  if (ids.length === 0) {
+    const text = req.body.text || '';
+    const url = req.body.url || extractUrl(text) || extractUrl(req.body.title || '');
+    try {
+      if (url && isYoutubeUrl(url)) {
+        ids.push(await ingestYoutube(url, 'phone-share'));
+      } else if (url) {
+        ids.push(await ingestWebpage(url, 'phone-share'));
+      } else if (text.trim()) {
+        ids.push(await ingestNote(text, 'phone-share', req.body.title));
+      }
+    } catch (err) {
+      console.error('[share] Échec:', err.message);
+    }
+  }
+
   res.redirect('/?shared=' + ids.length);
 });
 
