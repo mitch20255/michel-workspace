@@ -2,9 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import pdfParse from 'pdf-parse';
 import { getClient, MODEL, extractJson } from './anthropic.js';
+import { extractEpubText, extractDocxText, extractPptxText } from './documents.js';
 
 const IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
 const TEXT_TYPES = new Set(['text/plain', 'text/markdown']);
+export const EPUB_TYPE = 'application/epub+zip';
+export const DOCX_TYPE = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+export const PPTX_TYPE = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 const SYSTEM_PROMPT = `Tu organises une bibliothèque personnelle de fichiers (screenshots, documents, images).
 Pour chaque fichier, retourne UNIQUEMENT un objet JSON avec ces champs:
@@ -64,12 +68,35 @@ async function categorizeText(content, filename) {
  */
 export async function categorizeFile(filePath, mimetype, filename) {
   let result;
+  // Pour les documents longs (EPUB/Word/PowerPoint), le texte intégral extrait localement
+  // est archivé directement comme ocrText — le "ocr_text" renvoyé par l'IA serait tronqué
+  // par la limite de max_tokens de categorizeText, donc on ne s'y fie pas pour ces formats.
+  let ocrTextOverride = null;
+
   if (IMAGE_TYPES.has(mimetype)) {
     result = await categorizeImage(filePath, filename);
   } else if (mimetype === 'application/pdf') {
     const buffer = await fs.readFile(filePath);
     const parsed = await pdfParse(buffer);
     result = await categorizeText(parsed.text || '(PDF sans texte extractible)', filename);
+  } else if (mimetype === EPUB_TYPE || filename.match(/\.epub$/i)) {
+    const buffer = await fs.readFile(filePath);
+    const text = extractEpubText(buffer);
+    if (!text.trim()) throw new Error('Aucun texte extractible de cet EPUB');
+    ocrTextOverride = text;
+    result = await categorizeText(text, filename).catch((err) => { err.ocrText = text; throw err; });
+  } else if (mimetype === DOCX_TYPE || filename.match(/\.docx$/i)) {
+    const buffer = await fs.readFile(filePath);
+    const text = extractDocxText(buffer);
+    if (!text.trim()) throw new Error('Aucun texte extractible de ce document Word');
+    ocrTextOverride = text;
+    result = await categorizeText(text, filename).catch((err) => { err.ocrText = text; throw err; });
+  } else if (mimetype === PPTX_TYPE || filename.match(/\.pptx$/i)) {
+    const buffer = await fs.readFile(filePath);
+    const text = extractPptxText(buffer);
+    if (!text.trim()) throw new Error('Aucun texte extractible de cette présentation');
+    ocrTextOverride = text;
+    result = await categorizeText(text, filename).catch((err) => { err.ocrText = text; throw err; });
   } else if (TEXT_TYPES.has(mimetype) || filename.match(/\.(txt|md)$/i)) {
     const content = await fs.readFile(filePath, 'utf-8');
     result = await categorizeText(content, filename);
@@ -81,6 +108,6 @@ export async function categorizeFile(filePath, mimetype, filename) {
     category: result.category || 'Autre',
     tags: Array.isArray(result.tags) ? result.tags : [],
     description: result.description || '',
-    ocrText: result.ocr_text || '',
+    ocrText: ocrTextOverride ?? (result.ocr_text || ''),
   };
 }

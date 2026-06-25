@@ -18,10 +18,18 @@ export function isYoutubeUrl(url) {
   return YOUTUBE_RE.test(url);
 }
 
-function failItem(id, err) {
+export function isVimeoUrl(url) {
+  return /vimeo\.com/i.test(url);
+}
+
+export function isTiktokUrl(url) {
+  return /tiktok\.com/i.test(url);
+}
+
+function failItem(id, err, overrides = {}) {
   console.error(`[links] Catégorisation échouée pour #${id}:`, err.message);
   updateItemCategorization(id, {
-    category: 'Non catégorisé', tags: [], description: '', ocrText: '', status: 'error', error: err.message,
+    category: 'Non catégorisé', tags: [], description: '', ocrText: '', status: 'error', error: err.message, ...overrides,
   });
 }
 
@@ -73,11 +81,68 @@ export async function ingestYoutube(url, source) {
     );
     const transcript = transcriptItems.map((t) => t.text).join(' ');
     if (!transcript.trim()) throw new Error('Aucun transcript disponible pour cette vidéo');
-    const result = await categorizeYoutube(title, transcript);
-    updateItemCategorization(id, { ...result, ocrText: transcript, filename: title || url });
+    try {
+      const result = await categorizeYoutube(title, transcript);
+      updateItemCategorization(id, { ...result, ocrText: transcript, filename: title || url });
+    } catch (err) {
+      // Le transcript a été récupéré avec succès — on l'archive même si le résumé IA échoue.
+      failItem(id, err, { ocrText: transcript, filename: title || url });
+    }
   })().catch((err) => failItem(id, err));
 
   return id;
+}
+
+// --- Vidéos via oEmbed (Vimeo, TikTok) — métadonnées seulement, pas de transcript ----
+
+const VIDEO_SYSTEM_PROMPT = `Tu organises une bibliothèque personnelle. On te donne le titre et l'auteur d'une vidéo (Vimeo ou TikTok) — aucun transcript n'est disponible pour ce type de vidéo.
+Retourne UNIQUEMENT un objet JSON avec:
+- "category": catégorie courte (ex: "Vidéo - Divertissement", "Vidéo - Tutoriel", "Vidéo - Actualité"). Réutilise une catégorie existante si pertinent.
+- "tags": 2 à 6 mots-clés courts en minuscules.
+- "summary": une description en français de 1-2 phrases basée sur le titre et l'auteur.
+Ne retourne rien d'autre que le JSON.`;
+
+async function categorizeVideoMetadata(title, author) {
+  const anthropic = getClient();
+  const response = await anthropic.messages.create({
+    model: MODEL,
+    max_tokens: 300,
+    system: VIDEO_SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: `Titre: ${title || '(inconnu)'}\nAuteur: ${author || '(inconnu)'}` }],
+  });
+  const result = extractJson(response.content[0].text);
+  return { category: result.category || 'Vidéo', tags: result.tags || [], description: result.summary || '' };
+}
+
+async function ingestOembedVideo(url, source, { contentType, oembedUrl }) {
+  const id = insertItem({
+    filename: url, filepath: '', mimetype: null, size: 0, source, contentType, sourceUrl: url,
+  });
+
+  (async () => {
+    const res = await fetch(oembedUrl);
+    if (!res.ok) throw new Error(`oEmbed indisponible pour cette vidéo (HTTP ${res.status})`);
+    const data = await res.json();
+    const title = data.title || url;
+    const result = await categorizeVideoMetadata(title, data.author_name);
+    updateItemCategorization(id, { ...result, ocrText: '', filename: title });
+  })().catch((err) => failItem(id, err));
+
+  return id;
+}
+
+export async function ingestVimeo(url, source) {
+  return ingestOembedVideo(url, source, {
+    contentType: 'vimeo',
+    oembedUrl: `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`,
+  });
+}
+
+export async function ingestTiktok(url, source) {
+  return ingestOembedVideo(url, source, {
+    contentType: 'tiktok',
+    oembedUrl: `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`,
+  });
 }
 
 // --- Pages web ---------------------------------------------------------------
@@ -184,7 +249,7 @@ export async function ingestNote(text, source, titleHint = null) {
 
   categorizeNote(trimmed)
     .then((result) => updateItemCategorization(id, { ...result, ocrText: trimmed }))
-    .catch((err) => failItem(id, err));
+    .catch((err) => failItem(id, err, { ocrText: trimmed }));
 
   return id;
 }

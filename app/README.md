@@ -11,10 +11,14 @@ App web auto-hébergée pour stocker screenshots, documents et images dans une b
   - **Partage depuis le téléphone** (Android) : installe l'app sur l'écran d'accueil, puis utilise le bouton "Partager" de n'importe quelle app
 - 🔗 **Capture de liens et de texte** (via le même bouton Partager) :
   - **Vidéo YouTube** : résumé long et structuré + transcript complet archivé et cherchable
+  - **Vidéo Vimeo / TikTok** : titre et auteur récupérés automatiquement (oEmbed), catégorisés — pas de transcript disponible pour ces plateformes
   - **Page web** : résumé court + lien vers la source (le contenu n'est pas archivé, seulement résumé)
   - **Texte copié-collé / note** : stocké tel quel, avec résumé automatique si le texte est long (≥500 caractères)
+- 📄 **EPUB et documents Word/PowerPoint (.docx/.pptx)** : texte intégral extrait et archivé (cherchable), résumé et catégorisation automatiques
 - 🤖 **Catégorisation automatique** : chaque fichier/lien/note est analysé par Claude (catégorie, tags, description, texte détecté/OCR ou transcript)
-- 🔍 Recherche et filtrage par catégorie
+- ✅ **Lu / non lu** : marqué automatiquement comme lu à l'ouverture d'un élément
+- 📋 **Listes personnalisées** (façon "bookmarks" Facebook) : crée des listes et ajoute-y n'importe quel élément, un même élément peut appartenir à plusieurs listes
+- 🔍 Recherche et filtrage par catégorie ou par liste
 - 🗄️ Stockage local (SQLite), rien ne quitte ta machine sauf l'appel à l'API Claude pour l'analyse et la requête vers la page/vidéo partagée
 
 ## Installation
@@ -92,12 +96,13 @@ Par défaut : `app/watched/`. Dépose-y n'importe quel screenshot/document et il
 Une fois l'app accessible en HTTPS (voir section précédente) et ajoutée à l'écran d'accueil, utilise le bouton **Partager** depuis n'importe quelle app (Photos, navigateur, YouTube...) → choisis "Bibliothèque centralisée".
 
 Le même bouton gère plusieurs types de contenu, détectés automatiquement :
-- **Fichier** (photo, screenshot, PDF...) → importé et catégorisé comme avant
+- **Fichier** (photo, screenshot, PDF, EPUB, .docx/.pptx...) → importé et catégorisé comme avant
 - **Lien YouTube** → résumé long structuré (sections, points clés, citations) + transcript complet archivé
+- **Lien Vimeo / TikTok** → titre et auteur récupérés via oEmbed, catégorisés (pas de transcript disponible)
 - **Lien vers une page web** → résumé court (2-4 phrases) + lien cliquable vers la source, sans archiver le contenu complet
 - **Texte sélectionné/collé** (ex: depuis Notes, un article, un message) → stocké intégralement, avec résumé automatique seulement si le texte dépasse ~500 caractères
 
-Le contenu est visible dans la bibliothèque avec le statut "⏳ analyse..." pendant le traitement, puis se met à jour automatiquement (icône 🎬 pour YouTube, 🔗 pour les pages web, 🗒️ pour les notes).
+Le contenu est visible dans la bibliothèque avec le statut "⏳ analyse..." pendant le traitement, puis se met à jour automatiquement (icône 🎬 pour YouTube, 🎥 pour Vimeo, 🎵 pour TikTok, 🔗 pour les pages web, 🗒️ pour les notes).
 
 **Limitation iOS** : Safari/iOS ne supporte pas encore l'API Web Share Target, donc cette méthode ne fonctionne que sur Android. Pour iPhone, deux alternatives :
 - Utilise l'app **Raccourcis (Shortcuts)** : crée un raccourci "Partager" qui fait un `POST` du fichier vers `https://ton-serveur/api/share` (action "Obtenir le contenu de l'URL")
@@ -121,9 +126,10 @@ Le contenu est visible dans la bibliothèque avec le statut "⏳ analyse..." pen
 server/
   index.js       Serveur Express + routes API
   db.js          Schéma et requêtes SQLite (better-sqlite3)
-  categorize.js  Appels Claude API (vision pour images, texte pour PDF/txt)
+  categorize.js  Appels Claude API (vision pour images, texte pour PDF/txt/EPUB/Word/PowerPoint)
+  documents.js   Extraction de texte EPUB/.docx/.pptx (sans dépendance externe lourde)
   anthropic.js   Client Claude partagé (clé API, modèle, parsing JSON)
-  links.js       Ingestion des liens YouTube/pages web et des notes collées
+  links.js       Ingestion des liens YouTube/Vimeo/TikTok/pages web et des notes collées
   ingest.js      Logique commune: stocker un fichier + déclencher la catégorisation
   watcher.js     Surveillance du dossier `watched/`
   drive.js       Import Google Drive
@@ -141,8 +147,10 @@ fly.toml         Configuration de déploiement Fly.io
 
 ## Limites connues (MVP)
 
-- Types de fichiers supportés pour l'analyse de contenu : images (png/jpg/gif/webp), PDF, texte (.txt/.md). Les autres types sont catégorisés par nom de fichier uniquement.
+- Types de fichiers supportés pour l'analyse de contenu : images (png/jpg/gif/webp), PDF, EPUB, Word (.docx), PowerPoint (.pptx), texte (.txt/.md). Les autres types sont catégorisés par nom de fichier uniquement.
 - Images limitées à ~4.5 Mo pour l'analyse vision (limite API Claude).
 - Authentification HTTP basique uniquement (un seul couple identifiant/mot de passe pour toute l'app, voir section "Mot de passe d'accès") — suffisant pour un usage solo, pas pour plusieurs comptes.
 - Transcript YouTube : nécessite que la vidéo ait des sous-titres (générés automatiquement ou ajoutés par le créateur) ; sinon l'import échoue avec un message d'erreur explicite.
-- Pages web : certains sites bloquent les requêtes serveur (anti-bot) ou nécessitent du JavaScript pour afficher leur contenu — l'extraction peut alors échouer.
+- Vimeo/TikTok : seuls le titre et l'auteur sont récupérés (via oEmbed) — pas de transcript, contrairement à YouTube.
+- Pages web : certains sites bloquent les requêtes serveur (anti-bot) ou nécessitent du JavaScript pour afficher leur contenu — l'extraction peut alors échouer. C'est notamment le cas de **Facebook et Instagram** (contenu derrière un login, fortement dynamique) : un lien partagé depuis ces apps tombera probablement en erreur ou ne récupérera qu'un résumé très pauvre.
+- **Audio** (mémos vocaux, podcasts) : non supporté pour l'instant — la transcription audio nécessiterait un service tiers payant dédié (Claude n'analyse pas l'audio directement).

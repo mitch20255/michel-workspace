@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { insertItem, updateItemCategorization } from './db.js';
-import { categorizeFile } from './categorize.js';
+import { categorizeFile, EPUB_TYPE, DOCX_TYPE, PPTX_TYPE } from './categorize.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const FILES_DIR = path.join(__dirname, '..', 'data', 'files');
@@ -18,6 +18,9 @@ const MIME_BY_EXT = {
   '.pdf': 'application/pdf',
   '.txt': 'text/plain',
   '.md': 'text/markdown',
+  '.epub': EPUB_TYPE,
+  '.docx': DOCX_TYPE,
+  '.pptx': PPTX_TYPE,
 };
 
 export function guessMimetype(filename) {
@@ -67,7 +70,7 @@ async function finalize(filePath, originalName, source, driveFileId) {
         category: 'Non catégorisé',
         tags: [],
         description: '',
-        ocrText: '',
+        ocrText: err.ocrText || '',
         status: 'error',
         error: err.message,
       });

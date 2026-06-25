@@ -5,11 +5,17 @@ import crypto from 'node:crypto';
 import express from 'express';
 import multer from 'multer';
 import { randomUUID } from 'node:crypto';
-import { listItems, listCategories, getItem, deleteItem } from './db.js';
+import {
+  listItems, listCategories, getItem, deleteItem,
+  setItemRead, listLists, createList, addItemToList, removeItemFromList,
+} from './db.js';
 import { ingestExisting, FILES_DIR } from './ingest.js';
 import { startWatcher } from './watcher.js';
 import { importFromDrive } from './drive.js';
-import { extractUrl, isYoutubeUrl, ingestYoutube, ingestWebpage, ingestNote } from './links.js';
+import {
+  extractUrl, isYoutubeUrl, isVimeoUrl, isTiktokUrl,
+  ingestYoutube, ingestVimeo, ingestTiktok, ingestWebpage, ingestNote,
+} from './links.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -56,12 +62,44 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
 
 app.get('/api/items', (req, res) => {
-  const { category, q, status } = req.query;
-  res.json(listItems({ category, q, status }));
+  const { category, q, status, list } = req.query;
+  res.json(listItems({ category, q, status, list }));
 });
 
 app.get('/api/categories', (req, res) => {
   res.json(listCategories());
+});
+
+app.get('/api/lists', (req, res) => {
+  res.json(listLists());
+});
+
+app.post('/api/lists', (req, res) => {
+  try {
+    res.json(createList(req.body.name || ''));
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.patch('/api/items/:id/read', (req, res) => {
+  setItemRead(req.params.id, !!req.body.isRead);
+  res.status(204).end();
+});
+
+app.post('/api/items/:id/lists', (req, res) => {
+  try {
+    const list = req.body.listId ? { id: req.body.listId } : createList(req.body.name || '');
+    addItemToList(req.params.id, list.id);
+    res.json(list);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/items/:id/lists/:listId', (req, res) => {
+  removeItemFromList(req.params.id, req.params.listId);
+  res.status(204).end();
 });
 
 app.get('/api/files/:id', (req, res) => {
@@ -101,6 +139,10 @@ app.post('/api/share', upload.array('file'), async (req, res) => {
     try {
       if (url && isYoutubeUrl(url)) {
         ids.push(await ingestYoutube(url, 'phone-share'));
+      } else if (url && isVimeoUrl(url)) {
+        ids.push(await ingestVimeo(url, 'phone-share'));
+      } else if (url && isTiktokUrl(url)) {
+        ids.push(await ingestTiktok(url, 'phone-share'));
       } else if (url) {
         ids.push(await ingestWebpage(url, 'phone-share'));
       } else if (text.trim()) {

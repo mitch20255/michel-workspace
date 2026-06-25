@@ -1,4 +1,5 @@
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
@@ -44,8 +45,9 @@ aside {
   flex-shrink: 0;
 }
 aside h2 { font-size: 0.85rem; text-transform: uppercase; color: #9ca3af; }
-#category-list { list-style: none; padding: 0; margin: 0; }
-#category-list li {
+aside h2:not(:first-child) { margin-top: 20px; }
+#category-list, #list-list { list-style: none; padding: 0; margin: 0; }
+#category-list li, #list-list li {
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
@@ -53,8 +55,19 @@ aside h2 { font-size: 0.85rem; text-transform: uppercase; color: #9ca3af; }
   display: flex;
   justify-content: space-between;
 }
-#category-list li:hover, #category-list li.active { background: #1f2937; }
-#category-list .count { color: #6b7280; font-size: 0.8rem; }
+#category-list li:hover, #category-list li.active,
+#list-list li:hover, #list-list li.active { background: #1f2937; }
+#category-list .count, #list-list .count { color: #6b7280; font-size: 0.8rem; }
+#new-list-form { margin-top: 8px; }
+#new-list-input {
+  width: 100%;
+  background: #374151;
+  border: none;
+  color: #e5e7eb;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
 
 #grid {
   flex: 1;
@@ -97,6 +110,7 @@ aside h2 { font-size: 0.85rem; text-transform: uppercase; color: #9ca3af; }
 }
 .card.pending .category-badge { background: #6b7280; }
 .card.error .category-badge { background: #dc2626; }
+.card.read { opacity: 0.55; }
 
 .dropzone-overlay {
   position: fixed;
@@ -137,6 +151,21 @@ aside h2 { font-size: 0.85rem; text-transform: uppercase; color: #9ca3af; }
   border-radius: 10px; font-size: 0.75rem; margin: 2px 4px 0 0;
 }
 .modal-content .delete-btn {
-  margin-top: 14px; background: #dc2626; color: white; border: none;
+  background: #dc2626; color: white; border: none;
   padding: 8px 14px; border-radius: 8px; cursor: pointer;
 }
+.lists-section { margin-top: 14px; }
+.list-chip { background: #166534; }
+.list-chip .remove-list { cursor: pointer; margin-left: 4px; }
+.add-to-list-form { display: flex; gap: 6px; margin-top: 8px; }
+.add-to-list-input {
+  flex: 1; background: #374151; border: none; color: #e5e7eb;
+  padding: 6px 10px; border-radius: 6px; font-size: 0.85rem;
+}
+.add-to-list-form button {
+  background: #2563eb; color: white; border: none;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer;
+}
+.modal-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+.modal-actions button { padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+.toggle-read-btn { background: #374151; color: #e5e7eb; border: none; }
