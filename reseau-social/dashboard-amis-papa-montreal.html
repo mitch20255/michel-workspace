@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Réseau social papa & fille, Montréal</title>
+<style>
+  :root{
+    --bg:#0d0d12;
+    --card:#16161d;
+    --accent:#ff5c8a;
+    --accent2:#4fd1c5;
+    --text:#f5f5f7;
+    --muted:#9a9aa5;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  #scroller{
+    height:100vh;
+    overflow-y:scroll;
+    scroll-snap-type:y mandatory;
+    scrollbar-width:none;
+  }
+  #scroller::-webkit-scrollbar{display:none;}
+  .card{
+    height:100vh;
+    scroll-snap-align:start;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:24px;
+    position:relative;
+  }
+  .panel{
+    width:100%;
+    max-width:520px;
+    background:linear-gradient(160deg, var(--card), #1c1c26);
+    border-radius:20px;
+    padding:28px 24px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    border:1px solid rgba(255,255,255,0.06);
+  }
+  .badge{
+    display:inline-block;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--bg);
+    background:var(--accent2);
+    padding:4px 10px;
+    border-radius:999px;
+    margin-bottom:12px;
+  }
+  .platform{
+    display:inline-block;
+    font-size:12px;
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,0.15);
+    padding:3px 9px;
+    border-radius:999px;
+    margin-left:6px;
+  }
+  h1{font-size:22px;margin:8px 0 6px;line-height:1.25;}
+  p.desc{font-size:15px;line-height:1.5;color:#d8d8df;margin:0 0 16px;}
+  .unverified{color:#ffb86b;font-size:13px;margin:0 0 14px;}
+  a.linkbtn{
+    display:inline-block;
+    background:var(--accent);
+    color:#1a0a10;
+    font-weight:700;
+    text-decoration:none;
+    padding:10px 18px;
+    border-radius:12px;
+    font-size:14px;
+    margin-bottom:18px;
+  }
+  textarea.notes{
+    width:100%;
+    min-height:70px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:12px;
+    color:var(--text);
+    font-size:14px;
+    padding:10px;
+    resize:vertical;
+    font-family:inherit;
+  }
+  textarea.notes::placeholder{color:var(--muted);}
+  .label-notes{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px;display:block;}
+  #progress{
+    position:fixed;
+    top:14px;right:18px;
+    font-size:13px;
+    color:var(--muted);
+    background:rgba(0,0,0,0.4);
+    padding:4px 10px;
+    border-radius:999px;
+    z-index:10;
+  }
+  #hint{
+    position:fixed;
+    bottom:10px;left:0;right:0;
+    text-align:center;
+    font-size:12px;
+    color:var(--muted);
+    z-index:10;
+  }
+  #catbar{
+    position:fixed;
+    top:14px;left:18px;
+    font-size:12px;
+    color:var(--accent2);
+    background:rgba(0,0,0,0.4);
+    padding:4px 10px;
+    border-radius:999px;
+    z-index:10;
+    max-width:55%;
+  }
+</style>
+</head>
+<body>
+<div id="catbar">—</div>
+<div id="progress">0 / 0</div>
+<div id="scroller"></div>
+<div id="hint">↓ scroll / swipe pour la suivante · tes notes se sauvegardent automatiquement</div>
+
+<script>
+const DATA = [
+
+// ===== PAPAS / PARENTALITÉ — MONTRÉAL GÉNÉRAL =====
+{cat:"Papas Mtl", name:"Entre Mamans et Papas", platform:"Facebook (Page)", link:"https://www.facebook.com/regroupement.entremamans/", desc:"Organisme communautaire 0-5 ans. Soirées 'Entre papas' le mercredi avec un intervenant-père + petites sorties papas-enfants (poussette/porte-bébé) pour découvrir Montréal."},
+{cat:"Papas Mtl", name:"Entre Papas (page dédiée)", platform:"Site web", link:"https://entremamans.qc.ca/entrepapas/", desc:"Page spécifique au programme 'papas' de l'organisme ci-dessus. Bon point de départ pour voir les horaires avant de contacter."},
+{cat:"Papas Mtl", name:"Les papas et futurs papas", platform:"Facebook (Page)", link:"https://www.facebook.com/lespapasetfuturspapas/", desc:"Page communautaire pour papas et futurs papas.", unverified:"Activité récente non vérifiée — check la fréquence des posts avant de t'investir."},
+{cat:"Papas Mtl", name:"Les Papas en Action pour l'Équité", platform:"Site web", link:"http://www.lespapas.org/fr/quisommesnous/", desc:"Groupe fondé par 3 papas voisins qui voulaient parler de leur réalité. Enfants de 7 mois à 23 ans, ambiance communautaire et bénévole."},
+{cat:"Papas Mtl", name:"RVP — Groupe Papa", platform:"Organisme", link:"https://rvpaternite.org/services-aux-peres/groupe-papa/", desc:"Le Regroupement pour la valorisation de la paternité. Plusieurs volets: Groupe Papa, Espace-Papa, soupers de pères/coparents, Y'APP."},
+{cat:"Papas Mtl", name:"RVP — La Bande du C-H", platform:"Organisme", link:"https://www.rvpaternite.org/services-aux-peres/la-bande-du-c-h/", desc:"Conférences + groupe de papas, sous l'aile du RVP."},
+{cat:"Papas Mtl", name:"RVP — Relais Pères (coparentalité)", platform:"Organisme", link:"https://www.rvpaternite.org/services-aux-peres/relais-peres/", desc:"Soutien spécifique à la coparentalité, utile si tu veux aussi un coup de main légal/psy en plus du social."},
+{cat:"Papas Mtl", name:"RVP — Page FB pères et grands-pères", platform:"Organisme → Facebook", link:"https://www.rvpaternite.org/services-aux-peres/page-facebook-dediee-aux-peres-et-aux-grands-peres/", desc:"Renvoie vers une page Facebook dédiée aux pères et grands-pères.", unverified:"Clique le lien sur la page pour avoir l'URL Facebook exacte."},
+{cat:"Papas Mtl", name:"Pères Séparés", platform:"Organisme (Hochelaga)", link:"https://www.peres-separes.qc.ca/", desc:"LE gros joueur établi pour pères séparés/divorcés au Québec depuis 1998. Groupes de parole le mercredi soir, bureau à Hochelaga-Maisonneuve, 1700 appels/an. Tél: 514-254-6120.", unverified:"Pertinent surtout si ta situation familiale implique une séparation."},
+{cat:"Papas Mtl", name:"Association Devenir Papa", platform:"Instagram", link:"https://www.instagram.com/devenirpapa/", desc:"Programmes de préparation à la paternité + groupes de soutien pour pères."},
+{cat:"Papas Mtl", name:"APGM — Pères gais de Montréal", platform:"Facebook (Page)", link:"https://www.facebook.com/equipe.APGM/", desc:"Association pour pères gais, ouverte aussi aux pères par adoption/GPA.", unverified:"Pertinent seulement si applicable à ta situation."},
+
+// ===== COPARENTALITÉ / SOLO =====
+{cat:"Solo/Copar.", name:"Coparentalité au Québec", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/156619288396350/", desc:"+160 membres, créé pour faire se rencontrer des coparents potentiels dans la région métropolitaine.", unverified:"Format plutôt 'matching' coparental que purement social — lis les règles du groupe avant de poster."},
+{cat:"Solo/Copar.", name:"Montreal Single Parents Group", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/MontrealSingleParents/", desc:"Groupe pour parents solos à Montréal.", unverified:"Groupe à dominante anglophone à vérifier."},
+
+// ===== ROSEMONT – LA PETITE-PATRIE =====
+{cat:"Rosemont-PP", name:"Groupe d'entraide maternelle Petite-Patrie (GEM)", platform:"Organisme", link:"https://groupedentraidematernelle.org/", desc:"Ateliers parent-enfant, massage bébé, yoga maman-bébé, friperie 0-5 ans. 6848 av. Christophe-Colomb, 514-495-3494.", unverified:"Nom 'maternelle' mais ouvert généralement aux deux parents — confirme par téléphone."},
+{cat:"Rosemont-PP", name:"Arrondissement Rosemont–La Petite-Patrie", platform:"Facebook (Page officielle)", link:"https://www.facebook.com/arrondissementRPP/", desc:"Page officielle de l'arrondissement — annonces d'activités et de loisirs locaux."},
+{cat:"Rosemont-PP", name:"La Maisonnette des Parents", platform:"Organisme", link:"https://maisonnettedesparents.org/", desc:"Lieu d'appartenance et de soutien pour les familles de Rosemont–La Petite-Patrie."},
+{cat:"Rosemont-PP", name:"Maison de la Famille Petite-Côte", platform:"Facebook (Page)", link:"https://www.facebook.com/mdfpetitecote/", desc:"Centre communautaire à Rosemont — activités de socialisation pour parents, camps et sports familiaux."},
+
+// ===== PLATEAU-MONT-ROYAL =====
+{cat:"Plateau", name:"Parents du Plateau Mont Royal", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/704978889603342/", desc:"Groupe communautaire de parents du Plateau."},
+{cat:"Plateau", name:"Parents du Plateau Mont-Royal et environs", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/720718411322984/", desc:"Variante élargie aux quartiers environnants.", unverified:"Deux groupes similaires existent — rejoins les deux et garde le plus actif."},
+{cat:"Plateau", name:"Plateau Parents", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/1897836253837120/", desc:"Encore un autre groupe de parents du Plateau."},
+{cat:"Plateau", name:"Local familial du Plateau Mont Royal", platform:"Facebook (Page)", link:"https://www.facebook.com/localfamilial/", desc:"Organisme avec activités familiales régulières dans le quartier."},
+{cat:"Plateau", name:"Autour des familles Grand Plateau", platform:"Facebook (Page)", link:"https://www.facebook.com/autourdesfamillesgrandpplateau/", desc:"Regroupement de plusieurs organismes pour familles du Grand Plateau — bon hub pour trouver d'autres ressources."},
+
+// ===== AHUNTSIC-CARTIERVILLE =====
+{cat:"Ahuntsic", name:"Parents actifs Ahuntsic", platform:"Facebook (Groupe)", link:"https://journaldesvoisins.com/creation-dun-reseau-de-parents-actifs-dans-ahuntsic/", desc:"Groupe sans leader où tous les parents membres proposent des activités sportives/sociales.", unverified:"⚠️ Lien direct du groupe Facebook non confirmé — cherche 'Parents actifs Ahuntsic' directement sur Facebook. Ici je te donne l'article qui en parle."},
+{cat:"Ahuntsic", name:"Maison des Parents de Bordeaux-Cartierville", platform:"Facebook (Page)", link:"https://www.facebook.com/LaMdPBC/", desc:"+1200 abonnés. Ateliers interculturels, partage de compétences entre parents."},
+{cat:"Ahuntsic", name:"Parents Bordeaux Cartierville", platform:"Site web", link:"https://parentsbordeauxcartierville.com/activites/", desc:"Calendrier d'activités à consulter avant de te déplacer sur place."},
+
+// ===== HOCHELAGA-MAISONNEUVE =====
+{cat:"Hochelaga", name:"Parents Hochelaga-Maisonneuve", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/parents.hochelaga.maisonneuve/", desc:"Le groupe communautaire principal du quartier pour les parents."},
+{cat:"Hochelaga", name:"Interaction Famille Hochelaga-Maisonneuve", platform:"Organisme", link:"http://interactionfamille.ca/", desc:"Organisme avec plusieurs services pour familles du quartier."},
+{cat:"Hochelaga", name:"Centre Hochelaga-Maisonneuve", platform:"Facebook (Page)", link:"https://www.facebook.com/centre.hochelagamaisonneuve/", desc:"Centre communautaire local — bon relais d'infos et d'activités."},
+
+// ===== ACTIVITÉS / SORTIES — MONTRÉAL GÉNÉRAL =====
+{cat:"Activités Mtl", name:"Montréal pour Enfants", platform:"Facebook (Page)", link:"https://www.facebook.com/montrealpourenfant/", desc:"~13k abonnés. Idées de sorties et activités familiales à travers Montréal."},
+{cat:"Activités Mtl", name:"Sorties pour enfants Rive-Sud (et Montréal)", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/sortiespourenfants/", desc:"Partage de bons plans sorties enfants, couvre aussi Montréal malgré le nom."},
+{cat:"Activités Mtl", name:"Montreal Parents and Babies", platform:"Facebook (Groupe)", link:"https://www.facebook.com/groups/160789217588549/", desc:"Groupe anglophone parents-bébés, actif à Montréal."},
+
+// ===== MEETUP =====
+{cat:"Meetup", name:"Montréal Parents Meetup", platform:"Meetup", link:"https://www.meetup.com/montrealparentsmeetup/", desc:"Ouvert à tous: parents, proches, gardiennes. Vise à créer des liens sociaux et une communauté de soutien via des événements ponctuels."},
+{cat:"Meetup", name:"Tous les groupes Parents/Famille à Montréal", platform:"Meetup (catégorie)", link:"https://www.meetup.com/cities/ca/qc/montr%C3%A9al/parents-family/", desc:"Liste complète et évolutive de tous les groupes parents/famille sur Meetup à Montréal — à revisiter régulièrement, de nouveaux groupes apparaissent."},
+
+// ===== INSTAGRAM =====
+{cat:"Instagram", name:"SMPE+ (Salon Maternité Paternité Enfants)", platform:"Instagram", link:"https://www.instagram.com/maternitepaterniteenfants/", desc:"Plus grand salon famille au Canada, revient à Montréal chaque année (mai). Bon événement IRL ponctuel pour socialiser."},
+{cat:"Instagram", name:"Top 10 influenceurs parents Québec", platform:"Article (liste)", link:"https://madein.co/blogue/influence/10-influenceurs-parents-au-quebec-sur-instagram/", desc:"Liste de comptes Instagram de parents québécois, dont un compte 'papa cool' avec humour.", unverified:"Plus pour l'inspiration de contenu que pour réseauter en vrai."},
+
+// ===== CAFÉS / LIEUX IRL FAMILLE =====
+{cat:"Cafés IRL", name:"11 cafés kids-friendly à Montréal", platform:"Article (liste)", link:"https://montreal.citycrunch.ca/2025/02/24/cafes-kids-friendly-montreal/", desc:"Liste de 11 cafés famille à Montréal (dont La Cabane, Bouge Petit) — bons endroits pour croiser d'autres parents en sortant régulièrement."},
+{cat:"Cafés IRL", name:"5 cafés baby-friendly à Montréal", platform:"Article (liste)", link:"https://tplmoms.com/2018/04/30/5-cafes-tres-baby-friendly-montreal/", desc:"Autre sélection de cafés adaptés aux jeunes enfants."},
+{cat:"Cafés IRL", name:"Café parent-enfant — recherche La Presse", platform:"Article", link:"https://www.lapresse.ca/vivre/famille/201502/23/01-4846652-a-la-recherche-dun-cafe-parents-enfants.php", desc:"Article qui recense des cafés pensés spécifiquement pour parents-enfants à Montréal."},
+
+// ===== APPS POUR SE FAIRE DES AMIS (TOI, PAS SEULEMENT 'PAPA') =====
+{cat:"Apps Amis", name:"Bumble For Friends (BFF)", platform:"App mobile", link:"https://bumble.com/fr-ca/bff", desc:"Mode amical de Bumble — swipe pour matcher des amis potentiels près de toi. Actif à Montréal."},
+{cat:"Apps Amis", name:"4 apps pour se faire des amis à Montréal", platform:"Article (liste)", link:"https://mauditsfrancais.ca/4-applications-pour-se-faire-des-amis-a-montreal/", desc:"Article source qui mentionne Together Club, Frimake, Groupevibe et Timeleft — apps d'événements/soupers pour rencontrer du monde à Montréal.", unverified:"⚠️ Liens directs de ces 4 apps non confirmés individuellement — passe par cet article pour les trouver, je ne veux pas te donner une URL inventée."},
+{cat:"Apps Amis", name:"We3", platform:"App mobile (mention)", link:"https://www.orientaction-groupe.com/meilleures-plateformes-tisser-amities-durables-ligne-web-internet-sites-bumble-bff-meetup-reddit-diversite-culturelle-benefices/", desc:"Forme des groupes de 3 personnes via un questionnaire de ~150 critères/valeurs, visée amitié durable plutôt que ponctuelle.", unverified:"Lien direct vers l'app non confirmé — voir l'article source pour le nom exact à chercher sur ton store d'applications."},
+{cat:"Apps Amis", name:"Meetup (général)", platform:"App / Site", link:"https://www.meetup.com/find/ca--montreal/", desc:"Moins ciblé Montréal nativement mais a des groupes par intérêt (rando, jeux de société, réseautage) actifs dans la ville — bon complément aux groupes parents."},
+
+];
+
+const scroller = document.getElementById("scroller");
+const progress = document.getElementById("progress");
+const catbar = document.getElementById("catbar");
+const STORAGE_KEY = "papa_dashboard_notes_v1";
+let notesStore = {};
+try { notesStore = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch(e) { notesStore = {}; }
+
+function saveNote(id, value){
+  notesStore[id] = value;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notesStore));
+}
+
+DATA.forEach((item, i) => {
+  const id = "card_" + i;
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.index = i;
+  card.dataset.cat = item.cat;
+
+  const unverifiedHtml = item.unverified
+    ? `<p class="unverified">⚠️ ${item.unverified}</p>`
+    : "";
+
+  card.innerHTML = `
+    <div class="panel">
+      <span class="badge">${item.cat}</span>
+      <span class="platform">${item.platform}</span>
+      <h1>${item.name}</h1>
+      <p class="desc">${item.desc}</p>
+      ${unverifiedHtml}
+      <a class="linkbtn" href="${item.link}" target="_blank" rel="noopener noreferrer">Ouvrir le lien ↗</a>
+      <span class="label-notes">Mes notes</span>
+      <textarea class="notes" id="${id}" placeholder="Ex: contacté le ___ / pas répondu / ambiance sympa / à éviter...">${notesStore[id] || ""}</textarea>
+    </div>
+  `;
+  scroller.appendChild(card);
+
+  card.querySelector("textarea").addEventListener("input", (e) => {
+    saveNote(id, e.target.value);
+  });
+});
+
+function updateHud(){
+  const cards = Array.from(document.querySelectorAll(".card"));
+  const mid = window.scrollY !== undefined ? scroller.scrollTop + scroller.clientHeight/2 : 0;
+  let current = 0;
+  cards.forEach((c, i) => {
+    if (c.offsetTop <= mid) current = i;
+  });
+  progress.textContent = (current+1) + " / " + cards.length;
+  catbar.textContent = DATA[current].cat;
+}
+
+scroller.addEventListener("scroll", () => {
+  window.requestAnimationFrame(updateHud);
+});
+updateHud();
+</script>
+</body>
+</html>
