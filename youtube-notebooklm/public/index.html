@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="YT→NLM" />
+  <title>YouTube → NotebookLM</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icon-192.svg" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="logo">
+        <span class="logo-yt">▶</span>
+        <span class="logo-arrow">→</span>
+        <span class="logo-nlm">📓</span>
+      </div>
+      <h1>YouTube → NotebookLM</h1>
+      <p class="subtitle">Importe une playlist entière depuis mobile</p>
+    </header>
+
+    <main>
+      <!-- ── Playlist input ── -->
+      <section class="card" id="playlist-section">
+        <label for="playlist-url">URL de la playlist YouTube</label>
+        <div class="input-row">
+          <input
+            type="url"
+            id="playlist-url"
+            placeholder="https://www.youtube.com/playlist?list=..."
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+          />
+          <button id="paste-btn" class="icon-btn" title="Coller">📋</button>
+        </div>
+        <button id="fetch-btn" class="primary-btn">
+          <span id="fetch-label">Récupérer les vidéos</span>
+          <span id="fetch-spinner" class="spinner hidden"></span>
+        </button>
+      </section>
+
+      <!-- ── Error ── -->
+      <div id="error-box" class="error-card hidden"></div>
+
+      <!-- ── Results ── -->
+      <section id="results-section" class="hidden">
+        <div class="results-header">
+          <div>
+            <h2 id="playlist-title">Playlist</h2>
+            <p id="video-count" class="muted"></p>
+          </div>
+          <button id="select-all-btn" class="text-btn">Tout sélectionner</button>
+        </div>
+
+        <div id="video-list"></div>
+
+        <div id="loading-more" class="load-more hidden">
+          <button id="load-more-btn" class="secondary-btn">Charger plus…</button>
+        </div>
+      </section>
+
+      <!-- ── Sticky action bar ── -->
+      <div id="action-bar" class="action-bar hidden">
+        <div class="action-count">
+          <span id="selected-count">0</span> vidéo(s) sélectionnée(s)
+        </div>
+        <div class="action-btns">
+          <button id="copy-btn" class="copy-btn">📋 Copier les URLs</button>
+          <a
+            href="https://notebooklm.google.com"
+            target="_blank"
+            rel="noopener"
+            class="nlm-btn"
+          >Ouvrir NotebookLM</a>
+        </div>
+      </div>
+
+      <!-- ── API Key section ── -->
+      <section class="card" id="api-key-section">
+        <h3>🔑 Clé YouTube Data API</h3>
+        <p class="muted" style="margin: 8px 0 12px;">
+          Gratuite — 10 000 requêtes/jour. Requise une seule fois.
+        </p>
+        <div class="input-row">
+          <input
+            type="password"
+            id="api-key-input"
+            placeholder="AIza..."
+            autocomplete="off"
+            autocorrect="off"
+          />
+          <button id="api-key-save" class="icon-btn">💾</button>
+        </div>
+        <span id="api-key-status"></span>
+
+        <details style="margin-top: 12px;">
+          <summary class="text-btn" style="cursor:pointer; list-style:none; padding: 0;">
+            ▸ Comment obtenir une clé gratuite ?
+          </summary>
+          <ol class="instructions-list">
+            <li>Va sur <strong>console.cloud.google.com</strong></li>
+            <li>Crée un projet (ex: "YouTube NLM")</li>
+            <li>Menu → APIs &amp; Services → Bibliothèque</li>
+            <li>Cherche <strong>"YouTube Data API v3"</strong> → Activer</li>
+            <li>Menu → Identifiants → Créer des identifiants → Clé API</li>
+            <li>Copie la clé et colle-la ci-dessus</li>
+          </ol>
+        </details>
+      </section>
+
+      <!-- ── Instructions ── -->
+      <section class="card instructions">
+        <h3>Comment utiliser</h3>
+        <ol class="instructions-list">
+          <li>Entre ta clé API une fois (sauvegardée sur ton appareil)</li>
+          <li>Colle l'URL d'une playlist YouTube</li>
+          <li>Sélectionne les vidéos à importer</li>
+          <li>Clique <strong>Copier les URLs</strong></li>
+          <li>Ouvre NotebookLM → ton carnet → <strong>+ Ajouter une source</strong></li>
+          <li>Sélectionne <strong>URL</strong>, colle une URL, répète</li>
+        </ol>
+        <p class="tip">
+          💡 Installe cette page sur ton écran d'accueil pour y accéder comme une app.
+          Sur iOS : bouton Partager → "Sur l'écran d'accueil"
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
