@@ -1,4 +1,4 @@
-<title>Radar Veille IA</title>
+<title>Radar — Veille multi-thèmes</title>
 <style>
   :root {
     --bg: #F4F6FA;
@@ -9,24 +9,22 @@
     --faint: #8A93A6;
     --border: #E3E7EF;
     --border-strong: #D2D8E4;
-    --accent: #3B5BDB;
-    --accent-soft: #E8EDFC;
+    --accent: #5B7CF0;
     --attention: #C97C1A;
     --attention-soft: #FBEFD9;
     --high: #D6452A;
-    --high-soft: #FBE6E0;
     --shadow: 0 1px 2px rgba(20,30,60,.05), 0 6px 20px rgba(20,30,60,.05);
     --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --soft: color-mix(in srgb, var(--accent) 14%, transparent);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0D1016; --surface: #161A22; --surface-2: #1B2029;
       --text: #E8EBF2; --muted: #98A1B3; --faint: #69738A;
       --border: #262C38; --border-strong: #323A49;
-      --accent: #6E8BFF; --accent-soft: #1D2740;
       --attention: #E0A23E; --attention-soft: #33280F;
-      --high: #F0745A; --high-soft: #3A1C15;
+      --high: #F0745A;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 26px rgba(0,0,0,.35);
     }
   }
@@ -34,26 +32,21 @@
     --bg: #F4F6FA; --surface: #FFFFFF; --surface-2: #FBFCFE;
     --text: #14171D; --muted: #5A6273; --faint: #8A93A6;
     --border: #E3E7EF; --border-strong: #D2D8E4;
-    --accent: #3B5BDB; --accent-soft: #E8EDFC;
-    --attention: #C97C1A; --attention-soft: #FBEFD9;
-    --high: #D6452A; --high-soft: #FBE6E0;
+    --attention: #C97C1A; --attention-soft: #FBEFD9; --high: #D6452A;
     --shadow: 0 1px 2px rgba(20,30,60,.05), 0 6px 20px rgba(20,30,60,.05);
   }
   :root[data-theme="dark"] {
     --bg: #0D1016; --surface: #161A22; --surface-2: #1B2029;
     --text: #E8EBF2; --muted: #98A1B3; --faint: #69738A;
     --border: #262C38; --border-strong: #323A49;
-    --accent: #6E8BFF; --accent-soft: #1D2740;
-    --attention: #E0A23E; --attention-soft: #33280F;
-    --high: #F0745A; --high-soft: #3A1C15;
+    --attention: #E0A23E; --attention-soft: #33280F; --high: #F0745A;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 26px rgba(0,0,0,.35);
   }
 
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
-    font-family: var(--sans); line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
+    font-family: var(--sans); line-height: 1.5; -webkit-font-smoothing: antialiased;
   }
   .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px 80px; }
 
@@ -64,16 +57,15 @@
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
   }
-  .head-inner { max-width: 900px; margin: 0 auto; padding: 16px 20px 14px; }
+  .head-inner { max-width: 900px; margin: 0 auto; padding: 14px 20px 12px; }
   .brand { display: flex; align-items: center; gap: 12px; }
   .radar {
     width: 30px; height: 30px; flex: none; border-radius: 8px;
     background: radial-gradient(circle at 50% 50%, var(--accent) 0 2px, transparent 3px),
                 conic-gradient(from 0deg, transparent 0 300deg, color-mix(in srgb, var(--accent) 45%, transparent) 360deg);
     border: 1px solid var(--border-strong);
-    position: relative;
   }
-  h1 { font-size: 18px; letter-spacing: -.01em; margin: 0; font-weight: 700; }
+  h1 { font-size: 17px; letter-spacing: -.01em; margin: 0; font-weight: 700; }
   .sub { font-family: var(--mono); font-size: 11px; color: var(--faint); margin: 1px 0 0; text-transform: uppercase; letter-spacing: .06em; }
   .theme-btn {
     margin-left: auto; background: var(--surface); border: 1px solid var(--border);
@@ -81,6 +73,31 @@
     font-size: 15px; display: grid; place-items: center;
   }
   .theme-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* Session tabs */
+  .tabs { display: flex; gap: 6px; margin-top: 12px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+  .tabs::-webkit-scrollbar { height: 4px; }
+  .tabs::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+  .tab {
+    flex: none; display: inline-flex; align-items: center; gap: 7px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 7px 12px; cursor: pointer; color: var(--muted); font-size: 13px;
+    font-family: var(--sans); white-space: nowrap; position: relative;
+  }
+  .tab:hover { border-color: var(--border-strong); color: var(--text); }
+  .tab .ic { font-size: 15px; line-height: 1; }
+  .tab .tdot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .tab[aria-selected="true"] {
+    color: var(--text); font-weight: 600;
+    border-color: color-mix(in srgb, var(--tc) 55%, var(--border));
+    background: color-mix(in srgb, var(--tc) 12%, var(--surface));
+  }
+  .tab .ub {
+    font-family: var(--mono); font-size: 10px; font-variant-numeric: tabular-nums;
+    background: var(--tc); color: #fff; border-radius: 999px; padding: 1px 6px; min-width: 18px; text-align: center;
+  }
+  .tab .ub.zero { background: var(--border-strong); color: var(--faint); }
+  .tab.add { color: var(--faint); border-style: dashed; }
 
   /* Stats */
   .stats { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
@@ -96,8 +113,7 @@
   .controls { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
   .search {
     width: 100%; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 10px 12px 10px 34px; color: var(--text); font-size: 14px;
-    font-family: var(--sans);
+    border-radius: 10px; padding: 10px 12px 10px 34px; color: var(--text); font-size: 14px; font-family: var(--sans);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238A93A6' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M15 15l-3.5-3.5'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: 11px 50%;
   }
@@ -107,16 +123,14 @@
   .chip {
     background: var(--surface); border: 1px solid var(--border); color: var(--muted);
     border-radius: 999px; padding: 5px 11px; font-size: 12.5px; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; user-select: none;
-    font-family: var(--sans);
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; user-select: none; font-family: var(--sans);
   }
   .chip:hover { border-color: var(--border-strong); color: var(--text); }
-  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 40%, transparent); color: var(--accent); font-weight: 600; }
+  .chip[aria-pressed="true"] { background: var(--soft); border-color: color-mix(in srgb, var(--accent) 40%, transparent); color: var(--accent); font-weight: 600; }
   .chip .cnt { font-family: var(--mono); font-size: 10.5px; opacity: .7; font-variant-numeric: tabular-nums; }
   select.sort {
     margin-left: auto; background: var(--surface); border: 1px solid var(--border);
-    color: var(--muted); border-radius: 999px; padding: 5px 10px; font-size: 12.5px; cursor: pointer;
-    font-family: var(--sans);
+    color: var(--muted); border-radius: 999px; padding: 5px 10px; font-size: 12.5px; cursor: pointer; font-family: var(--sans);
   }
 
   /* Feed */
@@ -127,40 +141,30 @@
     transition: opacity .2s, border-color .2s;
   }
   .card::before {
-    content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px;
-    border-radius: 3px; background: var(--border-strong);
+    content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 3px; background: var(--border-strong);
   }
   .card.rel-high::before { background: var(--high); }
   .card.rel-medium::before { background: var(--attention); }
-  .card.read { opacity: .58; }
+  .card.read { opacity: .55; }
   .card.read:hover { opacity: .85; }
 
   .meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-  .badge {
-    font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: .04em; padding: 2px 7px; border-radius: 5px; line-height: 1.5;
-  }
+  .badge { font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 2px 7px; border-radius: 5px; line-height: 1.5; }
   .b-linkedin { background: #0A66C220; color: #2977d6; }
   .b-x { background: #0f0f0f18; color: var(--text); }
   .b-facebook { background: #1877F220; color: #2f80e8; }
-  .b-web { background: var(--accent-soft); color: var(--accent); }
-  @media (prefers-color-scheme: dark) { .b-x { background: #ffffff18; } }
+  .b-instagram { background: #E1306C20; color: #d6407c; }
+  .b-web { background: var(--soft); color: var(--accent); }
   :root[data-theme="dark"] .b-x { background: #ffffff18; }
+  @media (prefers-color-scheme: dark) { .b-x { background: #ffffff18; } }
   .author { font-weight: 600; font-size: 13px; }
   .dot { color: var(--faint); }
   .handle, .date { font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
-  .topic {
-    margin-left: auto; font-size: 11px; color: var(--muted);
-    background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px;
-  }
+  .topic { margin-left: auto; font-size: 11px; color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
   .unread-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--attention); flex: none; }
 
   .card h2 { font-size: 15.5px; margin: 0 0 6px; line-height: 1.35; letter-spacing: -.005em; text-wrap: balance; }
-  .summary {
-    font-size: 13.5px; color: var(--text); background: var(--surface-2);
-    border-left: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
-    padding: 8px 11px; border-radius: 0 7px 7px 0; margin: 0 0 4px;
-  }
+  .summary { font-size: 13.5px; color: var(--text); background: var(--surface-2); border-left: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); padding: 8px 11px; border-radius: 0 7px 7px 0; margin: 0 0 4px; }
   .summary .tag { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); display: block; margin-bottom: 3px; }
   .full { font-size: 13.5px; color: var(--muted); margin: 10px 0 4px; display: none; }
   .full.open { display: block; }
@@ -169,25 +173,27 @@
   .quick .tag { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--attention); display: block; margin-bottom: 3px; }
 
   .actions { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-  .act {
-    background: transparent; border: 1px solid var(--border); color: var(--muted);
-    border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans);
-  }
+  .act { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans); }
   .act:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface-2); }
   .act.primary[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .act.open-src { margin-left: auto; }
+  .act.open-src { margin-left: auto; text-decoration: none; }
   .act svg { width: 13px; height: 13px; }
 
-  .empty { text-align: center; padding: 60px 20px; color: var(--faint); }
+  .empty { text-align: center; padding: 56px 20px; color: var(--faint); }
   .empty svg { width: 40px; height: 40px; opacity: .5; margin-bottom: 12px; }
 
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 26px; margin-top: 20px; box-shadow: var(--shadow); }
+  .panel h2 { margin: 0 0 6px; font-size: 18px; }
+  .panel p { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  .panel .cue { background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 14px; font-family: var(--mono); font-size: 13px; color: var(--text); }
+  .panel ul { color: var(--muted); font-size: 13.5px; padding-left: 18px; margin: 14px 0 0; }
+  .panel li { margin: 4px 0; }
+
   .foot { margin-top: 26px; font-size: 11.5px; color: var(--faint); text-align: center; font-family: var(--mono); }
-  .foot a { color: var(--accent); text-decoration: none; }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:focus-visible, .chip:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
 
 <header>
@@ -195,24 +201,27 @@
     <div class="brand">
       <div class="radar" aria-hidden="true"></div>
       <div>
-        <h1>Radar Veille IA</h1>
-        <p class="sub" id="sub">Signaux IA · conseil PME</p>
+        <h1>Radar — Veille</h1>
+        <p class="sub" id="sub">Signaux · multi-thèmes</p>
       </div>
       <button class="theme-btn" id="theme" title="Basculer le thème" aria-label="Basculer le thème">◐</button>
     </div>
-    <div class="stats" id="stats"></div>
-    <div class="controls">
-      <input class="search" id="search" type="search" placeholder="Rechercher un post, un auteur, un sujet…" aria-label="Rechercher">
-      <div class="chips" id="platformChips"></div>
-      <div class="chips" id="filterChips">
-        <button class="chip" data-filter="unread" aria-pressed="false">Non lus seulement</button>
-        <button class="chip" data-filter="high" aria-pressed="false">Priorité haute</button>
-        <div class="sep" aria-hidden="true"></div>
-        <select class="sort" id="sort" aria-label="Trier">
-          <option value="date">Plus récents</option>
-          <option value="relevance">Pertinence</option>
-          <option value="platform">Plateforme</option>
-        </select>
+    <div class="tabs" id="tabs" role="tablist" aria-label="Sessions de veille"></div>
+    <div id="topArea">
+      <div class="stats" id="stats"></div>
+      <div class="controls">
+        <input class="search" id="search" type="search" placeholder="Rechercher dans cette session…" aria-label="Rechercher">
+        <div class="chips" id="platformChips"></div>
+        <div class="chips" id="filterChips">
+          <button class="chip" data-filter="unread" aria-pressed="false">Non lus seulement</button>
+          <button class="chip" data-filter="high" aria-pressed="false">Priorité haute</button>
+          <div class="sep" aria-hidden="true"></div>
+          <select class="sort" id="sort" aria-label="Trier">
+            <option value="date">Plus récents</option>
+            <option value="relevance">Pertinence</option>
+            <option value="platform">Plateforme</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -224,32 +233,37 @@
 </div>
 
 <script>
-const DATA = /*__DATA__*/{"meta":{"title":"Radar Veille IA","owner":"Michel Tremblay","generated":"2026-07-18","version":1,"note":"Hub centralisé des posts et signaux IA pertinents. Source des données du dashboard. Les résumés sont générés par IA au moment de la collecte. Aucun post n'est inventé : chaque entrée a une URL source réelle."},"topics":["Adoption PME","Agents IA","Marché Québec","Stratégie","Outils & Automatisation"],"posts":[{"id":"qc-stat-2025q2","platform":"web","author":"Institut de la statistique du Québec","handle":"statistique.quebec.ca","date":"2025-11-15","topic":"Marché Québec","relevance":"high","title":"12,7 % des entreprises québécoises utilisent l'IA en production","content":"Selon l'Institut de la statistique du Québec, 12,7 % des entreprises de la province ont utilisé des applications d'IA à des fins de production au cours des 12 mois précédant le 2e trimestre de 2025. La progression reste modeste : +3,3 points de pourcentage par rapport au même trimestre de 2024. Le rapport distingue l'usage par taille d'entreprise et par secteur, et confirme que les grandes entreprises adoptent plus vite que les PME.","summary":"Seulement 12,7 % des entreprises du Québec utilisent l'IA en production (T2 2025), une hausse modeste de +3,3 pts en un an. Le retard des PME = ton marché.","tags":["statistiques","PME","adoption"],"url":"https://statistique.quebec.ca/en/produit/publication/adoption-et-utilisation-intelligence-artificielle-entreprises-au-quebec-2024-2025"},{"id":"lapresse-prudentes-2025","platform":"web","author":"La Presse — Techno","handle":"lapresse.ca","date":"2025-11-28","topic":"Marché Québec","relevance":"high","title":"Les entreprises québécoises curieuses, mais prudentes","content":"Alors que de nombreuses voix soulignent l'urgence d'adopter l'IA pour rester compétitives, les entreprises québécoises temporisent. La technologie les intéresse en priorité, mais à condition d'y investir prudemment. L'article décrit un écart entre l'intérêt déclaré et le passage à l'action concret, souvent freiné par le manque de compétences internes et l'incertitude sur le retour sur investissement.","summary":"Les entreprises du QC sont curieuses envers l'IA mais hésitent à investir. Le frein #1 : pas de compétences internes ni de clarté sur le ROI — exactement le gap qu'un CAIO fractionnaire comble.","tags":["prudence","ROI","adoption"],"url":"https://www.lapresse.ca/affaires/techno/2025-11-28/intelligence-artificielle/les-entreprises-quebecoises-curieuses-mais-prudentes.php"},{"id":"radiocanada-adoption-2026","platform":"web","author":"Radio-Canada","handle":"ici.radio-canada.ca","date":"2026-02-10","topic":"Marché Québec","relevance":"high","title":"Au Canada, la course à l'IA se joue dans l'adoption, non dans les milliards","content":"L'article soutient que l'avantage concurrentiel canadien en IA ne viendra pas des investissements massifs en infrastructure, mais de la vitesse d'adoption par les entreprises — particulièrement les PME. Le vrai enjeu est de transformer l'intérêt en usage productif quotidien, un déficit d'exécution plus qu'un déficit de capital.","summary":"La thèse : au Canada, gagner la course IA = adopter vite, pas dépenser gros. L'avantage se joue dans l'exécution en PME — un angle de vente puissant pour tes clients.","tags":["adoption","PME","compétitivité"],"url":"https://ici.radio-canada.ca/nouvelle/2239862/intelligence-artificielle-investissement-adoption-pme"},{"id":"forbes-agents-compete-2026","platform":"web","author":"Forbes Business Council","handle":"forbes.com","date":"2026-04-27","topic":"Agents IA","relevance":"high","title":"How AI Agents Can Help Small Businesses Compete","content":"Article du Forbes Business Council expliquant comment les agents IA — capables d'agir de façon autonome sur des directives larges (« recherche ces concurrents et rédige une stratégie comparative ») — permettent aux petites entreprises de rivaliser avec de plus gros joueurs. Les agents travaillent 24/7, ne prennent pas de congés et s'améliorent à chaque interaction. Le passage clé : l'IA devient un partenaire stratégique, pas un simple outil passif.","summary":"Les agents IA autonomes laissent les PME « frapper au-dessus de leur poids » : ils exécutent des mandats larges 24/7. Angle de démo idéal pour un prospect qui hésite à embaucher.","tags":["agents","compétitivité","autonomie"],"url":"https://www.forbes.com/councils/forbesbusinesscouncil/2026/04/27/how-ai-agents-can-help-small-businesses-compete/"},{"id":"linkedin-12-predictions-2026","platform":"linkedin","author":"Kreate Technologies","handle":"LinkedIn Pulse","date":"2026-01-08","topic":"Stratégie","relevance":"medium","title":"12 AI Predictions For Small Businesses In 2026","content":"Billet LinkedIn listant 12 prédictions sur l'IA pour les petites entreprises en 2026 : généralisation des agents, remplacement des logiciels rigides basés sur des règles par des systèmes adaptatifs, orchestration multi-étapes via des plateformes comme Zapier Central et Relevance AI, et montée de la « logique par mission ». Le marché des agents IA passerait de 5,2 G$ (2024) à 196,6 G$ (2034).","summary":"12 prédictions IA pour les PME en 2026 : agents partout, fin des logiciels rigides, marché des agents ×38 d'ici 2034. Bon réservoir de « hooks » pour tes propres posts.","tags":["prédictions","agents","marché"],"url":"https://www.linkedin.com/pulse/12-ai-predictions-small-businesses-2026-kreatetechnologies-9yywc"},{"id":"linkedin-what-works-2026","platform":"linkedin","author":"Siloh Moses","handle":"LinkedIn Pulse","date":"2026-03-19","topic":"Outils & Automatisation","relevance":"medium","title":"AI Automation for Small Business: What Actually Works in 2026","content":"Billet LinkedIn qui tranche entre le battage médiatique et les cas d'usage d'automatisation IA qui livrent réellement de la valeur en PME en 2026. Met l'accent sur des flux concrets (service client, traitement de documents, relances de vente) plutôt que sur des projets ambitieux qui échouent, et sur l'importance de commencer petit avec un ROI mesurable.","summary":"Ce qui marche vraiment en automatisation IA pour PME en 2026 : commencer petit, cibler des flux à ROI mesurable (support, documents, relances) plutôt que des grands projets. Aligne avec ton approche « livraison mois 1 ».","tags":["automatisation","ROI","cas d'usage"],"url":"https://www.linkedin.com/pulse/ai-automation-small-business-what-actually-works-2026-siloh-moses-gzvrc"},{"id":"blueprism-agent-trends-2026","platform":"web","author":"Blue Prism","handle":"blueprism.com","date":"2026-05-02","topic":"Agents IA","relevance":"medium","title":"Future of AI Agents: Top Trends in 2026","content":"Analyse des grandes tendances des agents IA en 2026 : passage d'une IA réactive à une IA proactive qui agit, systèmes multi-agents, gouvernance et sécurité des agents, et intégration profonde dans les processus d'affaires. Souligne les enjeux de compétences, d'infrastructure et de sécurité qui conditionnent l'adoption.","summary":"Panorama des tendances agents IA 2026 : IA proactive, systèmes multi-agents, et les 3 freins récurrents (compétences, infra, sécurité). Matière solide pour un atelier client.","tags":["agents","tendances","gouvernance"],"url":"https://www.blueprism.com/resources/blog/future-ai-agents-trends/"},{"id":"mnp-optimisme-2026","platform":"web","author":"MNP","handle":"mnp.ca","date":"2026-06-01","topic":"Adoption PME","relevance":"medium","title":"IA en affaires 2026 : adoption et excès d'optimisme","content":"Rapport MNP Digital sur l'état de l'IA en affaires en 2026. Constate un écart entre l'optimisme des dirigeants et la maturité réelle des déploiements. Beaucoup d'entreprises surestiment leur avancement; les gains concrets restent concentrés chez celles qui ont structuré leur démarche (données, gouvernance, compétences).","summary":"MNP note un « excès d'optimisme » : les dirigeants surestiment leur maturité IA. Les vrais gains vont à ceux qui structurent (données, gouvernance). Argument pour vendre de la méthode, pas juste des outils.","tags":["maturité","gouvernance","PME"],"url":"https://www.mnp.ca/fr/points-de-vue/bibliotheque/rapport-de-mnp-digital-intelligence-artificielle-en-affaires-en-2026"}]}/*__END__*/;
+const DATA = /*__DATA__*/{"meta":{"title":"Radar — Veille multi-thèmes","owner":"Michel Tremblay","generated":"2026-07-19","version":2,"note":"Hub centralisé multi-sessions. Chaque session est une veille sur un thème. Les résumés sont générés par IA à la collecte. Aucun post n'est inventé : chaque entrée pointe vers une URL source réelle. Pour ajouter une session, demander à Claude : « Ajoute une session sur ___ »."},"sessions":[{"id":"cash-ia","name":"Cash avec l'IA","icon":"💰","accent":"#16A78C","blurb":"Dernières méthodes pour générer des revenus avec l'IA","topics":["Side hustle","Services","Produits numériques","Stratégie"],"posts":[{"id":"cash-oxford-21","platform":"web","author":"Oxford Home Study Centre","handle":"oxfordhomestudy.com","date":"2026-02-12","topic":"Side hustle","relevance":"medium","title":"21 idées simples de revenus avec l'IA en 2026","content":"Liste de 21 façons concrètes de générer un revenu avec l'IA : gestion de réseaux sociaux (légendes, calendrier, idées de contenu), design graphique (miniatures, bannières, pubs), rédaction SEO, marketing d'affiliation accéléré, vente de produits numériques (ebooks, gabarits, planificateurs) sur Etsy/Gumroad, et création de chatbots FAQ pour PME. Le fil conducteur : utiliser l'IA pour exécuter plus vite un service que des clients paient déjà.","summary":"21 méthodes concrètes pour monétiser l'IA (gestion réseaux, design, SEO, produits numériques, chatbots FAQ). Bon inventaire de départ pour choisir un angle.","tags":["idées","freelance","produits numériques"],"url":"https://www.oxfordhomestudy.com/OHSC-Blog/make-money-with-ai"},{"id":"cash-mercor-hustles","platform":"web","author":"Mercor","handle":"mercor.com","date":"2026-03-05","topic":"Services","relevance":"high","title":"Les meilleurs side hustles IA à démarrer en 2026","content":"Mercor classe les side hustles IA par potentiel réel en 2026. Constat clé : les généralistes de l'IA voient leurs tarifs compressés parce que l'offre a explosé, tandis que les spécialistes dans des secteurs réglementés (santé, juridique, finance) maintiennent ou augmentent leurs tarifs, car l'expertise de domaine est difficile à répliquer. Recommandation : se spécialiser plutôt que d'offrir de l'IA générique.","summary":"L'insight majeur 2026 : les généralistes IA se font écraser sur les prix, les spécialistes (santé, droit, finance) tiennent leurs tarifs. La niche = la marge.","tags":["spécialisation","tarifs","niche"],"url":"https://www.mercor.com/resources/experts/best-ai-side-hustles/"},{"id":"cash-rightblogger-11","platform":"web","author":"RightBlogger","handle":"rightblogger.com","date":"2026-01-28","topic":"Services","relevance":"medium","title":"Gagner de l'argent avec l'IA en 2026 : 11 méthodes qui marchent","content":"Onze approches éprouvées : blogue SEO assisté par IA (publier en minutes plutôt qu'en semaines), rédaction freelance sur Fiverr/Upwork, résumés de recherche, création de chatbots no-code, vente de packs de prompts et de gabarits Notion. Le conseil central : choisir UNE méthode, l'exécuter plus vite avec l'IA, et rester constant 3 à 6 mois.","summary":"11 méthodes qui fonctionnent + le vrai levier : choisir UNE méthode et rester constant 3-6 mois. La discipline bat la dispersion.","tags":["blogue","freelance","constance"],"url":"https://rightblogger.com/blog/make-money-ai"},{"id":"cash-agensi-1k5k","platform":"web","author":"Agensi","handle":"agensi.io","date":"2026-04-09","topic":"Side hustle","relevance":"high","title":"5 side hustles IA pour 1 000 $ à 5 000 $ / mois en 2026","content":"Cinq modèles avec fourchettes de revenus réalistes de 1 000 $ à 5 000 $ par mois : automatisations pour PME, création de contenu à l'échelle, services d'agents IA sur mesure, et productisation d'un workflow répétable. L'accent est mis sur la livraison d'un résultat mesurable plutôt que sur l'outil lui-même.","summary":"5 modèles chiffrés (1-5 k$/mois) : automatisations PME, contenu à l'échelle, agents sur mesure. Vend un résultat, pas un outil.","tags":["revenus","automatisation","agents"],"url":"https://www.agensi.io/learn/ai-side-hustle-ideas-2026"},{"id":"cash-aithemag-ranked","platform":"web","author":"AItheMag","handle":"aithemag.com","date":"2026-05-20","topic":"Stratégie","relevance":"medium","title":"Les side hustles IA qui paient vraiment en 2026 (classés)","content":"Classement critique des side hustles IA selon la demande réelle et la durabilité des revenus. L'avantage concurrentiel n'est pas d'avoir l'IA, mais d'avoir une IA qui suit des workflows professionnels au lieu de produire du générique. Les niches à forte valeur exigent une expertise de domaine et une méthode reproductible.","summary":"L'edge n'est pas « avoir l'IA », c'est une IA qui suit un workflow pro plutôt que du générique. La méthode reproductible = l'actif.","tags":["classement","workflow","durabilité"],"url":"https://www.aithemag.com/guides/make-money-with-ai/best-ai-side-hustles"}]},{"id":"parenting","name":"Parenting","icon":"👶","accent":"#8B79E6","blurb":"Théorie et pratique du parenting fondées sur la recherche","topics":["Discipline positive","Recherche","Gentle parenting","Pratique"],"posts":[{"id":"par-simplypsych-gentle","platform":"web","author":"Simply Psychology","handle":"simplypsychology.com","date":"2026-02-18","topic":"Gentle parenting","relevance":"high","title":"Ce que la psychologie dit vraiment du « gentle parenting »","content":"Analyse de la tendance du gentle parenting à la lumière de la recherche. La distinction clé : valider l'émotion ET tenir la limite. Exemple : « Tu es fâché qu'on quitte le parc. C'est correct d'être fâché. On part quand même. » Les composantes recoupent le parentage « autoritatif » (chaleur élevée + attentes élevées), le style que des décennies de recherche associent aux meilleurs résultats chez l'enfant.","summary":"Le gentle parenting bien compris = valider l'émotion ET tenir la limite. Ça recoupe le style « autoritatif » (chaleur + attentes), le plus soutenu par la recherche.","tags":["autoritatif","limites","émotions"],"url":"https://www.simplypsychology.com/articles/gentle-parenting-mental-health"},{"id":"par-oster-parentdata","platform":"web","author":"Emily Oster — ParentData","handle":"parentdata.org","date":"2026-03-22","topic":"Recherche","relevance":"high","title":"Le gentle parenting est-il le meilleur?","content":"Emily Oster examine les données derrière le gentle parenting. Constat nuancé : peu d'essais comparatifs directs sur l'étiquette « gentle parenting », mais un corpus solide appuie ses ingrédients (chaleur, constance, limites claires). Elle met en garde contre la culpabilité parentale générée par les réseaux sociaux et rappelle que la constance imparfaite suffit.","summary":"Oster : les données appuient les ingrédients (chaleur, constance, limites), pas l'étiquette marketing. La constance imparfaite suffit — lâche la culpabilité.","tags":["données","constance","culpabilité"],"url":"https://parentdata.org/kids/gentle-parenting/"},{"id":"par-plos-limit","platform":"web","author":"PLOS One (étude)","handle":"journals.plos.org","date":"2026-01-15","topic":"Recherche","relevance":"medium","title":"« Rester calme… mais j'atteins parfois ma limite »","content":"Étude qualitative publiée dans PLOS One explorant le vécu réel des parents qui pratiquent le gentle parenting. Thème dominant : la charge émotionnelle de rester calme, et la tension entre l'idéal et les limites personnelles. Suggère l'importance de l'autorégulation du parent et du soutien, pas seulement des techniques envers l'enfant.","summary":"Étude : le vrai défi du gentle parenting est la charge émotionnelle du parent. L'autorégulation et le soutien comptent autant que les techniques.","tags":["étude","autorégulation","réalité"],"url":"https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0307492"},{"id":"par-positivepsych","platform":"web","author":"PositivePsychology.com","handle":"positivepsychology.com","date":"2026-04-02","topic":"Pratique","relevance":"medium","title":"Le pouvoir du gentle parenting (avec 3 exemples)","content":"Guide pratique avec exemples concrets : coaching émotionnel (nommer et reconnaître les émotions améliore l'autorégulation de l'enfant), conséquences naturelles (laisser la réalité enseigner la leçon), et 5 à 20 minutes de temps individuel focalisé par jour. Ancré dans la recherche sur le développement de l'enfant.","summary":"Trois leviers pratiques : coaching émotionnel, conséquences naturelles, 5-20 min de temps individuel par jour. Petits gestes, gros effet.","tags":["coaching émotionnel","conséquences","temps"],"url":"https://positivepsychology.com/gentle-parenting/"},{"id":"par-vocal-47","platform":"web","author":"Vocal — Journal","handle":"vocal.media","date":"2026-05-11","topic":"Discipline positive","relevance":"medium","title":"47 conseils de parenting qui fonctionnent vraiment en 2026","content":"Compilation de conseils appuyés par la pratique : fixer des attentes claires, appliquer des limites cohérentes, maintenir la connexion pendant la discipline, éviter la discipline dure (qui crée un stress toxique et de l'agressivité). Rappel que les mots durs peuvent être aussi dommageables que la punition physique.","summary":"47 conseils, un fil rouge : attentes claires + limites constantes + connexion maintenue. La discipline dure crée du stress toxique, elle ne « corrige » pas.","tags":["discipline","constance","connexion"],"url":"https://vocal.media/journal/47-parenting-tips-that-actually-work-in-2026-most-parents-ignore-9"}]},{"id":"mtl-sorties","name":"Sorties ≤3h de MTL","icon":"📍","accent":"#E08A3C","blurb":"Activités et escapades à moins de 3h de Montréal, style découvertes Insta","topics":["Nature","Famille","Escapade","Été"],"posts":[{"id":"mtl-mesjolis-21","platform":"web","author":"Mes Jolis Voyages","handle":"mesjolisvoyages.com","date":"2026-06-01","topic":"Escapade","relevance":"high","title":"21 endroits à visiter à moins de 3 heures de Montréal","content":"Sélection d'escapades d'une journée à moins de 3h : parc national du Mont-Tremblant (rando, canot, à moins de 2h), parc national d'Oka (plage et aménagements au bord de l'eau), parc des Chutes-Dorwin (~1h, cascades et sentiers balisés), Mont Saint-Hilaire (réserve de la biosphère UNESCO). Idéal pour planifier des sorties nature accessibles.","summary":"21 escapades ≤3h : Mont-Tremblant, Oka (plage), Chutes-Dorwin (~1h), Mont Saint-Hilaire (UNESCO). Le meilleur point de départ pour planifier.","tags":["nature","randonnée","journée"],"url":"https://www.mesjolisvoyages.com/endroits-a-visiter-pas-loin-de-montreal/"},{"id":"mtl-pourenfants-cal","platform":"web","author":"Montréal pour Enfants","handle":"montrealpourenfants.com","date":"2026-06-20","topic":"Famille","relevance":"high","title":"On sort! On s'amuse! — calendrier de sorties en famille","content":"Calendrier régulièrement mis à jour des sorties familiales à Montréal et en périphérie : festivals, théâtre jeune public, activités de parc. Mentionne notamment La Machine (théâtre d'été jeunes publics) dans les parcs de la Montérégie du 5 juillet au 29 août 2026. Source pratique pour repérer les activités datées.","summary":"Calendrier vivant des sorties famille (festivals, théâtre de parc). Ex. : La Machine, théâtre d'été en Montérégie, 5 juillet–29 août 2026.","tags":["calendrier","festivals","enfants"],"url":"https://www.montrealpourenfants.com/433-on-sort-on-samuse/activite-en-famille/on-sort-on-s-amuse-calendrier-de-sorties-en-famille.html"},{"id":"mtl-ville-parcs","platform":"web","author":"Ville de Montréal","handle":"montreal.ca","date":"2026-06-15","topic":"Nature","relevance":"medium","title":"Des activités dans les parcs pour profiter de la nature tout l'été","content":"La Ville de Montréal recense les activités gratuites ou à petit prix dans les parcs pendant l'été : baignade, ateliers nature, animations de quartier. Bon complément aux escapades plus lointaines pour les journées où on reste en ville.","summary":"Activités de parc gratuites/petit prix tout l'été en ville. Le plan B parfait quand on ne quitte pas Montréal.","tags":["parcs","gratuit","été"],"url":"https://montreal.ca/articles/des-activites-dans-les-parcs-pour-profiter-de-la-nature-tout-lete-31981"},{"id":"mtl-silo57-11","platform":"web","author":"Silo 57","handle":"silo57.ca","date":"2026-06-08","topic":"Famille","relevance":"medium","title":"11 activités en famille à Montréal cet été, à petit prix","content":"Onze idées d'activités familiales abordables à Montréal et proximité pour l'été 2026. Format « découverte » proche de ce qu'on voit sur Instagram : lieux photogéniques, coups de cœur locaux, options gratuites. Pratique pour varier les fins de semaine.","summary":"11 activités familiales à petit prix, format découverte façon Insta. Idéal pour varier les fins de semaine sans se ruiner.","tags":["petit prix","famille","été"],"url":"https://www.silo57.ca/2026/06/08/11-activites-a-faire-en-famille-a-montreal-cet-ete-pour-profiter-de-la-ville-a-petit-prix"},{"id":"mtl-oasis-11","platform":"web","author":"OASIS Immersion","handle":"oasis.im","date":"2026-05-30","topic":"Famille","relevance":"medium","title":"Montréal en famille : 11 idées d'activités incontournables","content":"Onze incontournables pour petits et grands à Montréal, mêlant expériences immersives, culture et plein air. Bon pour équilibrer les sorties nature avec des activités intérieures les jours de pluie.","summary":"11 incontournables famille (immersif, culture, plein air). Le mix parfait, incluant des options intérieures pour les jours de pluie.","tags":["culture","immersif","incontournables"],"url":"https://oasis.im/montreal-activites-famille/"}]},{"id":"marche-ia","name":"Marché IA / PME","icon":"📊","accent":"#5B7CF0","blurb":"Signaux marché sur l'adoption de l'IA en PME (Québec / Canada)","topics":["Marché Québec","Agents IA","Adoption PME","Stratégie"],"posts":[{"id":"qc-stat-2025q2","platform":"web","author":"Institut de la statistique du Québec","handle":"statistique.quebec.ca","date":"2025-11-15","topic":"Marché Québec","relevance":"high","title":"12,7 % des entreprises québécoises utilisent l'IA en production","content":"Selon l'Institut de la statistique du Québec, 12,7 % des entreprises de la province ont utilisé des applications d'IA à des fins de production au cours des 12 mois précédant le 2e trimestre de 2025. La progression reste modeste : +3,3 points de pourcentage par rapport au même trimestre de 2024. Le rapport distingue l'usage par taille d'entreprise et par secteur, et confirme que les grandes entreprises adoptent plus vite que les PME.","summary":"Seulement 12,7 % des entreprises du Québec utilisent l'IA en production (T2 2025), une hausse modeste de +3,3 pts en un an. Le retard des PME = ton marché.","tags":["statistiques","PME","adoption"],"url":"https://statistique.quebec.ca/en/produit/publication/adoption-et-utilisation-intelligence-artificielle-entreprises-au-quebec-2024-2025"},{"id":"lapresse-prudentes-2025","platform":"web","author":"La Presse — Techno","handle":"lapresse.ca","date":"2025-11-28","topic":"Marché Québec","relevance":"high","title":"Les entreprises québécoises curieuses, mais prudentes","content":"Alors que de nombreuses voix soulignent l'urgence d'adopter l'IA pour rester compétitives, les entreprises québécoises temporisent. La technologie les intéresse en priorité, mais à condition d'y investir prudemment. L'article décrit un écart entre l'intérêt déclaré et le passage à l'action concret, souvent freiné par le manque de compétences internes et l'incertitude sur le retour sur investissement.","summary":"Les entreprises du QC sont curieuses envers l'IA mais hésitent à investir. Le frein #1 : pas de compétences internes ni de clarté sur le ROI — exactement le gap qu'un CAIO fractionnaire comble.","tags":["prudence","ROI","adoption"],"url":"https://www.lapresse.ca/affaires/techno/2025-11-28/intelligence-artificielle/les-entreprises-quebecoises-curieuses-mais-prudentes.php"},{"id":"radiocanada-adoption-2026","platform":"web","author":"Radio-Canada","handle":"ici.radio-canada.ca","date":"2026-02-10","topic":"Adoption PME","relevance":"high","title":"Au Canada, la course à l'IA se joue dans l'adoption, non dans les milliards","content":"L'article soutient que l'avantage concurrentiel canadien en IA ne viendra pas des investissements massifs en infrastructure, mais de la vitesse d'adoption par les entreprises — particulièrement les PME. Le vrai enjeu est de transformer l'intérêt en usage productif quotidien, un déficit d'exécution plus qu'un déficit de capital.","summary":"La thèse : au Canada, gagner la course IA = adopter vite, pas dépenser gros. L'avantage se joue dans l'exécution en PME — un angle de vente puissant pour tes clients.","tags":["adoption","PME","compétitivité"],"url":"https://ici.radio-canada.ca/nouvelle/2239862/intelligence-artificielle-investissement-adoption-pme"},{"id":"forbes-agents-compete-2026","platform":"web","author":"Forbes Business Council","handle":"forbes.com","date":"2026-04-27","topic":"Agents IA","relevance":"high","title":"How AI Agents Can Help Small Businesses Compete","content":"Article du Forbes Business Council expliquant comment les agents IA — capables d'agir de façon autonome sur des directives larges (« recherche ces concurrents et rédige une stratégie comparative ») — permettent aux petites entreprises de rivaliser avec de plus gros joueurs. Les agents travaillent 24/7, ne prennent pas de congés et s'améliorent à chaque interaction. Le passage clé : l'IA devient un partenaire stratégique, pas un simple outil passif.","summary":"Les agents IA autonomes laissent les PME « frapper au-dessus de leur poids » : ils exécutent des mandats larges 24/7. Angle de démo idéal pour un prospect qui hésite à embaucher.","tags":["agents","compétitivité","autonomie"],"url":"https://www.forbes.com/councils/forbesbusinesscouncil/2026/04/27/how-ai-agents-can-help-small-businesses-compete/"},{"id":"linkedin-12-predictions-2026","platform":"linkedin","author":"Kreate Technologies","handle":"LinkedIn Pulse","date":"2026-01-08","topic":"Stratégie","relevance":"medium","title":"12 AI Predictions For Small Businesses In 2026","content":"Billet LinkedIn listant 12 prédictions sur l'IA pour les petites entreprises en 2026 : généralisation des agents, remplacement des logiciels rigides basés sur des règles par des systèmes adaptatifs, orchestration multi-étapes via des plateformes comme Zapier Central et Relevance AI, et montée de la « logique par mission ». Le marché des agents IA passerait de 5,2 G$ (2024) à 196,6 G$ (2034).","summary":"12 prédictions IA pour les PME en 2026 : agents partout, fin des logiciels rigides, marché des agents ×38 d'ici 2034. Bon réservoir de « hooks » pour tes propres posts.","tags":["prédictions","agents","marché"],"url":"https://www.linkedin.com/pulse/12-ai-predictions-small-businesses-2026-kreatetechnologies-9yywc"},{"id":"linkedin-what-works-2026","platform":"linkedin","author":"Siloh Moses","handle":"LinkedIn Pulse","date":"2026-03-19","topic":"Stratégie","relevance":"medium","title":"AI Automation for Small Business: What Actually Works in 2026","content":"Billet LinkedIn qui tranche entre le battage médiatique et les cas d'usage d'automatisation IA qui livrent réellement de la valeur en PME en 2026. Met l'accent sur des flux concrets (service client, traitement de documents, relances de vente) plutôt que sur des projets ambitieux qui échouent, et sur l'importance de commencer petit avec un ROI mesurable.","summary":"Ce qui marche vraiment en automatisation IA pour PME en 2026 : commencer petit, cibler des flux à ROI mesurable (support, documents, relances). Aligne avec ton approche « livraison mois 1 ».","tags":["automatisation","ROI","cas d'usage"],"url":"https://www.linkedin.com/pulse/ai-automation-small-business-what-actually-works-2026-siloh-moses-gzvrc"}]}]}/*__END__*/;
 
 const PLATFORMS = {
-  linkedin: { label: "LinkedIn", badge: "b-linkedin", short: "in" },
-  x:        { label: "X",        badge: "b-x",        short: "X" },
-  facebook: { label: "Facebook", badge: "b-facebook", short: "f" },
-  web:      { label: "Web / Rapports", badge: "b-web", short: "web" }
+  linkedin:  { label: "LinkedIn",  badge: "b-linkedin" },
+  x:         { label: "X",         badge: "b-x" },
+  facebook:  { label: "Facebook",  badge: "b-facebook" },
+  instagram: { label: "Instagram", badge: "b-instagram" },
+  web:       { label: "Web",       badge: "b-web" }
 };
+const NEW = "__new__";
 
 const store = {
-  read: JSON.parse(localStorage.getItem("veille.read") || "{}"),
-  prefs: JSON.parse(localStorage.getItem("veille.prefs") || "{}"),
-  saveRead() { localStorage.setItem("veille.read", JSON.stringify(this.read)); },
-  savePrefs() { localStorage.setItem("veille.prefs", JSON.stringify(this.prefs)); }
+  read: JSON.parse(localStorage.getItem("veille.read2") || "{}"),   // { sessionId: { postId: ts } }
+  prefs: JSON.parse(localStorage.getItem("veille.prefs2") || "{}"),
+  saveRead() { localStorage.setItem("veille.read2", JSON.stringify(this.read)); },
+  savePrefs() { localStorage.setItem("veille.prefs2", JSON.stringify(this.prefs)); }
 };
 
+const sessions = DATA.sessions || [];
 let state = {
-  platform: store.prefs.platform || "all",
+  session: (sessions.find(s => s.id === store.prefs.session) ? store.prefs.session : (sessions[0] && sessions[0].id)),
+  platform: "all",
   unread: !!store.prefs.unread,
   high: !!store.prefs.high,
   sort: store.prefs.sort || "date",
   q: ""
 };
 
-const posts = (DATA.posts || []).slice();
 const $ = s => document.querySelector(s);
+const cur = () => sessions.find(s => s.id === state.session);
+function readMap() { return (store.read[state.session] = store.read[state.session] || {}); }
 
 // ---------- Theme ----------
 function applyTheme(t) {
@@ -258,9 +272,8 @@ function applyTheme(t) {
   $("#theme").textContent = t === "dark" ? "☀" : "☾";
 }
 $("#theme").onclick = () => {
-  const cur = document.documentElement.getAttribute("data-theme")
-    || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  applyTheme(cur === "dark" ? "light" : "dark");
+  const c = document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  applyTheme(c === "dark" ? "light" : "dark");
 };
 (function initTheme(){
   const saved = localStorage.getItem("veille.theme");
@@ -273,26 +286,26 @@ function extractive(text, max = 2) {
   const sentences = text.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+/g) || [text];
   if (sentences.length <= max) return text.trim();
   const words = text.toLowerCase().match(/[a-zà-ÿ]{4,}/g) || [];
-  const freq = {};
-  words.forEach(w => freq[w] = (freq[w] || 0) + 1);
+  const freq = {}; words.forEach(w => freq[w] = (freq[w] || 0) + 1);
   const scored = sentences.map((s, i) => {
     const sw = s.toLowerCase().match(/[a-zà-ÿ]{4,}/g) || [];
     let score = sw.reduce((a, w) => a + (freq[w] || 0), 0) / (sw.length || 1);
-    if (i === 0) score *= 1.35; // lead bias
+    if (i === 0) score *= 1.35;
     return { s: s.trim(), i, score };
   });
-  return scored.sort((a,b) => b.score - a.score).slice(0, max)
-    .sort((a,b) => a.i - b.i).map(x => x.s).join(" ");
+  return scored.sort((a,b) => b.score - a.score).slice(0, max).sort((a,b) => a.i - b.i).map(x => x.s).join(" ");
 }
 
 // ---------- Helpers ----------
-function fmtDate(iso) {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("fr-CA", { day: "2-digit", month: "short", year: "numeric" });
-}
+function fmtDate(iso) { return new Date(iso + "T00:00:00").toLocaleDateString("fr-CA", { day: "2-digit", month: "short", year: "numeric" }); }
+function esc(s) { return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+const relRank = { high: 0, medium: 1, low: 2 };
+function unreadCount(sess) { const rm = store.read[sess.id] || {}; return sess.posts.filter(p => !rm[p.id]).length; }
+
 function matches(p) {
+  const rm = readMap();
   if (state.platform !== "all" && p.platform !== state.platform) return false;
-  if (state.unread && store.read[p.id]) return false;
+  if (state.unread && rm[p.id]) return false;
   if (state.high && p.relevance !== "high") return false;
   if (state.q) {
     const hay = (p.title + " " + p.content + " " + p.summary + " " + p.author + " " + (p.tags||[]).join(" ") + " " + p.topic).toLowerCase();
@@ -300,39 +313,66 @@ function matches(p) {
   }
   return true;
 }
-const relRank = { high: 0, medium: 1, low: 2 };
+
+// ---------- Tabs ----------
+function renderTabs() {
+  const html = sessions.map(s => {
+    const uc = unreadCount(s);
+    const sel = s.id === state.session;
+    return `<button class="tab" role="tab" data-sid="${s.id}" aria-selected="${sel}" style="--tc:${s.accent}">
+      <span class="tdot" style="background:${s.accent}"></span>
+      <span class="ic">${s.icon || ""}</span>${esc(s.name)}
+      <span class="ub ${uc?"":"zero"}">${uc}</span>
+    </button>`;
+  }).join("");
+  const addSel = state.session === NEW;
+  $("#tabs").innerHTML = html + `<button class="tab add" role="tab" data-sid="${NEW}" aria-selected="${addSel}" style="--tc:var(--faint)">＋ Nouveau thème</button>`;
+  $("#tabs").querySelectorAll(".tab").forEach(t => t.onclick = () => switchSession(t.dataset.sid));
+}
+
+function switchSession(id) {
+  state.session = id; state.platform = "all"; state.q = "";
+  const si = $("#search"); if (si) si.value = "";
+  if (id !== NEW) { store.prefs.session = id; store.savePrefs(); }
+  const s = cur();
+  document.documentElement.style.setProperty("--accent", s ? s.accent : "#5B7CF0");
+  render();
+}
 
 // ---------- Render ----------
 function render() {
-  // stats
-  const total = posts.length;
-  const unread = posts.filter(p => !store.read[p.id]).length;
-  const high = posts.filter(p => p.relevance === "high" && !store.read[p.id]).length;
+  renderTabs();
+  const s = cur();
+
+  if (state.session === NEW || !s) { renderNewPanel(); return; }
+  $("#topArea").style.display = "";
+  document.documentElement.style.setProperty("--accent", s.accent);
+  $("#sub").textContent = s.blurb || s.name;
+
+  const rm = readMap();
+  const total = s.posts.length;
+  const unread = s.posts.filter(p => !rm[p.id]).length;
+  const high = s.posts.filter(p => p.relevance === "high" && !rm[p.id]).length;
   $("#stats").innerHTML = `
     <div class="stat"><span class="n">${total}</span><span class="l">Signaux</span></div>
-    <div class="stat ${unread ? "alert" : ""}"><span class="n">${unread}</span><span class="l">Non lus</span></div>
+    <div class="stat ${unread?"alert":""}"><span class="n">${unread}</span><span class="l">Non lus</span></div>
     <div class="stat"><span class="n">${high}</span><span class="l">Prio · non lus</span></div>`;
 
-  // platform chips with counts
-  const counts = { all: posts.length };
-  Object.keys(PLATFORMS).forEach(k => counts[k] = posts.filter(p => p.platform === k).length);
-  const chipHtml = [["all", "Tout"]].concat(Object.entries(PLATFORMS).map(([k,v]) => [k, v.label]))
-    .map(([k, label]) => `<button class="chip" data-plat="${k}" aria-pressed="${state.platform===k}">${label} <span class="cnt">${counts[k]??0}</span></button>`)
-    .join("");
+  // platform chips — only platforms present in this session
+  const present = {}; s.posts.forEach(p => present[p.platform] = (present[p.platform]||0)+1);
+  const order = Object.keys(PLATFORMS).filter(k => present[k]);
+  const chipHtml = [`<button class="chip" data-plat="all" aria-pressed="${state.platform==="all"}">Tout <span class="cnt">${total}</span></button>`]
+    .concat(order.map(k => `<button class="chip" data-plat="${k}" aria-pressed="${state.platform===k}">${PLATFORMS[k].label} <span class="cnt">${present[k]}</span></button>`)).join("");
   $("#platformChips").innerHTML = chipHtml;
-  $("#platformChips").querySelectorAll(".chip").forEach(c => c.onclick = () => {
-    state.platform = c.dataset.plat; store.prefs.platform = state.platform; store.savePrefs(); render();
-  });
+  $("#platformChips").querySelectorAll(".chip").forEach(c => c.onclick = () => { state.platform = c.dataset.plat; render(); });
 
-  // filter chips reflect state
   $("#filterChips").querySelectorAll("[data-filter]").forEach(c => {
     c.setAttribute("aria-pressed", String(state[c.dataset.filter]));
     c.onclick = () => { state[c.dataset.filter] = !state[c.dataset.filter]; store.prefs[c.dataset.filter] = state[c.dataset.filter]; store.savePrefs(); render(); };
   });
   $("#sort").value = state.sort;
 
-  // feed
-  let list = posts.filter(matches);
+  let list = s.posts.filter(matches);
   list.sort((a, b) => {
     if (state.sort === "date") return b.date.localeCompare(a.date);
     if (state.sort === "relevance") return (relRank[a.relevance]-relRank[b.relevance]) || b.date.localeCompare(a.date);
@@ -349,16 +389,14 @@ function render() {
     feed.innerHTML = list.map(card).join("");
     list.forEach(bindCard);
   }
-
-  const shown = list.length;
-  $("#foot").innerHTML = `${shown} / ${total} signaux affichés · dernière collecte ${DATA.meta.generated || "—"} · état lu/non-lu sauvegardé sur cet appareil`;
+  $("#foot").innerHTML = `${list.length} / ${total} signaux · session « ${esc(s.name)} » · dernière collecte ${DATA.meta.generated || "—"} · lu/non-lu sauvegardé sur cet appareil`;
 }
 
 function card(p) {
   const pl = PLATFORMS[p.platform] || PLATFORMS.web;
-  const isRead = !!store.read[p.id];
+  const isRead = !!readMap()[p.id];
   const long = (p.content || "").length > 320;
-  return `<article class="card rel-${p.relevance} ${isRead ? "read" : ""}" data-id="${p.id}">
+  return `<article class="card rel-${p.relevance} ${isRead?"read":""}" data-id="${p.id}">
     <div class="meta-row">
       ${isRead ? "" : '<span class="unread-dot" title="Non lu"></span>'}
       <span class="badge ${pl.badge}">${pl.label}</span>
@@ -369,8 +407,8 @@ function card(p) {
     </div>
     <h2>${esc(p.title)}</h2>
     <p class="summary"><span class="tag">Résumé IA</span>${esc(p.summary)}</p>
-    <p class="full" id="full-${p.id}">${esc(p.content)}</p>
-    <p class="quick" id="quick-${p.id}"></p>
+    <p class="full">${esc(p.content)}</p>
+    <p class="quick"></p>
     <div class="actions">
       <button class="act primary mark" aria-pressed="${isRead}">${isRead ? "✓ Lu" : "Marquer lu"}</button>
       <button class="act toggle">${long ? "Texte complet" : "Détails"}</button>
@@ -384,10 +422,7 @@ function card(p) {
 function bindCard(p) {
   const el = document.querySelector(`.card[data-id="${p.id}"]`);
   if (!el) return;
-  el.querySelector(".mark").onclick = () => {
-    if (store.read[p.id]) delete store.read[p.id]; else store.read[p.id] = Date.now();
-    store.saveRead(); render();
-  };
+  el.querySelector(".mark").onclick = () => { const rm = readMap(); if (rm[p.id]) delete rm[p.id]; else rm[p.id] = Date.now(); store.saveRead(); render(); };
   el.querySelector(".toggle").onclick = (e) => {
     const f = el.querySelector(".full"); f.classList.toggle("open");
     e.target.textContent = f.classList.contains("open") ? "Masquer" : ((p.content||"").length > 320 ? "Texte complet" : "Détails");
@@ -400,13 +435,29 @@ function bindCard(p) {
   };
 }
 
-function esc(s) { return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function renderNewPanel() {
+  $("#topArea").style.display = "none";
+  $("#sub").textContent = "Ajouter une veille";
+  document.documentElement.style.setProperty("--accent", "#5B7CF0");
+  $("#feed").innerHTML = `<div class="panel">
+    <h2>Ajouter une session de veille</h2>
+    <p>Chaque session suit un thème avec son propre fil, ses résumés IA et son suivi lu / non-lu. Pour en créer une, demande la collecte à Claude — la recherche web et les résumés se font de son côté, puis ce dashboard se met à jour (même lien).</p>
+    <div class="cue">« Ajoute une session sur : <em>ton thème ici</em> »</div>
+    <ul>
+      <li>Précise les plateformes visées (X, LinkedIn, Facebook, Instagram, web).</li>
+      <li>Ajoute des contraintes si utile (langue, région, période, « ≤ 3h de Montréal »…).</li>
+      <li>Tu peux aussi coller des posts précis à intégrer — zéro risque pour tes comptes.</li>
+    </ul>
+  </div>`;
+  $("#foot").innerHTML = `${sessions.length} sessions actives · dernière collecte ${DATA.meta.generated || "—"}`;
+}
 
-// search debounce
+// events
 let t;
 $("#search").oninput = e => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 140); };
 $("#sort").onchange = e => { state.sort = e.target.value; store.prefs.sort = state.sort; store.savePrefs(); render(); };
 
-if (DATA.meta && DATA.meta.owner) $("#sub").textContent = `Signaux IA · ${DATA.meta.owner}`;
+if (DATA.meta && DATA.meta.owner) $("#sub").textContent = `Signaux · ${DATA.meta.owner}`;
+const s0 = cur(); if (s0) document.documentElement.style.setProperty("--accent", s0.accent);
 render();
 </script>

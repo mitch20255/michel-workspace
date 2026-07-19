@@ -15,4 +15,8 @@ new = re.sub(
     html, count=1, flags=re.DOTALL,
 )
 (here / "dashboard.html").write_text(new, encoding="utf-8")
-print(f"OK — {len(data['posts'])} posts injectes dans dashboard.html")
+sessions = data.get("sessions", [])
+total = sum(len(s.get("posts", [])) for s in sessions)
+print(f"OK — {len(sessions)} sessions / {total} posts injectes dans dashboard.html")
+for s in sessions:
+    print(f"   {s.get('icon','')} {s['name']}: {len(s.get('posts', []))} posts")
