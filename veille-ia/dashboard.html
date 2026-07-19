@@ -1,0 +1,412 @@
+<title>Radar Veille IA</title>
+<style>
+  :root {
+    --bg: #F4F6FA;
+    --surface: #FFFFFF;
+    --surface-2: #FBFCFE;
+    --text: #14171D;
+    --muted: #5A6273;
+    --faint: #8A93A6;
+    --border: #E3E7EF;
+    --border-strong: #D2D8E4;
+    --accent: #3B5BDB;
+    --accent-soft: #E8EDFC;
+    --attention: #C97C1A;
+    --attention-soft: #FBEFD9;
+    --high: #D6452A;
+    --high-soft: #FBE6E0;
+    --shadow: 0 1px 2px rgba(20,30,60,.05), 0 6px 20px rgba(20,30,60,.05);
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0D1016; --surface: #161A22; --surface-2: #1B2029;
+      --text: #E8EBF2; --muted: #98A1B3; --faint: #69738A;
+      --border: #262C38; --border-strong: #323A49;
+      --accent: #6E8BFF; --accent-soft: #1D2740;
+      --attention: #E0A23E; --attention-soft: #33280F;
+      --high: #F0745A; --high-soft: #3A1C15;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 26px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F4F6FA; --surface: #FFFFFF; --surface-2: #FBFCFE;
+    --text: #14171D; --muted: #5A6273; --faint: #8A93A6;
+    --border: #E3E7EF; --border-strong: #D2D8E4;
+    --accent: #3B5BDB; --accent-soft: #E8EDFC;
+    --attention: #C97C1A; --attention-soft: #FBEFD9;
+    --high: #D6452A; --high-soft: #FBE6E0;
+    --shadow: 0 1px 2px rgba(20,30,60,.05), 0 6px 20px rgba(20,30,60,.05);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1016; --surface: #161A22; --surface-2: #1B2029;
+    --text: #E8EBF2; --muted: #98A1B3; --faint: #69738A;
+    --border: #262C38; --border-strong: #323A49;
+    --accent: #6E8BFF; --accent-soft: #1D2740;
+    --attention: #E0A23E; --attention-soft: #33280F;
+    --high: #F0745A; --high-soft: #3A1C15;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 26px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--sans); line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* Header */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .head-inner { max-width: 900px; margin: 0 auto; padding: 16px 20px 14px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .radar {
+    width: 30px; height: 30px; flex: none; border-radius: 8px;
+    background: radial-gradient(circle at 50% 50%, var(--accent) 0 2px, transparent 3px),
+                conic-gradient(from 0deg, transparent 0 300deg, color-mix(in srgb, var(--accent) 45%, transparent) 360deg);
+    border: 1px solid var(--border-strong);
+    position: relative;
+  }
+  h1 { font-size: 18px; letter-spacing: -.01em; margin: 0; font-weight: 700; }
+  .sub { font-family: var(--mono); font-size: 11px; color: var(--faint); margin: 1px 0 0; text-transform: uppercase; letter-spacing: .06em; }
+  .theme-btn {
+    margin-left: auto; background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px; width: 34px; height: 34px; cursor: pointer;
+    font-size: 15px; display: grid; place-items: center;
+  }
+  .theme-btn:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* Stats */
+  .stats { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 12px; display: flex; flex-direction: column; min-width: 76px;
+  }
+  .stat .n { font-family: var(--mono); font-size: 20px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+  .stat.alert .n { color: var(--attention); }
+
+  /* Controls */
+  .controls { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .search {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px 10px 34px; color: var(--text); font-size: 14px;
+    font-family: var(--sans);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238A93A6' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M15 15l-3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 11px 50%;
+  }
+  .search:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .chips .sep { width: 1px; height: 18px; background: var(--border-strong); margin: 0 3px; }
+  .chip {
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 999px; padding: 5px 11px; font-size: 12.5px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; user-select: none;
+    font-family: var(--sans);
+  }
+  .chip:hover { border-color: var(--border-strong); color: var(--text); }
+  .chip[aria-pressed="true"] { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 40%, transparent); color: var(--accent); font-weight: 600; }
+  .chip .cnt { font-family: var(--mono); font-size: 10.5px; opacity: .7; font-variant-numeric: tabular-nums; }
+  select.sort {
+    margin-left: auto; background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 999px; padding: 5px 10px; font-size: 12.5px; cursor: pointer;
+    font-family: var(--sans);
+  }
+
+  /* Feed */
+  .feed { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+  .card {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 15px 16px 13px 18px; box-shadow: var(--shadow);
+    transition: opacity .2s, border-color .2s;
+  }
+  .card::before {
+    content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px;
+    border-radius: 3px; background: var(--border-strong);
+  }
+  .card.rel-high::before { background: var(--high); }
+  .card.rel-medium::before { background: var(--attention); }
+  .card.read { opacity: .58; }
+  .card.read:hover { opacity: .85; }
+
+  .meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .badge {
+    font-family: var(--mono); font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .04em; padding: 2px 7px; border-radius: 5px; line-height: 1.5;
+  }
+  .b-linkedin { background: #0A66C220; color: #2977d6; }
+  .b-x { background: #0f0f0f18; color: var(--text); }
+  .b-facebook { background: #1877F220; color: #2f80e8; }
+  .b-web { background: var(--accent-soft); color: var(--accent); }
+  @media (prefers-color-scheme: dark) { .b-x { background: #ffffff18; } }
+  :root[data-theme="dark"] .b-x { background: #ffffff18; }
+  .author { font-weight: 600; font-size: 13px; }
+  .dot { color: var(--faint); }
+  .handle, .date { font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+  .topic {
+    margin-left: auto; font-size: 11px; color: var(--muted);
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px;
+  }
+  .unread-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--attention); flex: none; }
+
+  .card h2 { font-size: 15.5px; margin: 0 0 6px; line-height: 1.35; letter-spacing: -.005em; text-wrap: balance; }
+  .summary {
+    font-size: 13.5px; color: var(--text); background: var(--surface-2);
+    border-left: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    padding: 8px 11px; border-radius: 0 7px 7px 0; margin: 0 0 4px;
+  }
+  .summary .tag { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); display: block; margin-bottom: 3px; }
+  .full { font-size: 13.5px; color: var(--muted); margin: 10px 0 4px; display: none; }
+  .full.open { display: block; }
+  .quick { font-size: 13px; color: var(--text); background: var(--attention-soft); border-radius: 7px; padding: 8px 11px; margin: 8px 0 2px; display: none; }
+  .quick.open { display: block; }
+  .quick .tag { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--attention); display: block; margin-bottom: 3px; }
+
+  .actions { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .act {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans);
+  }
+  .act:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface-2); }
+  .act.primary[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .act.open-src { margin-left: auto; }
+  .act svg { width: 13px; height: 13px; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--faint); }
+  .empty svg { width: 40px; height: 40px; opacity: .5; margin-bottom: 12px; }
+
+  .foot { margin-top: 26px; font-size: 11.5px; color: var(--faint); text-align: center; font-family: var(--mono); }
+  .foot a { color: var(--accent); text-decoration: none; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<header>
+  <div class="head-inner">
+    <div class="brand">
+      <div class="radar" aria-hidden="true"></div>
+      <div>
+        <h1>Radar Veille IA</h1>
+        <p class="sub" id="sub">Signaux IA · conseil PME</p>
+      </div>
+      <button class="theme-btn" id="theme" title="Basculer le thème" aria-label="Basculer le thème">◐</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="controls">
+      <input class="search" id="search" type="search" placeholder="Rechercher un post, un auteur, un sujet…" aria-label="Rechercher">
+      <div class="chips" id="platformChips"></div>
+      <div class="chips" id="filterChips">
+        <button class="chip" data-filter="unread" aria-pressed="false">Non lus seulement</button>
+        <button class="chip" data-filter="high" aria-pressed="false">Priorité haute</button>
+        <div class="sep" aria-hidden="true"></div>
+        <select class="sort" id="sort" aria-label="Trier">
+          <option value="date">Plus récents</option>
+          <option value="relevance">Pertinence</option>
+          <option value="platform">Plateforme</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="feed" id="feed"></div>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const DATA = /*__DATA__*/{"meta":{"title":"Radar Veille IA","owner":"Michel Tremblay","generated":"2026-07-18","version":1,"note":"Hub centralisé des posts et signaux IA pertinents. Source des données du dashboard. Les résumés sont générés par IA au moment de la collecte. Aucun post n'est inventé : chaque entrée a une URL source réelle."},"topics":["Adoption PME","Agents IA","Marché Québec","Stratégie","Outils & Automatisation"],"posts":[{"id":"qc-stat-2025q2","platform":"web","author":"Institut de la statistique du Québec","handle":"statistique.quebec.ca","date":"2025-11-15","topic":"Marché Québec","relevance":"high","title":"12,7 % des entreprises québécoises utilisent l'IA en production","content":"Selon l'Institut de la statistique du Québec, 12,7 % des entreprises de la province ont utilisé des applications d'IA à des fins de production au cours des 12 mois précédant le 2e trimestre de 2025. La progression reste modeste : +3,3 points de pourcentage par rapport au même trimestre de 2024. Le rapport distingue l'usage par taille d'entreprise et par secteur, et confirme que les grandes entreprises adoptent plus vite que les PME.","summary":"Seulement 12,7 % des entreprises du Québec utilisent l'IA en production (T2 2025), une hausse modeste de +3,3 pts en un an. Le retard des PME = ton marché.","tags":["statistiques","PME","adoption"],"url":"https://statistique.quebec.ca/en/produit/publication/adoption-et-utilisation-intelligence-artificielle-entreprises-au-quebec-2024-2025"},{"id":"lapresse-prudentes-2025","platform":"web","author":"La Presse — Techno","handle":"lapresse.ca","date":"2025-11-28","topic":"Marché Québec","relevance":"high","title":"Les entreprises québécoises curieuses, mais prudentes","content":"Alors que de nombreuses voix soulignent l'urgence d'adopter l'IA pour rester compétitives, les entreprises québécoises temporisent. La technologie les intéresse en priorité, mais à condition d'y investir prudemment. L'article décrit un écart entre l'intérêt déclaré et le passage à l'action concret, souvent freiné par le manque de compétences internes et l'incertitude sur le retour sur investissement.","summary":"Les entreprises du QC sont curieuses envers l'IA mais hésitent à investir. Le frein #1 : pas de compétences internes ni de clarté sur le ROI — exactement le gap qu'un CAIO fractionnaire comble.","tags":["prudence","ROI","adoption"],"url":"https://www.lapresse.ca/affaires/techno/2025-11-28/intelligence-artificielle/les-entreprises-quebecoises-curieuses-mais-prudentes.php"},{"id":"radiocanada-adoption-2026","platform":"web","author":"Radio-Canada","handle":"ici.radio-canada.ca","date":"2026-02-10","topic":"Marché Québec","relevance":"high","title":"Au Canada, la course à l'IA se joue dans l'adoption, non dans les milliards","content":"L'article soutient que l'avantage concurrentiel canadien en IA ne viendra pas des investissements massifs en infrastructure, mais de la vitesse d'adoption par les entreprises — particulièrement les PME. Le vrai enjeu est de transformer l'intérêt en usage productif quotidien, un déficit d'exécution plus qu'un déficit de capital.","summary":"La thèse : au Canada, gagner la course IA = adopter vite, pas dépenser gros. L'avantage se joue dans l'exécution en PME — un angle de vente puissant pour tes clients.","tags":["adoption","PME","compétitivité"],"url":"https://ici.radio-canada.ca/nouvelle/2239862/intelligence-artificielle-investissement-adoption-pme"},{"id":"forbes-agents-compete-2026","platform":"web","author":"Forbes Business Council","handle":"forbes.com","date":"2026-04-27","topic":"Agents IA","relevance":"high","title":"How AI Agents Can Help Small Businesses Compete","content":"Article du Forbes Business Council expliquant comment les agents IA — capables d'agir de façon autonome sur des directives larges (« recherche ces concurrents et rédige une stratégie comparative ») — permettent aux petites entreprises de rivaliser avec de plus gros joueurs. Les agents travaillent 24/7, ne prennent pas de congés et s'améliorent à chaque interaction. Le passage clé : l'IA devient un partenaire stratégique, pas un simple outil passif.","summary":"Les agents IA autonomes laissent les PME « frapper au-dessus de leur poids » : ils exécutent des mandats larges 24/7. Angle de démo idéal pour un prospect qui hésite à embaucher.","tags":["agents","compétitivité","autonomie"],"url":"https://www.forbes.com/councils/forbesbusinesscouncil/2026/04/27/how-ai-agents-can-help-small-businesses-compete/"},{"id":"linkedin-12-predictions-2026","platform":"linkedin","author":"Kreate Technologies","handle":"LinkedIn Pulse","date":"2026-01-08","topic":"Stratégie","relevance":"medium","title":"12 AI Predictions For Small Businesses In 2026","content":"Billet LinkedIn listant 12 prédictions sur l'IA pour les petites entreprises en 2026 : généralisation des agents, remplacement des logiciels rigides basés sur des règles par des systèmes adaptatifs, orchestration multi-étapes via des plateformes comme Zapier Central et Relevance AI, et montée de la « logique par mission ». Le marché des agents IA passerait de 5,2 G$ (2024) à 196,6 G$ (2034).","summary":"12 prédictions IA pour les PME en 2026 : agents partout, fin des logiciels rigides, marché des agents ×38 d'ici 2034. Bon réservoir de « hooks » pour tes propres posts.","tags":["prédictions","agents","marché"],"url":"https://www.linkedin.com/pulse/12-ai-predictions-small-businesses-2026-kreatetechnologies-9yywc"},{"id":"linkedin-what-works-2026","platform":"linkedin","author":"Siloh Moses","handle":"LinkedIn Pulse","date":"2026-03-19","topic":"Outils & Automatisation","relevance":"medium","title":"AI Automation for Small Business: What Actually Works in 2026","content":"Billet LinkedIn qui tranche entre le battage médiatique et les cas d'usage d'automatisation IA qui livrent réellement de la valeur en PME en 2026. Met l'accent sur des flux concrets (service client, traitement de documents, relances de vente) plutôt que sur des projets ambitieux qui échouent, et sur l'importance de commencer petit avec un ROI mesurable.","summary":"Ce qui marche vraiment en automatisation IA pour PME en 2026 : commencer petit, cibler des flux à ROI mesurable (support, documents, relances) plutôt que des grands projets. Aligne avec ton approche « livraison mois 1 ».","tags":["automatisation","ROI","cas d'usage"],"url":"https://www.linkedin.com/pulse/ai-automation-small-business-what-actually-works-2026-siloh-moses-gzvrc"},{"id":"blueprism-agent-trends-2026","platform":"web","author":"Blue Prism","handle":"blueprism.com","date":"2026-05-02","topic":"Agents IA","relevance":"medium","title":"Future of AI Agents: Top Trends in 2026","content":"Analyse des grandes tendances des agents IA en 2026 : passage d'une IA réactive à une IA proactive qui agit, systèmes multi-agents, gouvernance et sécurité des agents, et intégration profonde dans les processus d'affaires. Souligne les enjeux de compétences, d'infrastructure et de sécurité qui conditionnent l'adoption.","summary":"Panorama des tendances agents IA 2026 : IA proactive, systèmes multi-agents, et les 3 freins récurrents (compétences, infra, sécurité). Matière solide pour un atelier client.","tags":["agents","tendances","gouvernance"],"url":"https://www.blueprism.com/resources/blog/future-ai-agents-trends/"},{"id":"mnp-optimisme-2026","platform":"web","author":"MNP","handle":"mnp.ca","date":"2026-06-01","topic":"Adoption PME","relevance":"medium","title":"IA en affaires 2026 : adoption et excès d'optimisme","content":"Rapport MNP Digital sur l'état de l'IA en affaires en 2026. Constate un écart entre l'optimisme des dirigeants et la maturité réelle des déploiements. Beaucoup d'entreprises surestiment leur avancement; les gains concrets restent concentrés chez celles qui ont structuré leur démarche (données, gouvernance, compétences).","summary":"MNP note un « excès d'optimisme » : les dirigeants surestiment leur maturité IA. Les vrais gains vont à ceux qui structurent (données, gouvernance). Argument pour vendre de la méthode, pas juste des outils.","tags":["maturité","gouvernance","PME"],"url":"https://www.mnp.ca/fr/points-de-vue/bibliotheque/rapport-de-mnp-digital-intelligence-artificielle-en-affaires-en-2026"}]}/*__END__*/;
+
+const PLATFORMS = {
+  linkedin: { label: "LinkedIn", badge: "b-linkedin", short: "in" },
+  x:        { label: "X",        badge: "b-x",        short: "X" },
+  facebook: { label: "Facebook", badge: "b-facebook", short: "f" },
+  web:      { label: "Web / Rapports", badge: "b-web", short: "web" }
+};
+
+const store = {
+  read: JSON.parse(localStorage.getItem("veille.read") || "{}"),
+  prefs: JSON.parse(localStorage.getItem("veille.prefs") || "{}"),
+  saveRead() { localStorage.setItem("veille.read", JSON.stringify(this.read)); },
+  savePrefs() { localStorage.setItem("veille.prefs", JSON.stringify(this.prefs)); }
+};
+
+let state = {
+  platform: store.prefs.platform || "all",
+  unread: !!store.prefs.unread,
+  high: !!store.prefs.high,
+  sort: store.prefs.sort || "date",
+  q: ""
+};
+
+const posts = (DATA.posts || []).slice();
+const $ = s => document.querySelector(s);
+
+// ---------- Theme ----------
+function applyTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  localStorage.setItem("veille.theme", t);
+  $("#theme").textContent = t === "dark" ? "☀" : "☾";
+}
+$("#theme").onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme")
+    || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  applyTheme(cur === "dark" ? "light" : "dark");
+};
+(function initTheme(){
+  const saved = localStorage.getItem("veille.theme");
+  if (saved) applyTheme(saved);
+  else $("#theme").textContent = matchMedia("(prefers-color-scheme: dark)").matches ? "☀" : "☾";
+})();
+
+// ---------- Extractive quick summary (fallback, no AI) ----------
+function extractive(text, max = 2) {
+  const sentences = text.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+/g) || [text];
+  if (sentences.length <= max) return text.trim();
+  const words = text.toLowerCase().match(/[a-zà-ÿ]{4,}/g) || [];
+  const freq = {};
+  words.forEach(w => freq[w] = (freq[w] || 0) + 1);
+  const scored = sentences.map((s, i) => {
+    const sw = s.toLowerCase().match(/[a-zà-ÿ]{4,}/g) || [];
+    let score = sw.reduce((a, w) => a + (freq[w] || 0), 0) / (sw.length || 1);
+    if (i === 0) score *= 1.35; // lead bias
+    return { s: s.trim(), i, score };
+  });
+  return scored.sort((a,b) => b.score - a.score).slice(0, max)
+    .sort((a,b) => a.i - b.i).map(x => x.s).join(" ");
+}
+
+// ---------- Helpers ----------
+function fmtDate(iso) {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("fr-CA", { day: "2-digit", month: "short", year: "numeric" });
+}
+function matches(p) {
+  if (state.platform !== "all" && p.platform !== state.platform) return false;
+  if (state.unread && store.read[p.id]) return false;
+  if (state.high && p.relevance !== "high") return false;
+  if (state.q) {
+    const hay = (p.title + " " + p.content + " " + p.summary + " " + p.author + " " + (p.tags||[]).join(" ") + " " + p.topic).toLowerCase();
+    if (!hay.includes(state.q.toLowerCase())) return false;
+  }
+  return true;
+}
+const relRank = { high: 0, medium: 1, low: 2 };
+
+// ---------- Render ----------
+function render() {
+  // stats
+  const total = posts.length;
+  const unread = posts.filter(p => !store.read[p.id]).length;
+  const high = posts.filter(p => p.relevance === "high" && !store.read[p.id]).length;
+  $("#stats").innerHTML = `
+    <div class="stat"><span class="n">${total}</span><span class="l">Signaux</span></div>
+    <div class="stat ${unread ? "alert" : ""}"><span class="n">${unread}</span><span class="l">Non lus</span></div>
+    <div class="stat"><span class="n">${high}</span><span class="l">Prio · non lus</span></div>`;
+
+  // platform chips with counts
+  const counts = { all: posts.length };
+  Object.keys(PLATFORMS).forEach(k => counts[k] = posts.filter(p => p.platform === k).length);
+  const chipHtml = [["all", "Tout"]].concat(Object.entries(PLATFORMS).map(([k,v]) => [k, v.label]))
+    .map(([k, label]) => `<button class="chip" data-plat="${k}" aria-pressed="${state.platform===k}">${label} <span class="cnt">${counts[k]??0}</span></button>`)
+    .join("");
+  $("#platformChips").innerHTML = chipHtml;
+  $("#platformChips").querySelectorAll(".chip").forEach(c => c.onclick = () => {
+    state.platform = c.dataset.plat; store.prefs.platform = state.platform; store.savePrefs(); render();
+  });
+
+  // filter chips reflect state
+  $("#filterChips").querySelectorAll("[data-filter]").forEach(c => {
+    c.setAttribute("aria-pressed", String(state[c.dataset.filter]));
+    c.onclick = () => { state[c.dataset.filter] = !state[c.dataset.filter]; store.prefs[c.dataset.filter] = state[c.dataset.filter]; store.savePrefs(); render(); };
+  });
+  $("#sort").value = state.sort;
+
+  // feed
+  let list = posts.filter(matches);
+  list.sort((a, b) => {
+    if (state.sort === "date") return b.date.localeCompare(a.date);
+    if (state.sort === "relevance") return (relRank[a.relevance]-relRank[b.relevance]) || b.date.localeCompare(a.date);
+    if (state.sort === "platform") return a.platform.localeCompare(b.platform) || b.date.localeCompare(a.date);
+    return 0;
+  });
+
+  const feed = $("#feed");
+  if (!list.length) {
+    feed.innerHTML = `<div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <div>Aucun signal ne correspond à ces filtres.</div></div>`;
+  } else {
+    feed.innerHTML = list.map(card).join("");
+    list.forEach(bindCard);
+  }
+
+  const shown = list.length;
+  $("#foot").innerHTML = `${shown} / ${total} signaux affichés · dernière collecte ${DATA.meta.generated || "—"} · état lu/non-lu sauvegardé sur cet appareil`;
+}
+
+function card(p) {
+  const pl = PLATFORMS[p.platform] || PLATFORMS.web;
+  const isRead = !!store.read[p.id];
+  const long = (p.content || "").length > 320;
+  return `<article class="card rel-${p.relevance} ${isRead ? "read" : ""}" data-id="${p.id}">
+    <div class="meta-row">
+      ${isRead ? "" : '<span class="unread-dot" title="Non lu"></span>'}
+      <span class="badge ${pl.badge}">${pl.label}</span>
+      <span class="author">${esc(p.author)}</span>
+      <span class="dot">·</span><span class="handle">${esc(p.handle||"")}</span>
+      <span class="dot">·</span><span class="date">${fmtDate(p.date)}</span>
+      <span class="topic">${esc(p.topic||"")}</span>
+    </div>
+    <h2>${esc(p.title)}</h2>
+    <p class="summary"><span class="tag">Résumé IA</span>${esc(p.summary)}</p>
+    <p class="full" id="full-${p.id}">${esc(p.content)}</p>
+    <p class="quick" id="quick-${p.id}"></p>
+    <div class="actions">
+      <button class="act primary mark" aria-pressed="${isRead}">${isRead ? "✓ Lu" : "Marquer lu"}</button>
+      <button class="act toggle">${long ? "Texte complet" : "Détails"}</button>
+      <button class="act quickbtn" title="Résumé extractif instantané (sans IA)">Résumé rapide</button>
+      <a class="act open-src" href="${esc(p.url)}" target="_blank" rel="noopener">Source
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+    </div>
+  </article>`;
+}
+
+function bindCard(p) {
+  const el = document.querySelector(`.card[data-id="${p.id}"]`);
+  if (!el) return;
+  el.querySelector(".mark").onclick = () => {
+    if (store.read[p.id]) delete store.read[p.id]; else store.read[p.id] = Date.now();
+    store.saveRead(); render();
+  };
+  el.querySelector(".toggle").onclick = (e) => {
+    const f = el.querySelector(".full"); f.classList.toggle("open");
+    e.target.textContent = f.classList.contains("open") ? "Masquer" : ((p.content||"").length > 320 ? "Texte complet" : "Détails");
+  };
+  el.querySelector(".quickbtn").onclick = (e) => {
+    const q = el.querySelector(".quick");
+    if (q.classList.contains("open")) { q.classList.remove("open"); e.target.textContent = "Résumé rapide"; return; }
+    q.innerHTML = `<span class="tag">Résumé rapide · extractif</span>${esc(extractive(p.content, 2))}`;
+    q.classList.add("open"); e.target.textContent = "Masquer résumé";
+  };
+}
+
+function esc(s) { return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+// search debounce
+let t;
+$("#search").oninput = e => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 140); };
+$("#sort").onchange = e => { state.sort = e.target.value; store.prefs.sort = state.sort; store.savePrefs(); render(); };
+
+if (DATA.meta && DATA.meta.owner) $("#sub").textContent = `Signaux IA · ${DATA.meta.owner}`;
+render();
+</script>
