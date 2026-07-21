@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Activités à Montréal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📍</span>
+      <div>
+        <h1>Activités à Montréal</h1>
+        <p class="subtitle">Ton carnet de découvertes autour de la ville</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button id="btn-import" class="btn ghost">＋ Depuis Instagram</button>
+      <button id="btn-add" class="btn primary">＋ Nouvelle activité</button>
+    </div>
+  </header>
+
+  <section class="statbar" id="statbar"></section>
+
+  <section class="filters">
+    <input id="f-search" class="input" type="search" placeholder="🔎 Rechercher (titre, quartier, tag…)" />
+    <select id="f-category" class="input"></select>
+    <select id="f-status" class="input">
+      <option value="">Tous les statuts</option>
+      <option value="a_faire">À faire</option>
+      <option value="favori">Favori</option>
+      <option value="fait">Fait</option>
+      <option value="archive">Archivé</option>
+    </select>
+    <button id="f-clear" class="btn ghost small">Réinitialiser</button>
+  </section>
+
+  <main id="grid" class="grid"></main>
+  <div id="empty" class="empty hidden">
+    <p>Aucune activité pour l'instant.</p>
+    <p class="muted">Ajoute-en une, ou colle un lien Instagram.</p>
+  </div>
+
+  <!-- Modale fiche -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="modal-title">Nouvelle activité</h2>
+        <button class="icon-btn" id="modal-close">✕</button>
+      </div>
+
+      <div class="ig-import" id="ig-import-block">
+        <label>Coller un lien de post Instagram (facultatif)</label>
+        <div class="ig-row">
+          <input id="ig-url" class="input" type="url" placeholder="https://www.instagram.com/p/…" />
+          <button id="ig-fetch" class="btn primary small" type="button">Récupérer</button>
+        </div>
+        <p class="ig-note muted" id="ig-note">Respecte les règles de Meta : on n'aspire rien, on lit l'aperçu officiel du lien.</p>
+      </div>
+
+      <form id="form" class="form">
+        <input type="hidden" id="a-id" />
+        <div class="field span2">
+          <label>Titre *</label>
+          <input id="a-title" class="input" required placeholder="Ex. Marché de nuit au Vieux-Port" />
+        </div>
+        <div class="field span2">
+          <label>Description</label>
+          <textarea id="a-description" class="input" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label>Catégorie</label>
+          <select id="a-category" class="input"></select>
+        </div>
+        <div class="field">
+          <label>Quartier</label>
+          <input id="a-neighborhood" class="input" placeholder="Ex. Mile End" />
+        </div>
+        <div class="field span2">
+          <label>Adresse</label>
+          <input id="a-address" class="input" placeholder="Ex. 1234 Boul. Saint-Laurent" />
+        </div>
+        <div class="field">
+          <label>Prix</label>
+          <input id="a-price" class="input" placeholder="Ex. Gratuit / $$" />
+        </div>
+        <div class="field">
+          <label>Statut</label>
+          <select id="a-status" class="input">
+            <option value="a_faire">À faire</option>
+            <option value="favori">Favori</option>
+            <option value="fait">Fait</option>
+            <option value="archive">Archivé</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Début</label>
+          <input id="a-start_date" class="input" type="date" />
+        </div>
+        <div class="field">
+          <label>Fin</label>
+          <input id="a-end_date" class="input" type="date" />
+        </div>
+        <div class="field span2">
+          <label>Tags (séparés par des virgules)</label>
+          <input id="a-tags" class="input" placeholder="terrasse, gratuit, été" />
+        </div>
+        <div class="field">
+          <label>Compte / source</label>
+          <input id="a-author_handle" class="input" placeholder="@compte" />
+        </div>
+        <div class="field">
+          <label>Note (0–5)</label>
+          <input id="a-rating" class="input" type="number" min="0" max="5" value="0" />
+        </div>
+        <div class="field span2">
+          <label>Lien source (Instagram, site…)</label>
+          <input id="a-source_url" class="input" type="url" placeholder="https://…" />
+        </div>
+        <div class="field span2">
+          <label>URL image (miniature)</label>
+          <input id="a-image_url" class="input" type="url" placeholder="https://…" />
+        </div>
+        <div class="field span2">
+          <label>Notes perso</label>
+          <textarea id="a-notes" class="input" rows="2"></textarea>
+        </div>
+        <input type="hidden" id="a-source_platform" />
+
+        <div class="form-actions span2">
+          <button type="button" id="btn-delete" class="btn danger hidden">Supprimer</button>
+          <div class="spacer"></div>
+          <button type="button" id="btn-cancel" class="btn ghost">Annuler</button>
+          <button type="submit" class="btn primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
