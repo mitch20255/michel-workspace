@@ -26,6 +26,11 @@
 - **[Nexus — APP LIVRÉE](../nexus-app/index.html)** — app fonctionnelle ([lien live](https://claude.ai/code/artifact/1fe50a01-346e-4d5f-a2c3-17cefd0fb078))
 - _(autres — copier `brain/projects/_TEMPLATE.md`)_
 
+## Learn / YouTube → Brain
+- [system/YOUTUBE_PIPELINE.md](../system/YOUTUBE_PIPELINE.md) — comment une vidéo devient une synthèse experte
+- [capture/youtube-queue.md](../capture/youtube-queue.md) — file d'attente des vidéos
+- [brain/knowledge/youtube/](../brain/knowledge/youtube/) — synthèses ingérées
+
 ## ☀️ À lire au réveil
 - **[MICHEL_WAKE_UP.md](../MICHEL_WAKE_UP.md)** — briefing : l'app est prête + tes choix
 

@@ -75,9 +75,48 @@ passes les accès. Dis juste « on va en B » et je te prépare la liste exacte 
 
 ---
 
+---
+
+## 🎥 NOUVEAU : le module « Learn » (YouTube → ton cerveau)
+
+Tu me l'as demandé en partant : une playlist YouTube → des synthèses niveau expert que
+ton brain ingère. **C'est construit** — nouvel onglet **Learn** dans l'app.
+
+**La vérité technique (importante) :** l'app publiée ne peut pas lire YouTube ni faire
+tourner une IA toute seule, et de mon côté YouTube bloque l'accès direct. Donc je **ne
+peux pas inventer** la synthèse d'une vidéo que je n'ai pas vraiment lue — je refuse de te
+fabriquer du faux savoir. La solution qui marche **aujourd'hui, sans aucune clé API** :
+
+**Le flux (zéro setup) :**
+1. Crée ta **playlist publique** sur YouTube *(ton geste manuel)*.
+2. Dans l'app → onglet **Learn** → colle les liens des vidéos.
+3. Ouvre chaque vidéo dans l'app → colle son **transcript** (sur YouTube : « … » →
+   *Afficher la transcription* → copier — 30 sec).
+4. Bouton **Export queue** → tu me donnes le fichier.
+5. Moi (ou ton Heartbeat) → **synthèse experte** à partir du vrai transcript.
+6. Bouton **Import syntheses** → ça atterrit dans ton cerveau, cherchable pour toujours.
+
+**Ou full-auto (Chemin B) :** si tu veux que l'app fasse TOUT sur un simple lien de
+playlist (sans coller de transcript), il me faut 3 clés que tu crées une fois (~20 min) :
+- **YouTube Data API** (Google, gratuit) — lister les vidéos
+- **Service de transcript** (gratuit) — récupérer le texte
+- **Clé API Claude** — générer les synthèses
+
+Donne-moi les clés et je code le worker qui automatise tout. Le format de synthèse
+(TL;DR → concepts → insights d'expert → **application à ton agence** → connexions dans
+ton cerveau) est défini dans `system/YOUTUBE_PIPELINE.md`.
+
+> 🟢 **Pour tester tout de suite :** ouvre l'app → **Learn** → colle une vidéo qui
+> t'intéresse → colle son transcript → Export → envoie-moi le fichier. Tu auras ta
+> première synthèse experte dans ton cerveau.
+
+---
+
 ## 💬 Ce que j'ai besoin de toi
 
-Juste réponds-moi avec **A** ou **B** (ou « laisse-moi jouer avec avant »).
-À partir de là, je continue.
+1. **Le brain / l'app** : réponds **A** (outil perso) ou **B** (produit vendable).
+2. **YouTube** : tu veux rester sur le flux **sans clé** (colle-transcript), ou tu montes
+   le **full-auto** (tu me donnes les 3 clés) ? Ou juste balance-moi une **playlist +
+   transcripts** et je te fais les premières synthèses.
 
 Bon café. ☕

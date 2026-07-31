@@ -5,7 +5,7 @@
     --border:#1E1E2E; --border-2:#272736;
     --text:#F1F5F9; --text-2:#94A3B8; --muted:#64748B;
     --accent:#6366F1; --accent-2:#818CF8; --accent-soft:rgba(99,102,241,.14);
-    --link:#22D3EE; --idea:#F59E0B; --success:#10B981;
+    --link:#22D3EE; --idea:#F59E0B; --success:#10B981; --yt:#F43F5E;
     --radius:12px; --radius-sm:8px; --radius-lg:16px;
     --sb:248px;
     --shadow:0 12px 40px -12px rgba(0,0,0,.7);
@@ -168,6 +168,7 @@
   .note:hover{border-left-color:inherit}
   .note.t-link{border-left-color:var(--link)}
   .note.t-idea{border-left-color:var(--idea)}
+  .note.t-youtube{border-left-color:var(--yt)}
   .note.t-text{border-left-color:var(--accent)}
   .note-top{display:flex;align-items:center;gap:9px;margin-bottom:5px}
   .note-type{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;flex:none}
@@ -398,6 +399,7 @@ const I = {
   sparkle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>',
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L4 14h7l-1 7 9-11h-7z"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg>',
 };
 const setIcon=(id,name)=>{const e=document.getElementById(id);if(e)e.innerHTML=I[name]};
 
@@ -449,8 +451,8 @@ function timeAgo(t){
   return Math.floor(d/365)+'y ago';
 }
 const projById=(id)=>state.projects.find(p=>p.id===id);
-function noteIcon(t){return t==='link'?I.link:t==='idea'?I.idea:I.text}
-function typeColor(t){return t==='link'?'var(--link)':t==='idea'?'var(--idea)':'var(--accent)'}
+function noteIcon(t){return t==='link'?I.link:t==='idea'?I.idea:t==='youtube'?I.play:I.text}
+function typeColor(t){return t==='link'?'var(--link)':t==='idea'?'var(--idea)':t==='youtube'?'var(--yt)':'var(--accent)'}
 function allTags(){
   const m={};state.notes.forEach(n=>n.tags.forEach(t=>m[t]=(m[t]||0)+1));
   return Object.entries(m).sort((a,b)=>b[1]-a[1]);
@@ -494,9 +496,10 @@ function render(){renderSidebar();renderMain();}
 
 function renderSidebar(){
   const nav=$('#nav');
-  const items=[['home','Home',I.home],['notes','All notes',I.note],['projects','Projects',I.folder]];
+  const ytCount=state.notes.filter(n=>n.type==='youtube').length;
+  const items=[['home','Home',I.home],['notes','All notes',I.note],['learn','Learn',I.play],['projects','Projects',I.folder]];
   nav.innerHTML=items.map(([v,l,ic])=>{
-    const c=v==='notes'?state.notes.length:v==='projects'?state.projects.length:'';
+    const c=v==='notes'?state.notes.length:v==='projects'?state.projects.length:v==='learn'?ytCount:'';
     return `<button class="sb-btn ${ui.view===v&&!ui.tag?'active':''}" data-view="${v}">${ic}<span>${l}</span>${c!==''?`<span class="count tnum">${c}</span>`:''}</button>`;
   }).join('');
   const tags=allTags();
@@ -511,7 +514,7 @@ function hashc(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>
 
 function renderMain(){
   if(ui.tag)return renderTag();
-  ({home:renderHome,notes:renderNotes,projects:renderProjects,project:renderProject,settings:renderSettings}[ui.view]||renderHome)();
+  ({home:renderHome,notes:renderNotes,learn:renderLearn,projects:renderProjects,project:renderProject,settings:renderSettings}[ui.view]||renderHome)();
 }
 
 function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening'}
@@ -629,6 +632,131 @@ function renderSettings(){
     </div>`;
 }
 
+/* --------- YouTube → Brain module --------- */
+function getLearnProject(){
+  let p=state.projects.find(x=>x.name==='Learning');
+  if(!p)p=addProject('Learning','#F43F5E');
+  return p;
+}
+function extractYT(text){
+  const vids=new Set(),lists=new Set();
+  (text.match(/\S+/g)||[]).forEach(tok=>{
+    let m;
+    if(m=tok.match(/[?&]list=([\w-]+)/))lists.add(m[1]);
+    if(m=tok.match(/[?&]v=([\w-]{11})/))vids.add(m[1]);
+    else if(m=tok.match(/youtu\.be\/([\w-]{11})/))vids.add(m[1]);
+    else if(m=tok.match(/\/shorts\/([\w-]{11})/))vids.add(m[1]);
+    else if(m=tok.match(/\/embed\/([\w-]{11})/))vids.add(m[1]);
+  });
+  return {vids:[...vids],lists:[...lists]};
+}
+function addYT(id){
+  if(state.notes.some(n=>n.videoId===id))return false;
+  const now=Date.now();
+  state.notes.unshift({id:uid(),type:'youtube',videoId:id,
+    url:'https://www.youtube.com/watch?v='+id,title:'YouTube video ('+id+')',
+    content:'',transcript:'',status:'pending',tags:['youtube'],
+    projectId:getLearnProject().id,createdAt:now,updatedAt:now});
+  return true;
+}
+function renderLearn(){
+  const vids=state.notes.filter(n=>n.type==='youtube');
+  const pending=vids.filter(v=>v.status!=='done');
+  const done=vids.filter(v=>v.status==='done');
+  const sh=(t,extra)=>`<div class="section-head"><h2>${t}</h2><div class="line"></div>${extra||''}</div>`;
+  content.innerHTML=`
+    <div class="page-head"><div class="page-title">Learn <span class="badge tnum">${vids.length}</span></div>
+      <div class="sub">YouTube → expert synthesis → your brain. Drop a video and Nexus turns it into knowledge you can search forever.</div></div>
+    <div class="capture" id="yt-add">
+      <textarea id="yt-in" rows="2" placeholder="Paste video URLs (one per line) or a playlist link…"></textarea>
+      <div class="capture-bar"><div class="hint">${I.play}<span>Public playlist or video links</span></div>
+        <button class="save-btn" id="yt-save" disabled>Add to queue</button></div>
+    </div>
+    <div class="digest-card" style="margin-bottom:26px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div class="ic" style="background:rgba(244,63,94,.12);color:var(--yt);flex:none;margin:0">${I.play}</div>
+        <div><h3 style="margin-bottom:4px">How it works</h3>
+        <p style="line-height:1.6">1 · Queue videos here.&nbsp; 2 · Open each → paste its transcript (YouTube: “…” → Show transcript → copy).&nbsp; 3 · Export the queue.&nbsp; 4 · Your agent writes an expert synthesis from the real transcript.&nbsp; 5 · Import it back — it lands in your brain.</p></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <button class="btn-ghost" data-action="yt-export">Export queue (.json)</button>
+        <button class="btn-ghost" data-action="yt-import">Import syntheses (.json)</button>
+      </div>
+    </div>
+    ${pending.length?sh('Queue — awaiting synthesis')+'<div class="feed" style="margin-bottom:28px">'+pending.map(ytCard).join('')+'</div>':''}
+    ${done.length?sh('Synthesized — in your brain','<span class="link" data-view="notes">All notes</span>')+'<div class="feed">'+done.map(noteCard).join('')+'</div>':''}
+    ${!vids.length?emptyLearn():''}`;
+  wireYT();
+}
+function ytCard(n){
+  const ready=n.transcript&&n.transcript.trim();
+  return `<div class="note t-youtube" data-yt="${n.id}">
+    <div class="note-top"><span class="note-type" style="background:rgba(244,63,94,.12);color:var(--yt)">${I.play}</span>
+      <span class="note-title">${esc(n.title)}</span>
+      <span class="status ${ready?'active':''}">${ready?'Ready':'Needs transcript'}</span></div>
+    <div class="note-host">${I.play}${esc(host(n.url))}</div></div>`;
+}
+function emptyLearn(){return`<div class="empty">${I.play}<h3>Feed your brain</h3><p>Paste a YouTube video or playlist above. Nexus distills each one into an expert synthesis you can search and connect.</p></div>`}
+function wireYT(){
+  const ta=$('#yt-in'),btn=$('#yt-save');if(!ta)return;
+  const grow=()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,180)+'px';btn.disabled=!ta.value.trim()};
+  ta.addEventListener('input',grow);
+  const add=()=>{
+    const r=extractYT(ta.value);let n=0;r.vids.forEach(id=>{if(addYT(id))n++});save();
+    ta.value='';grow();render();
+    if(n)toast(n+' video'+(n>1?'s':'')+' queued');
+    else if(r.lists.length)toast('Playlist link saved — paste its video URLs to synthesize (or set up the YouTube API, see briefing)');
+    else toast('No YouTube video links found');
+  };
+  btn.addEventListener('click',add);
+  ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();add()}});
+}
+function openYT(id){
+  const n=state.notes.find(x=>x.id===id);if(!n)return;
+  const st=n.status==='done'?'Synthesized ✓':(n.transcript&&n.transcript.trim()?'Ready to synthesize':'Awaiting transcript');
+  openModal(`<div class="modal" style="max-width:620px">
+    <div class="modal-head"><span class="mtype" style="background:rgba(244,63,94,.12);color:var(--yt)">${I.play}</span>
+      <input id="yt-title" value="${esc(n.title)}"/>
+      <button class="modal-x" data-action="close-modal">${I.close}</button></div>
+    <div class="modal-body">
+      <a class="modal-link" style="background:rgba(244,63,94,.1);color:var(--yt)" href="${esc(n.url)}" target="_blank" rel="noopener">${I.play}${esc(n.url)}</a>
+      ${n.status==='done'?`<div style="font-size:14.5px;line-height:1.65;white-space:pre-wrap">${esc(n.content)}</div>`:`
+      <div class="field"><label>Transcript — open the video, “…” → Show transcript → copy, paste here</label>
+        <textarea id="yt-tr" style="min-height:150px;width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:11px;font-size:13.5px;line-height:1.6;color:var(--text);outline:none" placeholder="Paste the transcript so Nexus can synthesize the real content…">${esc(n.transcript||'')}</textarea></div>
+      <p style="font-size:12.5px;color:var(--muted)">Then Export the queue (Settings or the Learn page) → your agent writes the synthesis → Import it back.</p>`}
+    </div>
+    <div class="modal-foot"><span class="meta">Status: ${st}</span>
+      <button class="btn-ghost danger" data-action="del-note" data-id="${id}">Remove</button>
+      ${n.status==='done'?'':`<button class="btn-solid" data-action="save-yt" data-id="${id}">Save</button>`}
+    </div></div>`);
+}
+function importSyntheses(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='application/json';
+  inp.onchange=()=>{const f=inp.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{try{
+      const arr=JSON.parse(r.result);if(!Array.isArray(arr))throw 0;
+      const lp=getLearnProject();let n=0;
+      arr.forEach(s=>{if(!s||!s.synthesis)return;
+        let note=s.videoId&&state.notes.find(x=>x.videoId===s.videoId&&x.type==='youtube');
+        if(note){note.content=s.synthesis;if(s.title)note.title=s.title;note.status='done';
+          if(s.tags)note.tags=[...new Set([...note.tags,...s.tags])];note.updatedAt=Date.now();}
+        else{state.notes.unshift({id:uid(),type:'youtube',videoId:s.videoId||'',url:s.url||'',
+          title:s.title||'Synthesis',content:s.synthesis,transcript:'',status:'done',
+          tags:[...new Set(['youtube',...(s.tags||[])])],projectId:lp.id,createdAt:Date.now(),updatedAt:Date.now()});}
+        n++;});
+      save();render();toast(n?n+' synthesis'+(n>1?'es':'')+' ingested':'Nothing to import');
+    }catch(e){toast('Invalid syntheses file')}};
+    r.readAsText(f)};inp.click();
+}
+function exportQueue(){
+  const q=state.notes.filter(n=>n.type==='youtube').map(n=>({videoId:n.videoId,url:n.url,title:n.title,transcript:n.transcript||'',status:n.status}));
+  if(!q.length)return toast('Queue is empty');
+  const blob=new Blob([JSON.stringify(q,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='nexus-youtube-queue-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Queue exported');
+}
+
 /* --------- pieces --------- */
 function captureHTML(projId){
   return `<div class="capture" id="capture">
@@ -713,7 +841,7 @@ function openNote(id){
       <button class="modal-x" data-action="close-modal">${I.close}</button>
     </div>
     <div class="modal-body">
-      ${n.type==='link'?`<a class="modal-link" href="${esc(n.url)}" target="_blank" rel="noopener">${I.link}${esc(n.url)}</a>`:''}
+      ${n.url?`<a class="modal-link" href="${esc(n.url)}" target="_blank" rel="noopener">${I.link}${esc(n.url)}</a>`:''}
       <textarea id="m-content" placeholder="Write your thoughts…">${esc(n.content)}</textarea>
       <div class="meta-grid">
         ${n.tags.map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}
@@ -819,6 +947,7 @@ document.addEventListener('click',e=>{
   const A=t.closest('[data-action]');
   const view=t.closest('[data-view]');
   const note=t.closest('[data-note]');
+  const ytc=t.closest('[data-yt]');
   const proj=t.closest('[data-proj]');
   const tag=t.closest('[data-tag]');
   const filter=t.closest('[data-filter]');
@@ -835,12 +964,16 @@ document.addEventListener('click',e=>{
     else if(a==='close-modal')closeModal();
     else if(a==='del-note'){deleteNote(A.dataset.id);closeModal();render();toast('Note deleted')}
     else if(a==='save-note'){updateNote(A.dataset.id,{title:$('#m-title').value.trim()||'Untitled',content:$('#m-content').value});closeModal();render();toast('Saved')}
+    else if(a==='save-yt'){const nn=state.notes.find(x=>x.id===A.dataset.id);const tr=$('#yt-tr').value;const ti=$('#yt-title').value.trim()||nn.title;updateNote(A.dataset.id,{title:ti,transcript:tr,status:nn.status==='done'?'done':(tr.trim()?'ready':'pending')});closeModal();render();toast('Saved')}
+    else if(a==='yt-export')exportQueue();
+    else if(a==='yt-import')importSyntheses();
     else if(a==='export')exportData();
     else if(a==='import')importData();
     else if(a==='clear')clearData();
     else if(a==='open-sidebar')openSidebar();
     else if(a==='close-sidebar')closeSidebar();
     return;}
+  if(ytc){openYT(ytc.dataset.yt);return}
   if(note){openNote(note.dataset.note);return}
   if(proj){ui.view='project';ui.proj=proj.dataset.proj;ui.tag=null;render();return}
   if(tag){ui.tag=tag.dataset.tag;ui.view='';render();closeSidebar();return}
