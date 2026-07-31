@@ -23,7 +23,11 @@
 
 ## Projects
 - [Nexus (app second-brain)](../NEXUS_VIBE_CODING.md) — spec produit
+- **[Nexus — APP LIVRÉE](../nexus-app/index.html)** — app fonctionnelle ([lien live](https://claude.ai/code/artifact/1fe50a01-346e-4d5f-a2c3-17cefd0fb078))
 - _(autres — copier `brain/projects/_TEMPLATE.md`)_
+
+## ☀️ À lire au réveil
+- **[MICHEL_WAKE_UP.md](../MICHEL_WAKE_UP.md)** — briefing : l'app est prête + tes choix
 
 ## Playbook business
 - [SKILL.md](../SKILL.md) — playbook AI Agency complet
