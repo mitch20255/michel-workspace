@@ -45,3 +45,18 @@ export interface GenerateOptions {
   sceneCount: number;
   apiKey: string;
 }
+
+export type VideoProvider = "replicate" | "openai" | "google";
+export type AspectRatio = "16:9" | "9:16" | "1:1";
+
+export interface VideoConfig {
+  provider: VideoProvider;
+  model: string;
+  aspect: AspectRatio;
+  seconds: number;
+  /** Clé du fournisseur (facultatif — sinon le serveur lit ses variables d'env). */
+  apiKey?: string;
+}
+
+/** sceneId -> URL du clip vidéo généré (servie par le backend, même origine). */
+export type ClipMap = Record<number, string>;

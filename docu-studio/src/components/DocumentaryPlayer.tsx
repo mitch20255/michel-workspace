@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Production } from "../types";
+import type { ClipMap, Production } from "../types";
 import { AmbientMusic } from "../lib/audio";
 import {
   cancelSpeech,
@@ -11,10 +11,11 @@ import { gradientFor, sceneImageUrl } from "../lib/visuals";
 
 interface Props {
   production: Production;
+  clips?: ClipMap;
   onExit: () => void;
 }
 
-export function DocumentaryPlayer({ production, onExit }: Props) {
+export function DocumentaryPlayer({ production, clips = {}, onExit }: Props) {
   const scenes = production.documentary.scenes;
   const style = production.documentary.style;
 
@@ -185,13 +186,27 @@ export function DocumentaryPlayer({ production, onExit }: Props) {
   }, [index, phase, isPlaying]);
 
   const bg = scene ? gradientFor(scene) : "#000";
+  const clipUrl = scene ? clips[scene.id] : undefined;
 
   return (
     <div className="player" ref={stageRef}>
       {/* Fond de secours (dégradé) toujours présent sous l'image. */}
       <div className="player-bg" style={{ background: bg }} />
 
-      {phase === "scene" && scene && imgUrl && (
+      {phase === "scene" && scene && clipUrl && (
+        <video
+          key={`vid-${index}-${nonce}`}
+          className="player-img show"
+          src={clipUrl}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+        />
+      )}
+
+      {phase === "scene" && scene && !clipUrl && imgUrl && (
         <img
           key={`${index}-${nonce}`}
           className={`player-img kenburns ${imgLoaded ? "show" : ""}`}

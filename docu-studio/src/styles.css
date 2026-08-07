@@ -704,3 +704,133 @@ button {
   color: #cfd4e0;
   margin-left: 6px;
 }
+
+/* ---------- Video Studio ---------- */
+.vstudio {
+  max-width: 820px;
+  margin: 0 auto;
+}
+.vstudio-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.vstudio-head h1 {
+  margin: 0;
+  font-size: clamp(24px, 4vw, 34px);
+}
+.vstudio-head .sub {
+  color: var(--muted);
+  margin: 6px 0 0;
+  max-width: 520px;
+}
+.vcfg {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.vscenes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0;
+}
+.vscene {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+.vscene.ok {
+  border-color: rgba(110, 168, 255, 0.5);
+}
+.vscene.err {
+  border-color: rgba(224, 84, 59, 0.5);
+}
+.vscene-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.vscene-idx {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #0e1119;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.vscene-heading {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vscene-state {
+  min-width: 180px;
+  display: flex;
+  justify-content: flex-end;
+}
+.vbar {
+  width: 160px;
+  height: 6px;
+  background: #0e1119;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.vbar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ffce8a);
+  transition: width 0.4s ease;
+}
+.tag {
+  font-size: 12px;
+  color: var(--muted);
+  background: #0e1119;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 9px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tag.ok {
+  color: #9fd0ff;
+  border-color: rgba(110, 168, 255, 0.4);
+}
+.tag.err {
+  color: #ffb59e;
+  border-color: rgba(224, 84, 59, 0.4);
+}
+.primary.alt {
+  background: linear-gradient(90deg, #6ea8ff, #9fd0ff);
+  color: #06122a;
+}
+.hint.warn {
+  color: #ffb59e;
+}
+.hint code,
+.vstudio code {
+  background: #0e1119;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 12px;
+}

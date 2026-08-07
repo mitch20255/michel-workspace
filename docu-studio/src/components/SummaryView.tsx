@@ -53,10 +53,11 @@ function renderMarkdown(md: string): string {
 interface Props {
   production: Production;
   onPlay: () => void;
+  onVideo: () => void;
   onReset: () => void;
 }
 
-export function SummaryView({ production, onPlay, onReset }: Props) {
+export function SummaryView({ production, onPlay, onVideo, onReset }: Props) {
   const { title, subtitle, expertSummary, keyPoints, notes, documentary } =
     production;
 
@@ -68,8 +69,11 @@ export function SummaryView({ production, onPlay, onReset }: Props) {
           {subtitle && <p className="sub">{subtitle}</p>}
         </div>
         <div className="summary-cta">
-          <button className="primary" onClick={onPlay}>
-            ▶ Lancer le documentaire
+          <button className="primary" onClick={onVideo}>
+            🎥 Générer la vidéo IA
+          </button>
+          <button className="ghost" onClick={onPlay}>
+            ▶ Aperçu cinématique
           </button>
           <button className="ghost" onClick={onReset}>
             Nouveau

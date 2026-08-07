@@ -5,12 +5,15 @@
   "type": "module",
   "description": "Génère un sommaire niveau expert puis un mini-documentaire cinématique (réaliste ou animé) à partir d'un sujet ou d'un texte.",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -k -n web,api -c cyan,magenta \"npm:dev:web\" \"npm:server\"",
+    "dev:web": "vite",
+    "server": "node server/index.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
+    "express": "^4.22.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -18,6 +21,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.2.4",
     "typescript": "^5.6.3",
     "vite": "^5.4.11"
   }

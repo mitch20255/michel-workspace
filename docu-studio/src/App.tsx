@@ -2,16 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { InputPanel } from "./components/InputPanel";
 import { SummaryView } from "./components/SummaryView";
 import { DocumentaryPlayer } from "./components/DocumentaryPlayer";
+import { VideoStudio } from "./components/VideoStudio";
 import { Loader } from "./components/Loader";
 import { generateProduction } from "./lib/claude";
 import { DEMO_PRODUCTION } from "./lib/demo";
-import type { GenerateOptions, Production } from "./types";
+import type { ClipMap, GenerateOptions, Production } from "./types";
 
-type View = "input" | "summary" | "player";
+type View = "input" | "summary" | "video" | "player";
 
 export function App() {
   const [view, setView] = useState<View>("input");
   const [production, setProduction] = useState<Production | null>(null);
+  const [clips, setClips] = useState<ClipMap>({});
   const [loading, setLoading] = useState(false);
   const [loaderStep, setLoaderStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,7 @@ export function App() {
     try {
       const result = await generateProduction(opts);
       setProduction(result);
+      setClips({});
       setView("summary");
     } catch (e) {
       setError(
@@ -54,6 +57,7 @@ export function App() {
   function handleDemo() {
     setError(null);
     setProduction(DEMO_PRODUCTION);
+    setClips({});
     setView("summary");
   }
 
@@ -61,7 +65,21 @@ export function App() {
     return (
       <DocumentaryPlayer
         production={production}
-        onExit={() => setView("summary")}
+        clips={clips}
+        onExit={() => setView(Object.keys(clips).length ? "video" : "summary")}
+      />
+    );
+  }
+
+  if (view === "video" && production) {
+    return (
+      <VideoStudio
+        production={production}
+        onDone={(c) => {
+          setClips(c);
+          setView("player");
+        }}
+        onBack={() => setView("summary")}
       />
     );
   }
@@ -110,8 +128,10 @@ export function App() {
           <SummaryView
             production={production}
             onPlay={() => setView("player")}
+            onVideo={() => setView("video")}
             onReset={() => {
               setProduction(null);
+              setClips({});
               setView("input");
             }}
           />
