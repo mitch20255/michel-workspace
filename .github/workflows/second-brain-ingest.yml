@@ -1,0 +1,59 @@
+name: Second Brain — Ingest instantané (webhook)
+
+# Capture UN contenu précis, à la demande, déclenché par un POST externe
+# (IFTTT / Zapier / Make / raccourci iOS / bookmarklet…) via l'API GitHub
+# "repository_dispatch". C'est ce qui rend Instagram/Facebook/n'importe quoi
+# automatique : "je like/save -> une note apparaît".
+#
+# Déclencheur (exemple, à mettre dans IFTTT/Zapier) :
+#   POST https://api.github.com/repos/mitch20255/michel-workspace/dispatches
+#   Headers: Authorization: Bearer <PAT>, Accept: application/vnd.github+json
+#   Body: {"event_type":"capture","client_payload":{"url":"...","type":"post","source":"Instagram"}}
+#
+# ⚠️ repository_dispatch ne tourne QUE depuis la branche par défaut (main).
+
+on:
+  repository_dispatch:
+    types: [capture]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: second-brain-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Ingest URL
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          PROJECTS: ${{ vars.PROJECTS }}
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          URL: ${{ github.event.client_payload.url }}
+          TYPE: ${{ github.event.client_payload.type }}
+          SOURCE: ${{ github.event.client_payload.source }}
+        run: |
+          if [ -z "$URL" ]; then echo "Pas d'URL dans le payload"; exit 0; fi
+          node automation/capture.mjs --url "$URL" --type "${TYPE:-}" --source "${SOURCE:-}"
+
+      - name: Commit & push
+        run: |
+          git config user.name  "second-brain-bot"
+          git config user.email "actions@github.com"
+          git add second-brain-vault automation/.state.json
+          if git diff --cached --quiet; then
+            echo "Rien à ajouter."
+          else
+            git commit -m "🧠 Capture instantanée: ${{ github.event.client_payload.url }}"
+            git push
+          fi

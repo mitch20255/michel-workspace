@@ -1,0 +1,54 @@
+name: Second Brain — Capture nocturne
+
+# Tourne tout seul chaque nuit et ramasse les NOUVEAUX contenus consommés
+# (YouTube likés + articles/vidéos sauvegardés dans Readwise Reader),
+# les fait résumer par Claude, et écrit les notes dans le vault Obsidian.
+#
+# ⚠️ Les workflows planifiés ne tournent QUE depuis la branche par défaut (main).
+#    Merge cette branche dans main pour l'activer.
+
+on:
+  schedule:
+    - cron: "0 8 * * *"      # 08:00 UTC ≈ 04:00 heure du Québec (EDT)
+  workflow_dispatch: {}       # bouton "Run workflow" pour tester à la main
+
+permissions:
+  contents: write             # pour committer les notes générées
+
+concurrency:
+  group: second-brain-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Capture
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          PROJECTS: ${{ vars.PROJECTS }}
+          JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          READWISE_TOKEN: ${{ secrets.READWISE_TOKEN }}
+        run: node automation/capture.mjs
+
+      - name: Commit & push
+        run: |
+          git config user.name  "second-brain-bot"
+          git config user.email "actions@github.com"
+          git add second-brain-vault automation/.state.json
+          if git diff --cached --quiet; then
+            echo "Rien de neuf cette nuit."
+          else
+            git commit -m "🧠 Capture auto: nouvelles notes ($(date -u +%Y-%m-%d))"
+            git push
+          fi

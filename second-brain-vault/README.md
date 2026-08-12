@@ -48,7 +48,8 @@
 2. Installe 3 plugins communautaires : **Dataview**, **Templater**, **Obsidian Git** (pour la sync).
 3. Lis `_system/Architecture.md` (5 min) — la logique complète.
 4. Ouvre `02-Projects/Parenting/Parenting - MOC.md` — l'exemple déjà monté.
-5. Quand tu veux automatiser la capture : `_system/Capture-Automation.md` (réutilise Cortex).
+5. **Pour la capture 100 % automatique → va dans [`../automation/`](../automation/README.md)**
+   (moteur GitHub Actions déjà livré : tu likes/saves, ça se range tout seul la nuit).
 
 ---
 

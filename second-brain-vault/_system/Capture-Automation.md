@@ -1,5 +1,10 @@
 # 🤖 Automatisation de la capture (réutilise Cortex)
 
+> ✅ **La solution LIVRÉE et prête à brancher est dans `../../automation/`** (moteur
+> GitHub Actions, aucun serveur). Lis **`automation/README.md`** en premier — c'est le
+> système réel, avec sa checklist de 15 min. Le contenu ci-dessous décrit l'**alternative
+> n8n** (utile si tu préfères tout garder dans n8n comme Cortex).
+
 Objectif : partager un contenu depuis ton téléphone → 30 s plus tard une note propre
 existe dans le vault. On **clone la logique de Cortex** en changeant la destination.
 
