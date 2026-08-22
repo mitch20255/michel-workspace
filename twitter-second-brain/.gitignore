@@ -1,0 +1,11 @@
+# Build artifacts / user data — never commit someone's tweet archive or vault
+vault/
+*_vault/
+.build_tmp/
+ta/
+tv/
+test_archive/
+test_vault/
+*.zip
+__pycache__/
+*.pyc

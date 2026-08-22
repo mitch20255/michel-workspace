@@ -1,0 +1,4 @@
+# Core pipeline runs with the Python standard library only.
+# `requests` is optional — it is used only by --download-resources to fetch
+# externally-linked PDFs / guides / files.
+requests>=2.31.0
