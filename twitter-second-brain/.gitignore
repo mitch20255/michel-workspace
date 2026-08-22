@@ -1,9 +1,21 @@
-# Build artifacts / user data — never commit someone's tweet archive or vault
+# Secrets — never commit credentials or API keys
+.env
+
+# twscrape session state (contains your logged-in account tokens)
+accounts.db
+*.db
+
+# Build artifacts / user data — never commit scraped data or the vault
 vault/
 *_vault/
+vault_test/
 .build_tmp/
+data/
+*.json
+!collectors/*.json
 ta/
 tv/
+jv/
 test_archive/
 test_vault/
 *.zip

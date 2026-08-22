@@ -1,68 +1,110 @@
-# 🧠 Twitter → Second Brain
+# 🧠 Twitter → Second Brain (+ AI)
 
-Turn a full X (Twitter) profile into a clean **Markdown / Obsidian second brain** —
-every tweet, thread, PDF, guide and linked resource, organized and searchable.
+Turn an X (Twitter) profile into a clean **Markdown / Obsidian second brain** —
+every tweet, thread, PDF, guide and linked resource — then **ask it questions in
+natural language**, answered by Claude with citations back to the source notes.
 
-This uses the **official X data archive** (the export X gives you of your own /
-your account's data). It's the legal, complete and robust path: no scraping, no
-rate limits, no risk of a banned session, and you get *everything* — including
-tweets that scrapers miss.
+Two ways to get the data in, one AI to query it:
 
----
-
-## Why the archive (not scraping)?
-
-You picked the **semi-manual / export** method. Here's what that buys you:
-
-| | Official archive (this tool) | Unofficial scraping |
-|---|---|---|
-| Legality | ✅ Within X's ToS | ❌ Against ToS |
-| Completeness | ✅ 100% of the account's tweets | ⚠️ Partial, capped |
-| Reliability | ✅ Never breaks | ❌ Breaks when X changes |
-| Media/links | ✅ Included in the export | ⚠️ Must re-fetch each one |
-| Setup | Download one `.zip` | Accounts, tokens, proxies |
-
-> **Note on "a channel you don't own":** the official archive covers the account
-> **you can log into**. To archive *your own* profile fully, use this. To capture
-> someone else's public profile, X's archive won't help — that requires the paid
-> official API or an unofficial scraper (a different, more fragile path). Tell me
-> if that's your case and I'll wire up an API-based collector instead.
-
----
-
-## Step 1 — Download the X archive
-
-1. On X: **Settings → Your account → Download an archive of your data**
-2. Confirm your password, request the archive.
-3. X emails you a download link (can take a few hours to ~24h).
-4. Download the `.zip` (it contains a `data/` folder with `tweets.js`,
-   `account.js`, `tweets_media/`, etc.).
-
-You do **not** need to unzip it — the tool reads the `.zip` directly.
-
-## Step 2 — Build the vault
-
-```bash
-# Core build (offline, stdlib only) — copies local media, expands links
-python build_brain.py --archive ~/Downloads/twitter-archive.zip --out ./vault
-
-# Also download externally-linked PDFs / guides / files
-pip install requests
-python build_brain.py --archive ~/Downloads/twitter-archive.zip --out ./vault --download-resources
+```
+   ┌─ Official X archive (your own account) ─┐
+   │                                          │→  build_brain.py  →  Obsidian vault  →  ask_brain.py  →  🧠 Claude Q&A
+   └─ Scrape a profile (your own account) ───┘        │                  │                   │
+                                              neutral JSON schema    notes/ + resources/   BM25 retrieval (local)
 ```
 
-Options:
+---
+
+## Getting the data in — pick your path
+
+### Path A — Official archive (simplest, safest, your own profile)
+
+The archive X gives you of **your own account's** data. Fully within X's ToS,
+100% complete, never breaks.
+
+1. On X: **Settings → Your account → Download an archive of your data**
+2. Wait for the email link (a few hours to ~24h), download the `.zip`.
+3. Build:
+   ```bash
+   python build_brain.py --archive ~/Downloads/twitter-archive.zip --out ./vault
+   ```
+
+### Path B — Scrape a profile with your own account
+
+For a profile the archive can't give you. This logs into X with **your own
+account** (via [`twscrape`](https://github.com/vladkens/twscrape)) and pulls a
+profile's tweets.
+
+> ### ⚠️ Read this first
+> Automated scraping with account credentials is **against X's Terms of
+> Service** and can get the account **rate-limited or suspended**. Mitigations:
+> - Use a **secondary, dedicated account** — never your main one.
+> - Keep volumes modest; add delays; don't hammer it.
+> - Credentials live in `.env` (gitignored), never in code or output.
+>
+> You accept this risk. The tool doesn't hide it.
+
+```bash
+pip install twscrape python-dotenv
+cp .env.example .env        # fill in your SECONDARY account details
+
+python collectors/collect_twscrape.py --target somehandle --limit 2000 \
+    --out ./data/somehandle.json
+
+python build_brain.py --json ./data/somehandle.json --out ./vault
+```
+
+The collector writes a **neutral JSON schema** (`collectors/SCHEMA.md`), so the
+source is fully decoupled: an official-API collector, an Apify export, or a
+manual dump that conforms to that schema feeds the exact same builder.
+
+---
+
+## Build options (`build_brain.py`)
 
 | Flag | Effect |
 |---|---|
-| `--archive` | Path to the `.zip` **or** the unzipped archive directory |
-| `--out` | Output vault directory |
-| `--download-resources` | Fetch external PDFs/guides/files you linked (needs `requests`) |
+| `--archive PATH` | Official X archive `.zip` or unzipped directory |
+| `--json PATH` | Neutral-schema JSON from a collector (mutually exclusive with `--archive`) |
+| `--out DIR` | Output vault directory |
+| `--download-resources` | Fetch external PDFs/guides/files that were linked (needs `requests`) |
 | `--include-retweets` | Also make notes for pure retweets (off by default) |
 
-## Step 3 — Open in Obsidian
+---
 
-Open the `--out` folder as an Obsidian vault and start at **`Home.md`**.
+## Ask your brain (`ask_brain.py`)
+
+Natural-language Q&A over the vault. **Retrieval is 100% local** — a pure-Python
+BM25 index over your notes, no embeddings, no extra services, works offline. The
+**answer** is written by **Claude** (`claude-opus-5`) from the retrieved notes,
+with `[note-id]` citations so every claim is verifiable.
+
+```bash
+pip install anthropic python-dotenv
+# put ANTHROPIC_API_KEY in .env, or run `ant auth login`
+
+# One-off question
+python ask_brain.py --vault ./vault -q "What's their advice on pricing?"
+
+# Interactive chat
+python ask_brain.py --vault ./vault
+
+# Retrieval only, no AI (no API key needed) — great for a quick sanity check
+python ask_brain.py --vault ./vault -q "cold outbound" --no-ai
+```
+
+| Flag | Effect |
+|---|---|
+| `--vault DIR` | The vault built by `build_brain.py` |
+| `-q, --question` | Ask once and exit (omit for interactive chat) |
+| `--k N` | How many notes to retrieve as context (default 6) |
+| `--no-ai` | Show retrieved notes only; skip the Claude answer |
+
+**Why BM25 and not embeddings?** You chose the lightest path: zero heavy
+dependencies, nothing to index-build or host, fully offline retrieval. It's
+excellent for keyword-and-topic questions over a personal corpus. If you later
+want fuzzy/semantic matching ("things *like* X" even without shared words), the
+retriever is a clean seam to swap for embeddings — ask and I'll add it.
 
 ---
 
@@ -75,45 +117,40 @@ vault/
 ├── _index_by_topic.md      # Every note, grouped by #hashtag
 ├── _index_resources.md     # Every PDF / guide / external link
 ├── notes/                  # One note per tweet OR per thread
-│   └── 2025-08-04-complete-guide-to-ai-agencies-1a2b3c.md
-├── attachments/            # Images & videos copied from the archive
+├── attachments/            # Images & videos (from the official archive)
 └── resources/              # Downloaded PDFs / guides (with --download-resources)
 ```
 
-Each note has:
-
-- **YAML frontmatter** (date, tweet id, author, likes, retweets, tags, canonical X URL)
-  — so Obsidian's Properties, Dataview and search all work.
-- **Rebuilt threads** — self-reply chains are stitched into one note, numbered `1/n`.
-- **Expanded links** — `t.co` shorteners replaced with the real URLs.
-- **Embedded media** — `![[image.jpg]]` for anything in the archive.
-- **Resource links** — every guide/PDF/article, also collected in `_index_resources.md`.
-- **`#hashtags`** — carried through as Obsidian tags for graph + filtering.
+Each note carries YAML frontmatter (date, id, likes, tags, canonical X URL),
+rebuilt threads (`1/n`), expanded `t.co` links, embedded media, and `#hashtags`
+as Obsidian tags. `ask_brain.py` reads that frontmatter for its citations.
 
 ---
 
-## Design notes
+## Files
 
-- **Offline-first.** The core build touches the network only if you pass
-  `--download-resources`, and even then only to fetch the public URLs *you*
-  linked in your own tweets.
-- **Idempotent-ish.** Re-running overwrites notes; delete the `--out` folder for a
-  clean rebuild.
-- **Robust to archive variants.** Handles `tweets.js` / `tweet.js`, split parts
-  (`tweets-part1.js`), and both `full_text` and legacy `text`.
-- **Pure retweets are skipped** by default — a second brain is *your* ideas, not
-  reposts. Use `--include-retweets` to keep them.
+| File | Role |
+|---|---|
+| `build_brain.py` | Archive/JSON → Obsidian vault |
+| `ask_brain.py` | BM25 retrieval + Claude Q&A over the vault |
+| `collectors/collect_twscrape.py` | Scrape a profile with your own account → neutral JSON |
+| `collectors/SCHEMA.md` | The neutral ingestion schema (source-agnostic) |
+| `.env.example` | Template for X credentials + `ANTHROPIC_API_KEY` |
+| `requirements.txt` | All-optional deps, documented per feature |
 
 ---
+
+## Security & privacy notes
+
+- **`.env`, `accounts.db`, `data/`, and `vault/` are gitignored** — credentials,
+  session tokens, scraped data and the brain never get committed.
+- The core build and BM25 retrieval are **offline**. Network is touched only by:
+  `--download-resources` (fetches URLs you archived), the collector (talks to X
+  via your account), and `ask_brain.py` (sends retrieved notes to the Anthropic
+  API to compose an answer).
 
 ## Extending it
 
-Ideas that slot in cleanly (ask and I'll add any):
-
-- **Semantic search / RAG** — add embeddings over `notes/` so you can ask
-  questions in natural language.
-- **Likes & bookmarks** — the archive also has `like.js`; treat liked tweets as an
-  inbox of external ideas.
-- **Auto-summaries** — generate a TL;DR per thread with an LLM.
-- **Someone else's public profile** — swap the archive reader for an official
-  X API collector.
+Ask and I'll add any: semantic/embeddings retrieval, per-thread AI summaries,
+an official-X-API collector, likes/bookmarks as a separate "inbox", or a small
+web UI over `ask_brain.py`.

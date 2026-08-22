@@ -126,6 +126,55 @@ def parse_profile(data_dir: Path) -> dict:
     return {}
 
 
+def parse_neutral_json(path: Path) -> tuple[list[Tweet], dict, dict]:
+    """Ingest the neutral collector schema (see collectors/SCHEMA.md).
+
+    Returns (tweets, account, profile). This is the source used when scraping a
+    profile with your own account instead of using the official X archive.
+    """
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    acc = doc.get("account", {}) or {}
+    account = {
+        "username": acc.get("username", "unknown"),
+        "accountId": str(acc.get("id") or acc.get("user_id") or ""),
+        "accountDisplayName": acc.get("display_name", ""),
+    }
+    profile = {"description": {"bio": acc.get("bio", "")}} if acc.get("bio") else {}
+
+    tweets: list[Tweet] = []
+    for t in doc.get("tweets", []):
+        created_raw = t.get("created_at")
+        try:
+            created = dt.datetime.fromisoformat(created_raw.replace("Z", "+00:00"))
+        except Exception:
+            # fall back to the Twitter archive timestamp format if present
+            try:
+                created = dt.datetime.strptime(created_raw, TWITTER_TS_FMT)
+            except Exception:
+                created = dt.datetime.now(dt.timezone.utc)
+        full_text = t.get("full_text") or t.get("text") or ""
+        tweets.append(Tweet(
+            id=str(t.get("id")),
+            created_at=created,
+            full_text=full_text,
+            in_reply_to_status_id=(str(t["in_reply_to_status_id"])
+                                   if t.get("in_reply_to_status_id") else None),
+            in_reply_to_user_id=(str(t["in_reply_to_user_id"])
+                                 if t.get("in_reply_to_user_id") else None),
+            reply_count=int(t.get("reply_count", 0) or 0),
+            retweet_count=int(t.get("retweet_count", 0) or 0),
+            favorite_count=int(t.get("favorite_count", 0) or 0),
+            hashtags=[h.lstrip("#") for h in t.get("hashtags", [])],
+            urls=[{"url": u.get("url"), "expanded": u.get("expanded") or u.get("url"),
+                   "display": u.get("display") or u.get("expanded") or u.get("url")}
+                  for u in t.get("urls", [])],
+            mentions=t.get("mentions", []),
+            media=t.get("media", []),
+            is_retweet=bool(t.get("is_retweet")) or full_text.startswith("RT @"),
+        ))
+    return tweets, account, profile
+
+
 def parse_tweets(data_dir: Path) -> list[Tweet]:
     # Newer archives use tweets.js; older ones tweet.js. Some split into parts.
     candidates = sorted(
@@ -515,8 +564,11 @@ def _write_indexes(out_dir, username, profile, note_records, tag_index, resource
 # ----------------------------------------------------------------------------
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--archive", required=True, type=Path,
-                    help="Path to the X archive .zip OR the unzipped archive directory")
+    src = ap.add_mutually_exclusive_group(required=True)
+    src.add_argument("--archive", type=Path,
+                     help="Path to the official X archive .zip OR the unzipped archive directory")
+    src.add_argument("--json", type=Path, dest="json_source",
+                     help="Path to a neutral-schema JSON file (from a collector, e.g. collect_twscrape.py)")
     ap.add_argument("--out", required=True, type=Path, help="Output vault directory")
     ap.add_argument("--download-resources", action="store_true",
                     help="Download externally-linked PDFs/guides/files (needs `requests`)")
@@ -526,20 +578,25 @@ def main():
 
     work_dir = args.out.parent / ".build_tmp"
     work_dir.mkdir(parents=True, exist_ok=True)
+    data_dir = work_dir  # no local media dir for JSON sources; overridden for archives
 
-    print("→ Loading archive ...")
-    root = load_archive(args.archive, work_dir)
-    data_dir = root / "data" if (root / "data").exists() else root
-    if not any(data_dir.glob("tweet*.js")):
-        # maybe the archive root itself is the data dir
-        data_dir = root
-    print(f"  data dir: {data_dir}")
-
-    print("→ Parsing account & tweets ...")
-    account = parse_account(data_dir)
-    profile = parse_profile(data_dir)
-    tweets = parse_tweets(data_dir)
-    print(f"  parsed {len(tweets)} tweets for @{account.get('username', '?')}")
+    if args.json_source:
+        print("→ Loading neutral JSON source ...")
+        tweets, account, profile = parse_neutral_json(args.json_source)
+        print(f"  parsed {len(tweets)} tweets for @{account.get('username', '?')}")
+    else:
+        print("→ Loading archive ...")
+        root = load_archive(args.archive, work_dir)
+        data_dir = root / "data" if (root / "data").exists() else root
+        if not any(data_dir.glob("tweet*.js")):
+            # maybe the archive root itself is the data dir
+            data_dir = root
+        print(f"  data dir: {data_dir}")
+        print("→ Parsing account & tweets ...")
+        account = parse_account(data_dir)
+        profile = parse_profile(data_dir)
+        tweets = parse_tweets(data_dir)
+        print(f"  parsed {len(tweets)} tweets for @{account.get('username', '?')}")
 
     if not args.include_retweets:
         pre = len(tweets)

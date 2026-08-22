@@ -1,4 +1,15 @@
-# Core pipeline runs with the Python standard library only.
-# `requests` is optional — it is used only by --download-resources to fetch
-# externally-linked PDFs / guides / files.
+# --- Core -------------------------------------------------------------------
+# build_brain.py and ask_brain.py's retrieval (BM25) run on the Python
+# standard library alone. Everything below is OPTIONAL, per feature.
+
+# build_brain.py --download-resources  (fetch linked PDFs/guides)
 requests>=2.31.0
+
+# ask_brain.py  (AI question-answering over the brain, via Claude)
+anthropic>=0.40.0
+
+# collectors/collect_twscrape.py  (scrape a profile using YOUR OWN X account)
+twscrape>=0.13.0
+
+# Load credentials / API keys from a .env file (collector + ask_brain.py)
+python-dotenv>=1.0.0
