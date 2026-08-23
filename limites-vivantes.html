@@ -1,0 +1,270 @@
+<title>Des limites vivantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#FAF5F1;--surface:#FFFFFF;--surface-2:#F5EEE7;--ink:#241C18;--ink-soft:#5A4E47;
+    --muted:#8C7E75;--hair:#E7DBD2;--hair-strong:#D8C8bd;
+    --rouge:#C22A20;--rouge-bg:rgba(194,42,32,.10);
+    --jaune:#C98A1E;--jaune-bg:rgba(201,138,30,.13);
+    --vert:#2E8B6E;--vert-bg:rgba(46,139,110,.12);
+    --accent:#D8562B;
+    --shadow:0 1px 2px rgba(60,40,30,.05),0 12px 32px -12px rgba(90,50,30,.16);
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#161210;--surface:#221A16;--surface-2:#2C221C;--ink:#F4EBE4;--ink-soft:#C9B9AE;
+    --muted:#9A897E;--hair:#382C25;--hair-strong:#4A3A31;
+    --rouge:#F0554A;--rouge-bg:rgba(240,85,74,.14);
+    --jaune:#E7B24E;--jaune-bg:rgba(231,178,78,.15);
+    --vert:#54C29E;--vert-bg:rgba(84,194,158,.15);
+    --accent:#EC6A3D;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 18px 40px -14px rgba(0,0,0,.6);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#161210;--surface:#221A16;--surface-2:#2C221C;--ink:#F4EBE4;--ink-soft:#C9B9AE;
+    --muted:#9A897E;--hair:#382C25;--hair-strong:#4A3A31;
+    --rouge:#F0554A;--rouge-bg:rgba(240,85,74,.14);
+    --jaune:#E7B24E;--jaune-bg:rgba(231,178,78,.15);
+    --vert:#54C29E;--vert-bg:rgba(84,194,158,.15);
+    --accent:#EC6A3D;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 18px 40px -14px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:clamp(28px,5vw,60px) clamp(20px,4vw,40px) 80px;}
+  .eyebrow{font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 14px;}
+  h1{font-family:"Fraunces",serif;font-weight:900;font-optical-sizing:auto;
+    font-size:clamp(2.2rem,6.5vw,3.9rem);line-height:1;letter-spacing:-.02em;text-wrap:balance;margin:0 0 18px;}
+  h1 em{font-style:italic;color:var(--accent);font-weight:500;}
+  .lede{font-size:clamp(1.04rem,2.2vw,1.24rem);color:var(--ink-soft);max-width:60ch;margin:0;text-wrap:pretty;}
+  h2.sec{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(1.5rem,3.6vw,2.1rem);
+    letter-spacing:-.015em;margin:clamp(48px,7vw,76px) 0 4px;text-wrap:balance;}
+  h2.sec .num{color:var(--accent);font-weight:900;margin-right:.4em;}
+  h2.sec + .sub{color:var(--muted);margin:0 0 26px;max-width:62ch;font-size:1rem;}
+
+  /* mirror box */
+  .mirror{margin-top:clamp(30px,5vw,44px);background:var(--surface);border:1px solid var(--hair);
+    border-left:5px solid var(--accent);border-radius:14px;padding:22px 24px;box-shadow:var(--shadow);}
+  .mirror .k{font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  .mirror p{margin:0 0 10px;font-size:1rem;color:var(--ink-soft);}
+  .mirror p:last-child{margin-bottom:0;}
+  .mirror b{color:var(--ink);}
+
+  /* rocks */
+  .rocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:clamp(14px,2.4vw,20px);}
+  .rock{background:var(--surface);border:1px solid var(--hair);border-radius:18px;padding:24px 22px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .rock::before{content:attr(data-n);position:absolute;top:-14px;right:6px;font-family:"Fraunces",serif;
+    font-weight:900;font-size:5.4rem;color:var(--ink);opacity:.05;line-height:1;}
+  .rock h3{font-family:"Fraunces",serif;font-weight:600;font-size:1.24rem;line-height:1.15;margin:0 0 8px;letter-spacing:-.01em;}
+  .rock p{margin:0;font-size:.96rem;color:var(--ink-soft);text-wrap:pretty;}
+
+  /* traffic light */
+  .lights{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
+  .light{border-radius:16px;padding:20px 20px 18px;border:1px solid var(--hair);background:var(--surface);box-shadow:var(--shadow);}
+  .light .dot{width:16px;height:16px;border-radius:50%;display:inline-block;margin-right:9px;vertical-align:-1px;}
+  .light .lbl{font-family:"Fraunces",serif;font-weight:600;font-size:1.14rem;}
+  .light .tag{font-size:.78rem;font-weight:700;color:var(--muted);margin:2px 0 10px;}
+  .light p{margin:0;font-size:.92rem;color:var(--ink-soft);}
+  .r .dot{background:var(--rouge)} .r{border-top:3px solid var(--rouge)}
+  .y .dot{background:var(--jaune)} .y{border-top:3px solid var(--jaune)}
+  .g .dot{background:var(--vert)} .g{border-top:3px solid var(--vert)}
+
+  /* gestes */
+  .gestes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;counter-reset:g;}
+  .geste{background:var(--surface-2);border-radius:14px;padding:18px 20px;}
+  .geste .g-n{counter-increment:g;font-family:"Fraunces",serif;font-weight:900;color:var(--accent);font-size:1.6rem;line-height:1;}
+  .geste h4{font-family:"Fraunces",serif;font-weight:600;font-size:1.05rem;margin:6px 0 5px;}
+  .geste p{margin:0;font-size:.9rem;color:var(--ink-soft);}
+  .geste em{color:var(--ink);font-style:italic;}
+
+  /* sectors */
+  #sectors{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:clamp(16px,2.5vw,22px);}
+  .sector{background:var(--surface);border:1px solid var(--hair);border-radius:18px;box-shadow:var(--shadow);
+    padding:20px 20px 8px;display:flex;flex-direction:column;}
+  .sector.prio{border:1.5px solid var(--accent);}
+  .sector h3{font-family:"Fraunces",serif;font-weight:600;font-size:1.2rem;margin:0 0 3px;display:flex;align-items:center;gap:10px;letter-spacing:-.01em;}
+  .sector h3 .ic{font-size:1.3rem;}
+  .sector .badge{align-self:flex-start;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent);background:var(--rouge-bg);padding:3px 8px;border-radius:999px;margin:0 0 12px;}
+  .beh{display:flex;gap:11px;padding:11px 0;border-top:1px solid var(--hair);}
+  .beh:first-of-type{border-top:none;}
+  .beh .d{width:11px;height:11px;border-radius:50%;flex:none;margin-top:6px;}
+  .beh.r .d{background:var(--rouge)} .beh.y .d{background:var(--jaune)} .beh.g .d{background:var(--vert)}
+  .beh .txt{font-size:.93rem;}
+  .beh .txt b{color:var(--ink);font-weight:700;}
+  .beh .txt .lim{display:block;color:var(--ink-soft);margin-top:2px;}
+  .beh .txt .lim::before{content:"→ ";color:var(--accent);font-weight:700;}
+
+  /* alive / keep */
+  .keep{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;}
+  .kb{background:var(--surface);border:1px solid var(--hair);border-radius:16px;padding:22px;box-shadow:var(--shadow);}
+  .kb h4{font-family:"Fraunces",serif;font-weight:600;font-size:1.12rem;margin:0 0 8px;}
+  .kb p{margin:0;font-size:.94rem;color:var(--ink-soft);}
+  .kb b{color:var(--ink);}
+
+  .foot{margin-top:clamp(40px,6vw,60px);padding-top:20px;border-top:1px solid var(--hair);font-size:.84rem;color:var(--muted);}
+  .foot p{max-width:74ch;}
+  @media print{body{background:#fff}.rock,.sector,.light,.kb,.mirror{break-inside:avoid}}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Poser des limites à 3 ans · fiche pour un parent</p>
+  <h1>Des limites <em>vivantes</em></h1>
+  <p class="lede">
+    Une limite n'est pas une punition ni un combat à gagner contre ton enfant. C'est le
+    gouvernail que tu tiens — calmement — pour qu'il puisse rester un enfant. Un tout-petit qui
+    obtient tout dirige un monde trop grand pour lui : ça l'épuise et l'insécurise. Tenir le
+    cadre, c'est l'aimer.
+  </p>
+
+  <div class="mirror">
+    <p class="k">À lire en premier</p>
+    <p><b>« Le jour, il va très très bien. »</b> Souvent, tout va bien <b>parce que</b> tout est
+    accordé : sans « non », il n'y a pas de friction. Le sommeil est le seul endroit où on ne peut
+    pas dire « oui sur demande » — alors c'est là que l'absence de cadre ressort.</p>
+    <p>S'endormir sur une chaise, dans le salon, ce n'est pas un enfant qui se régule : c'est un
+    enfant <b>sans cadre de sommeil, qui s'écroule d'épuisement</b>. Le cadre ne le priverait pas
+    de repos — il le lui rendrait.</p>
+  </div>
+
+  <h2 class="sec"><span class="num">I.</span>Six vérités de roche</h2>
+  <p class="sub">Le socle. À comprendre une fois, puis à ne plus rediscuter. Si une seule doit
+  rester : <b>la constance est la limite.</b></p>
+  <div class="rocks">
+    <div class="rock" data-n="1"><h3>Une limite, c'est de l'amour</h3><p>Un enfant qui obtient tout tient un volant trop grand pour ses mains. Le cadre le rassure bien plus qu'il ne le prive.</p></div>
+    <div class="rock" data-n="2"><h3>« Non » est une phrase complète</h3><p>On le dit une fois, court, avec douceur. Pas de plaidoirie. Plus tu expliques, plus tu rouvres la négociation.</p></div>
+    <div class="rock" data-n="3"><h3>Céder à la 10ᵉ fois enseigne d'aller jusqu'à 10</h3><p>Une limite tenue 9 fois puis lâchée par fatigue apprend à pousser plus fort la prochaine fois. Flancher est la plus coûteuse des leçons.</p></div>
+    <div class="rock" data-n="4"><h3>L'émotion oui, la limite aussi</h3><p><em>« Tu as le droit d'être fâché. Et c'est l'heure du dodo. »</em> Les deux ensemble — jamais accueillir OU tenir, toujours les deux.</p></div>
+    <div class="rock" data-n="5"><h3>C'est toi qui mènes la barque</h3><p>Ce n'est pas gagner contre lui. C'est tenir le gouvernail sans trembler, pour qu'il n'ait pas, lui, à porter ce poids.</p></div>
+    <div class="rock" data-n="6"><h3>Ton calme devient le sien</h3><p>À 3 ans, son frein intérieur n'est pas construit. Il emprunte le tien. Si tu tiens, il apprend à tenir.</p></div>
+  </div>
+
+  <h2 class="sec"><span class="num">II.</span>Le feu de circulation</h2>
+  <p class="sub">Avant de réagir, classe la situation dans une des trois couleurs. Le secret d'un
+  parent souple ET solide : un <b>grand OUI dans le vert</b> rend le <b>non du rouge</b> crédible.</p>
+  <div class="lights">
+    <div class="light r"><span class="dot"></span><span class="lbl">Rouge</span><div class="tag">Non-négociable · zéro exception</div><p>Sécurité, santé, respect des autres. Peu nombreux, mais absolus. On ne discute pas, jamais. On agit.</p></div>
+    <div class="light y"><span class="dot"></span><span class="lbl">Jaune</span><div class="tag">Limite tenue · émotion accueillie</div><p>Dodo, repas, écrans, hygiène. La règle est fixe, la peine est permise. <b>C'est ici qu'un parent lax flanche le plus.</b></p></div>
+    <div class="light g"><span class="dot"></span><span class="lbl">Vert</span><div class="tag">Liberté · choix offerts</div><p>Quel pyjama, quel fruit, quel jeu. On dit oui largement. Offrir des choix nourrit son besoin de pouvoir — au bon endroit.</p></div>
+  </div>
+
+  <h2 class="sec"><span class="num">III.</span>Les quatre gestes qui tiennent</h2>
+  <p class="sub">La même petite chorégraphie, à chaque fois. La répétition, c'est ce qui la rend prévisible — donc sécurisante.</p>
+  <div class="gestes">
+    <div class="geste"><div class="g-n"></div><h4>Dire non, une fois</h4><p>Court, calme, sans te justifier. <em>« Non, pas de bonbon maintenant. »</em> Point.</p></div>
+    <div class="geste"><div class="g-n"></div><h4>Offrir un choix fermé</h4><p>Deux options qui te vont toutes les deux. <em>« Pyjama bleu ou rouge ? »</em> — jamais « veux-tu mettre ton pyjama ? »</p></div>
+    <div class="geste"><div class="g-n"></div><h4>Accueillir en tenant</h4><p>Tu restes présente, tu nommes l'émotion, et la limite ne bouge pas. Ta stabilité est le message.</p></div>
+    <div class="geste"><div class="g-n"></div><h4>Reconnecter après</h4><p>La tempête passée, on se retrouve — câlin, jeu. On ne remâche pas la crise. Le lien se répare une fois le calme revenu.</p></div>
+  </div>
+
+  <h2 class="sec"><span class="num">IV.</span>Les secteurs, sphère par sphère</h2>
+  <p class="sub">Où tenir, concrètement. Chaque point : <b>la situation</b>, puis <b>la limite à tenir</b>.
+  La pastille dit la couleur — <span style="color:var(--rouge);font-weight:700">rouge</span> jamais négociable,
+  <span style="color:var(--jaune);font-weight:700">jaune</span> tenu avec cœur,
+  <span style="color:var(--vert);font-weight:700">vert</span> laisse-le choisir.</p>
+  <div id="sectors"></div>
+
+  <h2 class="sec"><span class="num">V.</span>Garder la limite vivante</h2>
+  <p class="sub">Poser une règle est facile. La garder vivante — intacte dans le temps, la fatigue et
+  l'humeur — c'est tout le travail. Voici les trois pièges qui la tuent.</p>
+  <div class="keep">
+    <div class="kb"><h4>Le piège de l'explication</h4><p>Pour un cerveau de 3 ans qui monte, chaque phrase de l'adulte n'est pas un réconfort : c'est une <b>relance</b>. Et une longue explication dit aussi : <b>« ma décision est encore ouverte »</b>. Fais court — c'est plus doux, pas plus dur.</p></div>
+    <div class="kb"><h4>Le piège de flancher</h4><p>Céder « juste cette fois » parce qu'on est épuisée est ce qui <b>renforce le plus</b> le comportement : l'enfant apprend que la crise finit par payer, il suffit d'insister assez. Tenir une fois t'évite dix crises.</p></div>
+    <div class="kb"><h4>Le piège des deux voix</h4><p>Une règle qui existe chez l'un et pas chez l'autre — ou le matin et pas le soir — n'est pas une règle. <b>Même cadre, mêmes adultes, tous les jours.</b> La prévisibilité est ce qui sécurise.</p></div>
+  </div>
+
+  <p class="foot">
+    <p>Cette fiche décrit un style <b>ferme et chaleureux</b> (haute affection + cadre clair), celui
+    que la recherche associe aux enfants les plus sereins. Ce ne sont pas des règles rigides : chaque
+    enfant, chaque famille est différent. En cas de sommeil très perturbé, de crises intenses et
+    durables ou de toute inquiétude, un professionnel (pédiatre, éducateur spécialisé, psychologue de
+    l'enfance) peut accompagner sans jugement. Poser des limites ne veut jamais dire crier, punir
+    durement ou retirer l'amour : c'est offrir un cadre stable <b>à l'intérieur</b> de l'amour.</p>
+  </p>
+</div>
+
+<script>
+const SECTORS=[
+ {ic:"🌙",name:"Sommeil",prio:true,beh:[
+   ["r","S'endort sur une chaise, dans le salon, la voiture","Le sommeil se fait dans son lit. On instaure un lieu et une heure fixes."],
+   ["y","Réclame une histoire / un verre / un câlin en boucle","Ce qui est prévu (une histoire, un câlin), puis c'est fini. On l'annonce d'avance."],
+   ["y","Se relève dix fois après le coucher","On le raccompagne au lit, calmement, sans discours, autant de fois qu'il faut."],
+   ["y","Exige un parent couché avec lui jusqu'à l'endormissement","Présence rassurante mais qui s'éloigne peu à peu : l'endormissement lui appartient."],
+   ["y","Repousse l'heure : « pas fatigué »","L'heure du coucher est fixe, ce n'est pas un débat. Le rituel prépare, il ne négocie pas."],
+   ["y","Vient dans le lit des parents la nuit","On le ramène doucement dans son lit (sauf règle familiale choisie et constante)."],
+ ]},
+ {ic:"🍽️",name:"Repas",beh:[
+   ["y","Refuse le plat, réclame autre chose","Un seul repas est servi ; pas de menu à la carte. Il peut ne pas manger — sans substitut."],
+   ["y","Veut manger devant l'écran ou en marchant","On mange assis, à table."],
+   ["y","Réclame des collations en continu","Collations à heures fixes, pas à la demande."],
+   ["g","Choisit entre deux aliments proposés","On le laisse choisir : la pomme ou la banane. Pouvoir au bon endroit."],
+ ]},
+ {ic:"📱",name:"Écrans",beh:[
+   ["y","Réclame « encore ! » sans fin","Durée annoncée d'avance + minuterie. Quand ça s'arrête, ça s'arrête."],
+   ["y","Fait une crise à l'extinction","On prévient une minute avant, puis on tient. La crise ne rallume pas l'écran."],
+   ["y","L'écran sert à calmer chaque contrariété","L'écran n'est pas le régulateur d'émotion. On console autrement."],
+ ]},
+ {ic:"🚦",name:"Sécurité",prio:true,beh:[
+   ["r","Refuse de s'attacher / détache son siège auto","La voiture ne roule pas sans siège attaché. Zéro exception."],
+   ["r","Court vers la rue, le stationnement","On tient la main, non négociable — sinon poussette."],
+   ["r","Touche cuisinière, prises, produits","« Non » ferme + on l'éloigne physiquement, tout de suite."],
+   ["r","Lâche la main dans un lieu dangereux","Main ou porté. On ne négocie pas la sécurité."],
+ ]},
+ {ic:"🖐️",name:"Respect des autres",prio:true,beh:[
+   ["r","Tape, mord, pousse, tire les cheveux","On arrête le geste physiquement : « On ne fait pas mal. » Immédiat et ferme."],
+   ["r","Lance des objets sur les gens, crache","Arrêté fermement, sans colère, sans négociation."],
+   ["r","Frappe le parent","On bloque la main avec calme : on ne se laisse pas taper."],
+ ]},
+ {ic:"🗣️",name:"Façon de demander",beh:[
+   ["y","Crie ou pleurniche pour obtenir","« Je t'écoute quand tu parles doucement. » On attend le ton calme."],
+   ["y","Donne des ordres au parent (« Donne ! », « Bouge pas ! »)","On ne répond pas aux ordres. On modèle : « On dit s'il te plaît. »"],
+   ["y","Exige l'attention immédiate, tout le temps","Apprendre à attendre un court instant : « Deux minutes et j'arrive. »"],
+ ]},
+ {ic:"🛒",name:"Désirs & magasins",beh:[
+   ["y","« Je veux ça ! » → crise en magasin","On n'achète jamais sous la crise. On tient, même sous les regards."],
+   ["y","Réclame un jouet/bonbon à chaque sortie","Non calme, une fois. Les sorties ne sont pas des distributrices."],
+   ["g","Veut quelque chose qu'on peut accorder","« Oui, bonne idée » — dire oui de bon cœur quand c'est un vrai oui."],
+ ]},
+ {ic:"🪥",name:"Hygiène & corps",beh:[
+   ["r","Refuse le brossage de dents","Non négociable (santé). On le fait — en jeu si possible, mais on le fait."],
+   ["y","Refuse le bain, de se laver","On y va, avec douceur mais sans reculer."],
+   ["y","Refuse de s'habiller / se déshabille en public","On rhabille calmement ; choix fermé de vêtements le matin."],
+ ]},
+ {ic:"🌱",name:"Autonomie (limite envers soi)",beh:[
+   ["g","Le parent l'habille/le nourrit alors qu'il sait faire","Le laisser essayer seul. Résister à faire à sa place « pour aller plus vite »."],
+   ["y","Le parent range ses jouets à sa place","Il participe à ranger : « On range ensemble. »"],
+   ["g","Se fait porter alors qu'il peut marcher","Il marche. On soutient l'effort plutôt que de l'éviter."],
+ ]},
+ {ic:"🤝",name:"Vie sociale & partage",beh:[
+   ["y","Arrache les jouets, refuse de partager","Tour de rôle. On soutient l'attente : « C'est le tour de X, puis le tien. »"],
+   ["y","N'accepte pas de perdre / d'attendre son tour","On accompagne la frustration sans supprimer la règle du jeu."],
+   ["y","Coupe la parole, exige d'être le centre","Apprendre à patienter un court moment pendant que l'adulte parle."],
+ ]},
+ {ic:"🔄",name:"Transitions & départs",beh:[
+   ["y","Refuse de quitter le parc, la fête","On prévient (« encore 5 minutes »), puis on part même s'il proteste."],
+   ["y","Refuse de monter en poussette / de rentrer","On y va. La transition est menée, pas soumise au vote."],
+   ["g","Choisit comment faire la transition","« Tu marches ou tu sautes comme une grenouille jusqu'à la porte ? »"],
+ ]},
+ {ic:"👩",name:"Espace du parent & du couple",beh:[
+   ["y","N'accepte pas que tu parles à un autre adulte / au téléphone","Tu as le droit à des moments à toi. Il apprend à attendre un peu."],
+   ["y","Sépare les câlins des parents, exige d'être entre vous","Le couple existe. « Papa et maman se font un câlin, viens après. »"],
+   ["y","Exige ta présence à chaque seconde","Apprendre à jouer seul un court moment, tout près de toi."],
+   ["y","Décide de l'horaire de toute la famille","C'est toi qui mènes la barque : les grandes décisions t'appartiennent."],
+ ]},
+];
+const root=document.getElementById("sectors");
+SECTORS.forEach(s=>{
+  const el=document.createElement("div");
+  el.className="sector"+(s.prio?" prio":"");
+  let h=`<h3><span class="ic">${s.ic}</span>${s.name}</h3>`;
+  if(s.prio)h+=`<span class="badge">Priorité</span>`;
+  s.beh.forEach(([c,sit,lim])=>{
+    h+=`<div class="beh ${c}"><span class="d"></span><span class="txt"><b>${sit}</b><span class="lim">${lim}</span></span></div>`;
+  });
+  el.innerHTML=h;
+  root.appendChild(el);
+});
+</script>
