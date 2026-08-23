@@ -1,0 +1,330 @@
+<title>La vague qui ne retombe jamais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#FAF5F1;
+    --surface:#FFFFFF;
+    --ink:#241C18;
+    --ink-soft:#5A4E47;
+    --muted:#8C7E75;
+    --hair:#E7DBD2;
+    --hair-strong:#D8C8bd;
+    --amber:#E8913A;
+    --ember:#D8562B;
+    --crise:#C22A20;
+    --calm:#2E9C8E;
+    --calm-soft:#C9E7E1;
+    --shadow:0 1px 2px rgba(60,40,30,.05),0 12px 32px -12px rgba(90,50,30,.16);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#171210;
+      --surface:#221A16;
+      --ink:#F4EBE4;
+      --ink-soft:#C9B9AE;
+      --muted:#9A897E;
+      --hair:#382C25;
+      --hair-strong:#4A3A31;
+      --amber:#F0A254;
+      --ember:#EC6A3D;
+      --crise:#F0554A;
+      --calm:#49C4B4;
+      --calm-soft:#26433F;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 18px 40px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171210;
+    --surface:#221A16;
+    --ink:#F4EBE4;
+    --ink-soft:#C9B9AE;
+    --muted:#9A897E;
+    --hair:#382C25;
+    --hair-strong:#4A3A31;
+    --amber:#F0A254;
+    --ember:#EC6A3D;
+    --crise:#F0554A;
+    --calm:#49C4B4;
+    --calm-soft:#26433F;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 18px 40px -14px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:clamp(28px,5vw,64px) clamp(20px,4vw,40px) 72px;}
+  .eyebrow{
+    font-size:.74rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ember);margin:0 0 14px;
+  }
+  h1{
+    font-family:"Fraunces",serif;font-weight:900;font-optical-sizing:auto;
+    font-size:clamp(2.1rem,6vw,3.6rem);line-height:1.02;letter-spacing:-.02em;
+    text-wrap:balance;margin:0 0 20px;
+  }
+  h1 em{font-style:italic;color:var(--ember);font-weight:500;}
+  .lede{
+    font-size:clamp(1.02rem,2.2vw,1.22rem);color:var(--ink-soft);
+    max-width:60ch;margin:0 0 8px;text-wrap:pretty;
+  }
+  .figure{
+    background:var(--surface);border:1px solid var(--hair);border-radius:20px;
+    box-shadow:var(--shadow);margin:clamp(28px,5vw,44px) 0 0;
+    padding:clamp(14px,3vw,26px) clamp(10px,2.5vw,22px) clamp(18px,3vw,26px);
+    overflow:hidden;
+  }
+  .figure svg{display:block;width:100%;height:auto;}
+  .cap{
+    display:flex;flex-wrap:wrap;gap:6px 22px;align-items:baseline;
+    padding:0 clamp(8px,2vw,16px);margin-bottom:6px;
+  }
+  .cap h2{
+    font-family:"Fraunces",serif;font-weight:600;font-size:1.15rem;
+    letter-spacing:-.01em;margin:0;
+  }
+  .cap p{margin:0;font-size:.86rem;color:var(--muted);}
+  .legend{
+    display:flex;flex-wrap:wrap;gap:14px 26px;
+    padding:16px clamp(10px,2.5vw,20px) 2px;margin-top:6px;
+    border-top:1px solid var(--hair);
+  }
+  .lg{display:flex;align-items:center;gap:9px;font-size:.85rem;color:var(--ink-soft);}
+  .lg .sw{width:26px;height:0;border-radius:2px;flex:none;}
+  .lg .s-curve{border-top:3px solid var(--ember);}
+  .lg .s-ghost{border-top:3px dashed var(--calm);}
+  .lg .s-thresh{border-top:2px dashed var(--crise);}
+  .lg .s-relance{
+    width:16px;height:16px;border-radius:50%;
+    background:var(--surface);border:2px solid var(--ember);
+    position:relative;
+  }
+  .lg .s-relance::after{
+    content:"";position:absolute;inset:0;margin:auto;width:6px;height:6px;
+    border-radius:50%;background:var(--ember);
+  }
+  .notes{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:clamp(16px,3vw,26px);margin-top:clamp(32px,5vw,48px);
+  }
+  .note{border-top:2px solid var(--hair-strong);padding-top:16px;}
+  .note .n{
+    font-family:"Fraunces",serif;font-weight:600;font-size:1.05rem;
+    display:flex;align-items:baseline;gap:10px;margin-bottom:6px;
+  }
+  .note .n b{
+    font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.8rem;
+    color:var(--ember);letter-spacing:.04em;
+  }
+  .note p{margin:0;font-size:.94rem;color:var(--ink-soft);text-wrap:pretty;}
+  .foot{
+    margin-top:clamp(34px,5vw,50px);padding-top:18px;border-top:1px solid var(--hair);
+    font-size:.82rem;color:var(--muted);max-width:70ch;
+  }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Régulation émotionnelle · enfant de 3 ans</p>
+  <h1>La vague qui <em>ne retombe jamais</em></h1>
+  <p class="lede">
+    Quand l'amygdale d'un jeune enfant s'active, une vague monte puis, si on la laisse
+    tranquille, redescend d'elle-même vers le calme. Mais si l'adulte relance l'enfant —
+    en lui parlant, en détournant son attention, en le stimulant à nouveau — une nouvelle
+    vague démarre <strong>avant que la précédente ne soit retombée</strong>. Elle ne repart
+    donc pas de zéro : la charge s'empile jusqu'au débordement.
+  </p>
+
+  <figure class="figure">
+    <div class="cap">
+      <h2>Activation de l'amygdale au fil du temps</h2>
+      <p>schéma conceptuel — l'échelle illustre la dynamique, pas des valeurs mesurées</p>
+    </div>
+    <div id="chart" role="img"
+      aria-label="Courbe d'activation de l'amygdale montant en quatre vagues successives. Chaque vague est relancée par le parent au creux, avant le retour au calme, si bien que les creux et les pics montent à chaque fois jusqu'à dépasser le seuil de débordement. Une courbe fantôme en pointillés montre la retombée vers le calme si la première vague avait été laissée tranquille."></div>
+    <div class="legend">
+      <span class="lg"><span class="sw s-curve"></span>Vague réelle (relancée)</span>
+      <span class="lg"><span class="sw s-ghost"></span>Si on laisse redescendre</span>
+      <span class="lg"><span class="s-relance"></span>Le parent relance</span>
+      <span class="lg"><span class="sw s-thresh"></span>Seuil de débordement</span>
+    </div>
+  </figure>
+
+  <div class="notes">
+    <div class="note">
+      <div class="n"><b>1</b>La vague monte</div>
+      <p>Une contrariété, une frustration, une surprise : l'amygdale s'allume et l'activation
+      grimpe vers un pic. C'est normal et attendu chez un tout-petit.</p>
+    </div>
+    <div class="note">
+      <div class="n"><b>2</b>Elle veut redescendre</div>
+      <p>Juste après le pic, le système cherche à se réguler et à revenir au calme. C'est la
+      fenêtre où l'enfant a besoin de silence et de sécurité, pas de sollicitation.</p>
+    </div>
+    <div class="note">
+      <div class="n"><b>3</b>Le parent relance</div>
+      <p>On parle, on explique, on distrait, on stimule à nouveau. Une deuxième vague démarre
+      au creux — depuis une charge résiduelle, pas depuis zéro.</p>
+    </div>
+    <div class="note">
+      <div class="n"><b>4</b>Le débordement</div>
+      <p>À force d'empiler des vagues qui repartent de plus en plus haut, l'activation finit par
+      dépasser le seuil : c'est la crise, l'enfant n'a plus les moyens de se réguler.</p>
+    </div>
+  </div>
+
+  <p class="foot">
+    Lecture du schéma : chaque nouvelle vague démarre au niveau du creux précédent (la ligne
+    pointillée horizontale marque cette « charge résiduelle »), et non au niveau du sol.
+    Laisser une vague retomber complètement — la courbe fantôme verte — ramène l'enfant sous
+    le seuil et lui rend sa capacité à se calmer seul.
+  </p>
+</div>
+
+<script>
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  // viewBox geometry
+  const W=920,H=540;
+  const L=64,R=884,T=54,B=430; // plot box
+  const mapX=t=>L+(t/100)*(R-L);
+  const mapY=a=>B-(a/100)*(B-T);
+  const THRESH=85;
+
+  // --- data (t 0..100, activation 0..100) ---
+  const curve=[
+    [0,6],[4,7],[8,26],[12,44],      // pic 1
+    [16,39],[21,31],                 // creux 1  (relance 1)
+    [25,48],[30,60],                 // pic 2
+    [35,53],[40,45],                 // creux 2  (relance 2)
+    [44,60],[49,74],                 // pic 3
+    [54,66],[59,58],                 // creux 3  (relance 3)
+    [63,74],[69,93],                 // pic 4 -> débordement
+    [74,88],[80,77],[86,60],[92,47],[100,41]
+  ];
+  const ghost=[
+    [12,44],[16,33],[21,22],[27,13],[34,8],[42,5],[52,5],[64,5]
+  ];
+  const peaks=[[12,44,"Pic 1"],[30,60,"Pic 2"],[49,74,"Pic 3"],[69,93,"Pic 4"]];
+  const relances=[[21,31],[40,45],[59,58]];
+
+  function smooth(pts){
+    const p=pts.map(d=>[mapX(d[0]),mapY(d[1])]);
+    let d=`M ${p[0][0].toFixed(1)} ${p[0][1].toFixed(1)}`;
+    for(let i=0;i<p.length-1;i++){
+      const p0=p[i-1]||p[i],p1=p[i],p2=p[i+1],p3=p[i+2]||p2;
+      const c1x=p1[0]+(p2[0]-p0[0])/6, c1y=p1[1]+(p2[1]-p0[1])/6;
+      const c2x=p2[0]-(p3[0]-p1[0])/6, c2y=p2[1]-(p3[1]-p1[1])/6;
+      d+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
+  const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+  const svg=el("svg",{viewBox:`0 0 ${W} ${H}`,xmlns:NS});
+
+  // defs: vertical gradient (amber low -> crise high) + area fill
+  const defs=el("defs",{});
+  const lg=el("linearGradient",{id:"stroke",gradientUnits:"userSpaceOnSpace",x1:0,y1:mapY(0),x2:0,y2:mapY(100)});
+  lg.appendChild(el("stop",{offset:"0%","stop-color":"var(--amber)"}));
+  lg.appendChild(el("stop",{offset:"58%","stop-color":"var(--ember)"}));
+  lg.appendChild(el("stop",{offset:"100%","stop-color":"var(--crise)"}));
+  defs.appendChild(lg);
+  const ag=el("linearGradient",{id:"area",gradientUnits:"userSpaceOnSpace",x1:0,y1:mapY(100),x2:0,y2:mapY(0)});
+  ag.appendChild(el("stop",{offset:"0%","stop-color":"var(--ember)","stop-opacity":".22"}));
+  ag.appendChild(el("stop",{offset:"100%","stop-color":"var(--ember)","stop-opacity":"0"}));
+  defs.appendChild(ag);
+  svg.appendChild(defs);
+
+  // débordement zone (above threshold)
+  svg.appendChild(el("rect",{x:L,y:T,width:R-L,height:mapY(THRESH)-T,fill:"var(--crise)","fill-opacity":".07"}));
+
+  // y axis arrow + label
+  svg.appendChild(el("line",{x1:L,y1:B,x2:L,y2:T-6,stroke:"var(--hair-strong)","stroke-width":1.4}));
+  svg.appendChild(el("path",{d:`M ${L} ${T-12} l -4 8 l 4 -3 l 4 3 z`,fill:"var(--hair-strong)"}));
+  // x axis arrow + label
+  svg.appendChild(el("line",{x1:L,y1:B,x2:R+6,y2:B,stroke:"var(--hair-strong)","stroke-width":1.4}));
+  svg.appendChild(el("path",{d:`M ${R+12} ${B} l -8 -4 l 3 4 l -3 4 z`,fill:"var(--hair-strong)"}));
+
+  const txt=(x,y,s,o={})=>{
+    const t=el("text",{x,y,fill:o.fill||"var(--muted)","font-family":o.ff||'"Hanken Grotesk",sans-serif',
+      "font-size":o.fs||13,"font-weight":o.fw||500,"text-anchor":o.anchor||"start"});
+    t.textContent=s;if(o.style)t.setAttribute("font-style",o.style);if(o.ls)t.setAttribute("letter-spacing",o.ls);
+    return t;
+  };
+  // y label (rotated)
+  const yl=txt(0,0,"Activation de l'amygdale →",{fs:12.5,fw:600,anchor:"start",ls:".02em"});
+  yl.setAttribute("transform",`translate(${L-16} ${B}) rotate(-90)`);
+  svg.appendChild(yl);
+  svg.appendChild(txt(L-14,T+4,"fort",{anchor:"end",fs:11.5}));
+  svg.appendChild(txt(L-14,B-1,"calme",{anchor:"end",fs:11.5}));
+  svg.appendChild(txt(R+2,B+22,"Temps →",{anchor:"end",fs:12.5,fw:600,ls:".02em"}));
+
+  // threshold line + label
+  const ty=mapY(THRESH);
+  svg.appendChild(el("line",{x1:L,y1:ty,x2:R,y2:ty,stroke:"var(--crise)","stroke-width":1.6,"stroke-dasharray":"7 5","stroke-opacity":".85"}));
+  svg.appendChild(txt(R,ty-9,"Seuil de débordement · crise",{fill:"var(--crise)",anchor:"end",fs:12.5,fw:700}));
+
+  // ghost curve
+  svg.appendChild(el("path",{d:smooth(ghost),fill:"none",stroke:"var(--calm)","stroke-width":2.4,
+    "stroke-dasharray":"3 6","stroke-linecap":"round","stroke-opacity":".95"}));
+  svg.appendChild(txt(mapX(52)+6,mapY(5)+4,"… retour au calme",{fill:"var(--calm)",fs:12,fw:600,style:"italic",ff:'"Fraunces",serif'}));
+
+  // residual "ne repart pas de zéro" ticks at each creux
+  relances.forEach(([t,a],i)=>{
+    const x=mapX(t);
+    svg.appendChild(el("line",{x1:L,y1:mapY(a),x2:x,y2:mapY(a),stroke:"var(--ember)","stroke-width":1,
+      "stroke-dasharray":"2 4","stroke-opacity":".5"}));
+  });
+  // callout bracket on creux 1: residual charge
+  (function(){
+    const [t,a]=relances[0], x=mapX(t);
+    svg.appendChild(el("line",{x1:x-30,y1:mapY(a),x2:x-30,y2:B,stroke:"var(--ember)","stroke-width":1.4,"stroke-opacity":".55"}));
+    svg.appendChild(el("path",{d:`M ${x-33} ${mapY(a)} l 3 4 l 3 -4`,fill:"none",stroke:"var(--ember)","stroke-width":1.4,"stroke-opacity":".55"}));
+    const g=txt(x-38,mapY(a)+ (B-mapY(a))/2 -6,"charge",{fill:"var(--ember)",anchor:"end",fs:11,fw:700});
+    svg.appendChild(g);
+    svg.appendChild(txt(x-38,mapY(a)+(B-mapY(a))/2+8,"résiduelle",{fill:"var(--ember)",anchor:"end",fs:11,fw:700}));
+  })();
+
+  // area fill under main curve
+  const areaTop=smooth(curve);
+  const areaD=`${areaTop} L ${mapX(100)} ${B} L ${mapX(0)} ${B} Z`;
+  svg.appendChild(el("path",{d:areaD,fill:"url(#area)"}));
+
+  // main curve
+  svg.appendChild(el("path",{d:smooth(curve),fill:"none",stroke:"url(#stroke)","stroke-width":3.4,
+    "stroke-linecap":"round","stroke-linejoin":"round"}));
+
+  // peak dots + labels
+  peaks.forEach(([t,a,lab],i)=>{
+    const x=mapX(t),y=mapY(a);
+    const col = a>=THRESH?"var(--crise)":"var(--ember)";
+    svg.appendChild(el("circle",{cx:x,cy:y,r:5.5,fill:"var(--surface)",stroke:col,"stroke-width":2.4}));
+    const above = y-16;
+    svg.appendChild(txt(x,above,lab,{fill:col,anchor:"middle",fs:12.5,fw:700,ff:'"Fraunces",serif'}));
+  });
+  // débordement callout near pic 4
+  (function(){
+    const x=mapX(69),y=mapY(93);
+    svg.appendChild(txt(x-8,y-32,"DÉBORDEMENT",{fill:"var(--crise)",anchor:"middle",fs:12,fw:700,ls:".06em"}));
+  })();
+
+  // relance markers (parent restarts) at creux
+  relances.forEach(([t,a],i)=>{
+    const x=mapX(t),y=mapY(a);
+    // small upward arrow from the dot toward the next rise
+    svg.appendChild(el("path",{d:`M ${x} ${y-9} l 0 -13`,stroke:"var(--ember)","stroke-width":1.8,"stroke-linecap":"round"}));
+    svg.appendChild(el("path",{d:`M ${x} ${y-24} l -4 6 l 4 -2 l 4 2 z`,fill:"var(--ember)"}));
+    // node
+    svg.appendChild(el("circle",{cx:x,cy:y,r:6.5,fill:"var(--surface)",stroke:"var(--ember)","stroke-width":2.6}));
+    svg.appendChild(el("circle",{cx:x,cy:y,r:2.6,fill:"var(--ember)"}));
+    // label below baseline
+    svg.appendChild(txt(x,B+22,`Relance ${i+1}`,{fill:"var(--ember)",anchor:"middle",fs:12,fw:700}));
+    svg.appendChild(txt(x,B+37,i===0?"le parent parle":i===1?"détourne l'attention":"stimule encore",
+      {fill:"var(--muted)",anchor:"middle",fs:10.5,fw:500}));
+  });
+
+  document.getElementById("chart").appendChild(svg);
+})();
+</script>
