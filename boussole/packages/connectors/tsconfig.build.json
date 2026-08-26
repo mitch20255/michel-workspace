@@ -1,4 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["src/**/*.test.ts", "src/testing/**", "dist"]
+  // `src/testing` est compilé : il est exposé comme sous-chemin
+  // `@boussole/connectors/testing` pour les tests des autres paquets.
+  "exclude": ["src/**/*.test.ts", "dist"]
 }

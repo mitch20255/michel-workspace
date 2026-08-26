@@ -25,6 +25,10 @@ export default defineConfig({
       },
       { find: '@boussole/core', replacement: resolvePath('./packages/core/src/index.ts') },
       {
+        find: '@boussole/connectors/testing',
+        replacement: resolvePath('./packages/connectors/src/testing/index.ts'),
+      },
+      {
         find: '@boussole/connectors',
         replacement: resolvePath('./packages/connectors/src/index.ts'),
       },
@@ -33,7 +37,14 @@ export default defineConfig({
         replacement: resolvePath('./packages/documents/src/index.ts'),
       },
       { find: '@boussole/llm', replacement: resolvePath('./packages/llm/src/index.ts') },
-      { find: '@boussole/db', replacement: resolvePath('./packages/db/src/index.ts') },
+      /**
+       * `@boussole/db` n'est délibérément pas aliasé vers ses sources : il
+       * réexporte le client Prisma généré, qui est du CommonJS. Résolu par
+       * Vite comme un module ESM source, `PrismaClient` n'est alors pas un
+       * constructeur. Le paquet est donc résolu normalement, via ses
+       * `exports` et son `dist` — d'où la nécessité de le construire avant
+       * les tests d'intégration.
+       */
     ],
   },
   test: {

@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    // Une application n'est importée par personne : elle n'a pas à publier de
+    // fichiers de déclaration. Les émettre obligerait par ailleurs à nommer
+    // explicitement des types Prisma générés qui référencent des chemins
+    // internes non portables.
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist"]
+}

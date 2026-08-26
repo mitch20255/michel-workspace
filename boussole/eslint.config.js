@@ -29,7 +29,13 @@ export default tseslint.config(
   },
   {
     // Scripts, tests and server entrypoints legitimately log to stdout.
-    files: ['**/*.test.ts', '**/scripts/**/*.ts', '**/src/main.ts', '**/src/cli/**/*.ts'],
+    files: [
+      '**/*.test.ts',
+      '**/scripts/**/*.ts',
+      '**/src/main.ts',
+      '**/src/seed.ts',
+      '**/src/cli/**/*.ts',
+    ],
     rules: { 'no-console': 'off' },
   },
   prettier,

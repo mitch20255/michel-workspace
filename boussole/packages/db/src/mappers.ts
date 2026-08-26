@@ -7,6 +7,7 @@ import {
 import type {
   CandidateProfile as ProfileRow,
   Job as JobRow,
+  Prisma,
   SensitiveAnswer,
 } from '../generated/client/index.js';
 
@@ -138,9 +139,26 @@ export function jobToRow(job: NormalizedJob) {
 
 // --- Profil ---------------------------------------------------------------
 
+export interface ProfileMappingOptions {
+  /**
+   * Déchiffre une valeur stockée. Fourni par l'appelant, qui détient la clé.
+   *
+   * Appliqué **avant** la validation Zod, et non après : les colonnes
+   * chiffrées contiennent `v1.<iv>.<tag>.<chiffré>`, qui n'est ni une adresse
+   * courriel ni un numéro de téléphone valide. Valider d'abord ferait
+   * échouer toute lecture de profil chiffré.
+   */
+  decrypt?: (value: string) => string;
+}
+
 export function profileRowToDomain(
   row: ProfileRow & { sensitiveAnswers?: SensitiveAnswer[] },
+  options: ProfileMappingOptions = {},
 ): CandidateProfile {
+  const decrypt = options.decrypt ?? ((value: string) => value);
+  const decryptOptional = (value: string | null) =>
+    value === null || value === '' ? undefined : decrypt(value);
+
   return CandidateProfileSchema.parse({
     id: row.id,
     label: row.label,
@@ -153,9 +171,9 @@ export function profileRowToDomain(
       pronouns: row.pronouns ?? undefined,
     },
     contact: {
-      email: row.email,
-      phone: row.phone ?? undefined,
-      address: row.address ?? undefined,
+      email: decrypt(row.email),
+      phone: decryptOptional(row.phone),
+      address: decryptOptional(row.address),
       publicLocation: row.publicLocation ?? undefined,
     },
     location:
@@ -179,7 +197,7 @@ export function profileRowToDomain(
     sensitiveAnswers: (row.sensitiveAnswers ?? []).map((answer) => ({
       key: answer.key,
       state: answer.state,
-      value: answer.value ?? undefined,
+      value: decryptOptional(answer.value),
       note: answer.note ?? undefined,
       updatedAt: answer.updatedAt.toISOString(),
     })),
@@ -219,4 +237,23 @@ export function profileToRow(profile: CandidateProfile) {
     preferences: profile.preferences,
     cannedAnswers: profile.cannedAnswers,
   };
+}
+
+// --- JSON -----------------------------------------------------------------
+
+/**
+ * Convertit une valeur du domaine en valeur JSON acceptée par Prisma.
+ *
+ * Nécessaire parce que `Prisma.InputJsonValue` exige une signature d'index,
+ * que les `interface` TypeScript ne fournissent pas — un `CriterionScore[]`
+ * parfaitement sérialisable est donc rejeté par le typage. La conversion est
+ * sûre : seules des structures issues de schémas Zod (donc JSON par
+ * construction) transitent par ici.
+ *
+ * Une fonction unique et documentée plutôt qu'un `as never` dispersé à chaque
+ * appel : le jour où Prisma assouplit ce typage, il n'y a qu'un endroit à
+ * nettoyer.
+ */
+export function toJson<T>(value: T): Prisma.InputJsonValue {
+  return value as unknown as Prisma.InputJsonValue;
 }

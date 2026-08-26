@@ -91,6 +91,14 @@ export const RawJobSchema = z.object({
 });
 export type RawJob = z.infer<typeof RawJobSchema>;
 
+/**
+ * Forme **avant** validation : les champs à valeur par défaut y sont
+ * facultatifs. C'est ce que fournit un appelant (connecteur, saisie manuelle,
+ * script d'amorçage) ; `RawJob` est ce qui en ressort une fois validé.
+ * Les confondre oblige chaque appelant à répéter les valeurs par défaut.
+ */
+export type RawJobInput = z.input<typeof RawJobSchema>;
+
 /** Offre normalisée : la forme canonique manipulée par tout le reste du système. */
 export const NormalizedJobSchema = z.object({
   source: JobSourceSchema,

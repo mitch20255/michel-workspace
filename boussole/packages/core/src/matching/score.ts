@@ -78,6 +78,17 @@ export const DEFAULT_WEIGHTS: Record<CriterionKey, number> = {
   experience_depth: 0.04,
 };
 
+/**
+ * Plafonds appliqués quand trop peu de critères sont évaluables.
+ *
+ * Choisis pour rester sous les seuils de décision : moins de quatre critères
+ * ne peut pas dépasser « à considérer », moins de six ne peut pas atteindre
+ * « prioritaire — générer les documents ». Une offre mal documentée peut donc
+ * être examinée, jamais recommandée en priorité.
+ */
+const CONFIDENCE_CAP_SPARSE = 60;
+const CONFIDENCE_CAP_PARTIAL = 78;
+
 export interface ScoreOptions {
   weights?: Partial<Record<CriterionKey, number>>;
   /** Texte du CV courant, pour l'analyse d'écart. */
@@ -171,10 +182,29 @@ export function scoreJob(
     warnings.push(`Quelques signaux d'offre fantôme (score ${job.ghostScore}/100).`);
   }
 
+  /**
+   * Plafond de confiance.
+   *
+   * Redistribuer le poids des critères non évaluables évite de pénaliser une
+   * offre discrète, mais produit un effet pervers si on s'arrête là : une
+   * annonce quasi vide ne peut échouer nulle part, et un simple intitulé bien
+   * aligné suffit alors à la faire monter très haut. Une offre fantôme sans
+   * exigence, sans salaire et sans lieu se retrouvait ainsi recommandée en
+   * priorité — l'inverse exact de ce qu'on veut.
+   *
+   * Un avertissement ne suffit pas : c'est le score qui pilote le tri, et
+   * personne ne lit l'avertissement d'une offre classée première. On plafonne
+   * donc explicitement. « On ne sait pas » ne doit jamais se présenter comme
+   * « c'est excellent ».
+   */
   if (evaluated.length < 4) {
     warnings.push(
-      'Offre peu documentée : le score repose sur peu de critères et reste peu fiable.',
+      'Offre trop peu documentée pour être notée sérieusement : le score est plafonné.',
     );
+    score = Math.min(score, CONFIDENCE_CAP_SPARSE);
+  } else if (evaluated.length < 6) {
+    warnings.push('Offre partiellement documentée : plusieurs critères n’ont pas pu être évalués.');
+    score = Math.min(score, CONFIDENCE_CAP_PARTIAL);
   }
 
   if (keywordGap.realGaps.some((g) => g.required)) {

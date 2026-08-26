@@ -1,4 +1,4 @@
-import type { NormalizedJob, RawJob } from '../schemas/job.js';
+import type { NormalizedJob, RawJobInput } from '../schemas/job.js';
 import { NormalizedJobSchema, RawJobSchema } from '../schemas/job.js';
 import { normalizeCompanyName, normalizeJobTitle } from '../text/normalize.js';
 import { detectLanguage } from '../text/tokens.js';
@@ -33,7 +33,7 @@ export interface NormalizeOptions {
   companyEmployeeCount?: number;
 }
 
-export function normalizeJob(input: RawJob, options: NormalizeOptions = {}): NormalizedJob {
+export function normalizeJob(input: RawJobInput, options: NormalizeOptions = {}): NormalizedJob {
   const raw = RawJobSchema.parse(input);
   const now = options.now ?? new Date();
   const nowIso = now.toISOString();

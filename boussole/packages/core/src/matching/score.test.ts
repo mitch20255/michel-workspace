@@ -78,6 +78,37 @@ describe('scoreJob — honnêteté sur l’inconnu', () => {
     expect(without.score).toBeGreaterThanOrEqual(withExpectation.score - 5);
   });
 
+  it('plafonne le score d’une offre trop peu documentée', () => {
+    // Sans plafond, une annonce quasi vide ne peut échouer nulle part : un
+    // intitulé bien aligné suffit à la faire monter très haut, et une offre
+    // fantôme se retrouve recommandée en priorité. Un avertissement ne suffit
+    // pas — c'est le score qui pilote le tri.
+    const emptyJob = makeJob({
+      title: 'Développeuse senior',
+      descriptionRaw:
+        '<p>Nous sommes toujours à la recherche de talents pour notre banque de candidatures.</p>',
+      locationRaw: undefined,
+      department: undefined,
+      applyUrl: undefined,
+    });
+
+    const result = scoreJob(emptyJob, makeProfile());
+    const evaluatedCount = result.criteria.filter((criterion) => criterion.evaluated).length;
+
+    expect(evaluatedCount).toBeLessThan(6);
+    expect(result.score).toBeLessThanOrEqual(78);
+    expect(result.decision).not.toBe('generate_documents');
+    expect(result.warnings.join(' ')).toMatch(/document/i);
+  });
+
+  it('ne plafonne pas une offre bien documentée', () => {
+    const result = scoreJob(makeJob(), makeProfile());
+    expect(
+      result.criteria.filter((criterion) => criterion.evaluated).length,
+    ).toBeGreaterThanOrEqual(6);
+    expect(result.score).toBeGreaterThan(78);
+  });
+
   it('signale une offre trop peu documentée pour être notée sérieusement', () => {
     const job = makeJob({
       descriptionRaw: '<p>Poste ouvert.</p>',
