@@ -12,3 +12,17 @@ onlyBuiltDependencies:
   - prisma
   - sharp
   - unrs-resolver
+
+# React et Next doivent être remontés à la racine de node_modules.
+#
+# Avec l'arborescence isolée de pnpm, Next résout React à travers des liens
+# symboliques et peut se retrouver avec deux instances chargées : le
+# répartiteur de hooks de la seconde est alors nul, et le prérendu échoue sur
+# « Cannot read properties of null (reading 'useContext') » — un message qui
+# ne désigne pas du tout la cause réelle.
+publicHoistPattern:
+  - 'react'
+  - 'react-dom'
+  - 'react-is'
+  - 'next'
+  - 'styled-jsx'

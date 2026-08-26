@@ -24,7 +24,9 @@
     "dev:api": "pnpm --filter @boussole/api run dev",
     "dev:web": "pnpm --filter @boussole/web run dev",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
-    "infra:down": "docker compose -f infra/docker-compose.yml down"
+    "infra:down": "docker compose -f infra/docker-compose.yml down",
+    "build:web": "pnpm --filter @boussole/web run build",
+    "seed": "pnpm --filter @boussole/api run seed"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

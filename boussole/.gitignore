@@ -29,3 +29,7 @@ packages/db/prisma/migrations/dev.db*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Next.js
+apps/web/.next/
+apps/web/next-env.d.ts

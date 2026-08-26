@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+
+/**
+ * Palette et fondations.
+ *
+ * Thème clair et sombre pilotés par la préférence système : une recherche
+ * d'emploi se fait souvent le soir, après une journée de travail.
+ *
+ * Les couleurs sémantiques (décision, fiabilité) sont définies une seule fois
+ * ici et réutilisées partout : un score « prioritaire » doit avoir exactement
+ * la même couleur dans la liste, le détail et le CRM, sinon l'utilisateur
+ * doit relire le texte à chaque fois.
+ */
+
+@theme {
+  --color-surface: oklch(99% 0.003 260);
+  --color-surface-raised: oklch(100% 0 0);
+  --color-surface-sunken: oklch(96.5% 0.005 260);
+  --color-border-subtle: oklch(91% 0.006 260);
+  --color-ink: oklch(22% 0.015 260);
+  --color-ink-muted: oklch(48% 0.012 260);
+  --color-ink-faint: oklch(62% 0.01 260);
+
+  --color-accent: oklch(52% 0.16 250);
+  --color-accent-soft: oklch(95% 0.03 250);
+
+  /* Décisions du moteur de scoring. */
+  --color-priority: oklch(52% 0.15 155);
+  --color-priority-soft: oklch(95% 0.04 155);
+  --color-shortlist: oklch(55% 0.14 230);
+  --color-shortlist-soft: oklch(95% 0.035 230);
+  --color-maybe: oklch(62% 0.13 75);
+  --color-maybe-soft: oklch(96% 0.045 85);
+  --color-reject: oklch(55% 0.06 260);
+  --color-reject-soft: oklch(95% 0.008 260);
+
+  /* Signaux d'offre fantôme. */
+  --color-warn: oklch(58% 0.16 40);
+  --color-warn-soft: oklch(96% 0.04 45);
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    @theme {
+      --color-surface: oklch(19% 0.012 260);
+      --color-surface-raised: oklch(23% 0.014 260);
+      --color-surface-sunken: oklch(16% 0.01 260);
+      --color-border-subtle: oklch(31% 0.014 260);
+      --color-ink: oklch(94% 0.006 260);
+      --color-ink-muted: oklch(72% 0.012 260);
+      --color-ink-faint: oklch(58% 0.012 260);
+
+      --color-accent: oklch(72% 0.13 250);
+      --color-accent-soft: oklch(28% 0.05 250);
+
+      --color-priority: oklch(75% 0.15 155);
+      --color-priority-soft: oklch(27% 0.05 155);
+      --color-shortlist: oklch(75% 0.12 230);
+      --color-shortlist-soft: oklch(27% 0.045 230);
+      --color-maybe: oklch(78% 0.13 80);
+      --color-maybe-soft: oklch(29% 0.05 75);
+      --color-reject: oklch(65% 0.02 260);
+      --color-reject-soft: oklch(26% 0.01 260);
+
+      --color-warn: oklch(75% 0.14 45);
+      --color-warn-soft: oklch(29% 0.05 40);
+    }
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-feature-settings: 'kern', 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Le français utilise des espaces fines insécables avant « : ; ? ! » ;
+     on laisse le navigateur les gérer plutôt que de les coder en dur. */
+  :lang(fr) {
+    hyphens: auto;
+  }
+}
