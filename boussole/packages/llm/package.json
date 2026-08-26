@@ -1,0 +1,24 @@
+{
+  "name": "@boussole/llm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Couche d'abstraction LLM en BYOK, désactivée par défaut.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.121.0",
+    "@boussole/core": "workspace:*",
+    "zod": "^4.4.3"
+  }
+}
