@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  // `src/testing` est compilé : il est exposé publiquement comme sous-chemin
+  // `@boussole/core/testing` pour les tests des autres paquets. Seuls les
+  // fichiers de test eux-mêmes sont exclus de la construction.
+  "exclude": ["src/**/*.test.ts", "dist"]
+}

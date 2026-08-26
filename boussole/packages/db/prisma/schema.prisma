@@ -1,0 +1,500 @@
+// Schéma de données de Boussole.
+//
+// Principes structurants :
+//
+// 1. **Séparation stricte données utilisateur / données d'offres.** Les
+//    offres sont publiques et partageables entre profils ; le profil, les
+//    candidatures et les documents ne le sont jamais. Cette frontière rend
+//    l'export et la suppression du compte simples et vérifiables.
+//
+// 2. **Rien n'est supprimé silencieusement.** Une offre disparue d'un ATS
+//    passe à `inactive` : elle reste liée aux candidatures en cours et
+//    permet de détecter une republication plus tard.
+//
+// 3. **Les champs chiffrés sont des `String`** contenant le format
+//    `v1.<iv>.<tag>.<chiffré>` produit par @boussole/core/server. Ils sont
+//    marqués `/// chiffré` dans les commentaires et listés dans SECURITY.md.
+//    Ils ne sont jamais indexés — un index sur un chiffré ne sert à rien et
+//    fuit de l'information par sa seule existence.
+//
+// 4. **Le journal d'audit est en ajout seul.** Aucune relation ne permet de
+//    le modifier, et sa suppression n'est possible qu'avec le compte entier.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Utilisateur et profil
+// ---------------------------------------------------------------------------
+
+/// Compte. En mode mono-utilisateur (MVP), une seule ligne existe ; le modèle
+/// est présent dès le départ pour que le passage au multi-utilisateur soit une
+/// migration et non une réécriture.
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique /// chiffré
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profiles     CandidateProfile[]
+  applications Application[]
+  documents    GeneratedDocument[]
+  auditEvents  AuditEvent[]
+  sources      JobSource[]
+  settings     UserSettings?
+
+  @@map("users")
+}
+
+model UserSettings {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// none | anthropic | openai | ollama. `none` = aucune donnée ne sort.
+  llmProvider String  @default("none")
+  llmModel    String?
+  /// Clé BYOK fournie par l'utilisateur. /// chiffré
+  llmApiKey   String?
+  /// Faux tant que l'utilisateur n'a pas explicitement accepté l'envoi de
+  /// données à un fournisseur externe. Aucun appel n'a lieu sans ce drapeau.
+  llmConsent  Boolean @default(false)
+
+  /// Pondérations personnalisées du scoring, sérialisées.
+  scoringWeights Json @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+model CandidateProfile {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label  String @default("Profil principal")
+  locale String @default("fr-CA")
+
+  firstName String
+  lastName  String
+  headline  String?
+  summary   String?
+  pronouns  String?
+
+  /// Coordonnées : PII stricte, chiffrées au repos.
+  email          String /// chiffré
+  phone          String? /// chiffré
+  address        String? /// chiffré
+  publicLocation String?
+
+  /// Ville/région/pays, en clair : nécessaires au scoring de localisation.
+  city    String?
+  region  String?
+  country String?
+
+  /// Sous-objets du profil. Stockés en JSON validé par Zod à l'entrée et à la
+  /// sortie : leur forme évolue vite et ils ne sont jamais interrogés
+  /// champ par champ en SQL. Les normaliser en tables produirait une dizaine
+  /// de jointures pour afficher un CV.
+  experiences    Json @default("[]")
+  projects       Json @default("[]")
+  education      Json @default("[]")
+  certifications Json @default("[]")
+  skills         Json @default("[]")
+  languages      Json @default("[]")
+  links          Json @default("[]")
+  preferences    Json @default("{}")
+  cannedAnswers  Json @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sensitiveAnswers SensitiveAnswer[]
+  applications     Application[]
+  documents        GeneratedDocument[]
+
+  @@index([userId])
+  @@map("candidate_profiles")
+}
+
+/// Réponses aux questions sensibles.
+///
+/// Table dédiée plutôt que colonnes JSON : ces valeurs ont un cycle de vie
+/// propre (chiffrement, audit de chaque modification, état `needs_input`) et
+/// doivent pouvoir être purgées indépendamment du reste du profil.
+model SensitiveAnswer {
+  id        String           @id @default(cuid())
+  profileId String
+  profile   CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  /// Clé issue de SENSITIVE_FIELDS (@boussole/core).
+  key   String
+  /// answered | needs_input | declined
+  state String @default("needs_input")
+  /// Présent uniquement si state = answered. /// chiffré
+  value String?
+  note  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([profileId, key])
+  @@map("sensitive_answers")
+}
+
+// ---------------------------------------------------------------------------
+// Sources et ingestion
+// ---------------------------------------------------------------------------
+
+/// Tableau d'offres suivi par l'utilisateur.
+model JobSource {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// greenhouse | lever | ashby | personio
+  provider   String
+  boardToken String
+  label      String?
+  enabled    Boolean @default(true)
+
+  lastRunAt   DateTime?
+  lastRunOk   Boolean?
+  lastRunNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  runs IngestionRun[]
+
+  @@unique([userId, provider, boardToken])
+  @@index([userId, enabled])
+  @@map("job_sources")
+}
+
+/// Trace d'exécution d'une ingestion. Conservée pour l'audit et pour
+/// diagnostiquer une source qui se dégrade.
+model IngestionRun {
+  id       String    @id @default(cuid())
+  sourceId String
+  source   JobSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  /// running | success | failed
+  status     String    @default("running")
+
+  fetched  Int @default(0)
+  created  Int @default(0)
+  updated  Int @default(0)
+  inactive Int @default(0)
+
+  warnings Json    @default("[]")
+  error    String?
+
+  @@index([sourceId, startedAt])
+  @@map("ingestion_runs")
+}
+
+// ---------------------------------------------------------------------------
+// Offres
+// ---------------------------------------------------------------------------
+
+/// Offre normalisée. Volontairement **non rattachée à un utilisateur** : deux
+/// profils qui suivent le même tableau d'offres partagent la même ligne. Ce qui
+/// est personnel (score, candidature, notes) vit dans les tables liées.
+model Job {
+  id String @id @default(cuid())
+
+  source      String /// connector | manual | import
+  atsProvider String
+  sourceJobId String
+
+  companyName           String
+  companyNameNormalized String
+  companyDomain         String?
+
+  title           String
+  titleNormalized String
+  department      String?
+
+  locationRaw      String?
+  locations        Json    @default("[]")
+  remotePolicy     String  @default("unknown")
+  remoteConfidence String  @default("low")
+
+  employmentType      String @default("unknown")
+  seniority           String @default("unknown")
+  seniorityConfidence String @default("low")
+
+  salaryMin        Float?
+  salaryMax        Float?
+  salaryCurrency   String?
+  salaryPeriod     String?
+  salaryConfidence String  @default("low")
+  salaryEvidence   String?
+
+  language String @default("unknown")
+
+  descriptionRaw  String @default("")
+  descriptionText String @default("")
+  sections        Json   @default("{}")
+  skills          Json   @default("[]")
+
+  applyUrl     String?
+  canonicalUrl String?
+
+  postedAt      DateTime?
+  firstSeenAt   DateTime  @default(now())
+  lastSeenAt    DateTime  @default(now())
+  lastChangedAt DateTime?
+  expiresAt     DateTime?
+
+  seenCount   Int @default(1)
+  repostCount Int @default(0)
+
+  /// active | inactive | expired | unknown
+  status String @default("active")
+
+  contentHash String
+  identityKey String
+
+  duplicateGroupId String?
+  duplicateGroup   DuplicateGroup? @relation(fields: [duplicateGroupId], references: [id], onDelete: SetNull)
+
+  ghostScore   Int  @default(0)
+  ghostSignals Json @default("[]")
+
+  /// Snapshot brut de la source. Permet de rejouer la normalisation quand un
+  /// parseur s'améliore, sans réinterroger l'ATS.
+  rawPayload Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  scores       JobScore[]
+  applications Application[]
+
+  /// Une offre est identifiée de façon unique par sa source et son
+  /// identifiant chez cette source.
+  @@unique([atsProvider, sourceJobId])
+  @@index([identityKey])
+  @@index([status, lastSeenAt])
+  @@index([companyNameNormalized])
+  @@index([duplicateGroupId])
+  @@map("jobs")
+}
+
+/// Regroupement de doublons. Le groupe existe même à un seul membre : cela
+/// évite un cas particulier partout dans le code d'affichage.
+model DuplicateGroup {
+  id String @id @default(cuid())
+
+  /// Offre retenue pour l'affichage (la plus complète du groupe).
+  canonicalJobId String?
+  /// Vrai si le regroupement a été confirmé ou corrigé par l'utilisateur.
+  confirmedByUser Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs Job[]
+
+  @@map("duplicate_groups")
+}
+
+/// Résultat de scoring, par couple offre/profil.
+///
+/// Stocké plutôt que recalculé à chaque affichage : le score dépend du profil
+/// au moment du calcul, et l'utilisateur doit pouvoir constater qu'une offre a
+/// changé de note après une mise à jour de son profil.
+model JobScore {
+  id        String @id @default(cuid())
+  jobId     String
+  job       Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  profileId String
+
+  score    Int
+  /// reject | maybe | shortlist | generate_documents
+  decision String
+
+  criteria   Json @default("[]")
+  blockers   Json @default("[]")
+  warnings   Json @default("[]")
+  keywordGap Json @default("{}")
+  summary    String @default("")
+
+  computedAt DateTime @default(now())
+
+  @@unique([jobId, profileId])
+  @@index([profileId, score])
+  @@map("job_scores")
+}
+
+// ---------------------------------------------------------------------------
+// CRM
+// ---------------------------------------------------------------------------
+
+model Application {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  profileId String
+  profile   CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  stage String @default("to_review")
+
+  /// Copie de l'offre au moment de la candidature. Les offres disparaissent
+  /// des ATS ; sans copie locale, le contexte de sa propre candidature est perdu.
+  jobSnapshot Json?
+
+  appliedAt        DateTime?
+  nextAction       String?
+  nextActionDueAt  DateTime?
+  scoreAtShortlist Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes     ApplicationNote[]
+  events    ApplicationEvent[]
+  reminders Reminder[]
+  documents GeneratedDocument[]
+
+  /// Une seule candidature par offre et par profil.
+  @@unique([profileId, jobId])
+  @@index([userId, stage])
+  @@index([nextActionDueAt])
+  @@map("applications")
+}
+
+model ApplicationNote {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([applicationId, createdAt])
+  @@map("application_notes")
+}
+
+model ApplicationEvent {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  type      String
+  fromStage String?
+  toStage   String?
+  message   String?
+  /// user | system : on doit toujours savoir qui a agi.
+  actor     String   @default("user")
+  createdAt DateTime @default(now())
+
+  @@index([applicationId, createdAt])
+  @@map("application_events")
+}
+
+model Reminder {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  label  String
+  dueAt  DateTime
+  done   Boolean  @default(false)
+  doneAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([dueAt, done])
+  @@map("reminders")
+}
+
+// ---------------------------------------------------------------------------
+// Documents
+// ---------------------------------------------------------------------------
+
+/// Document généré (CV ou lettre).
+///
+/// Chaque génération crée une **nouvelle ligne** : on ne remplace jamais un
+/// document déjà envoyé. Savoir exactement quel CV a été transmis à quel
+/// employeur est indispensable en entretien.
+model GeneratedDocument {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  profileId String
+  profile   CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  /// cv | cover_letter
+  kind     String
+  language String @default("fr")
+  version  Int    @default(1)
+
+  /// Source Typst générée, conservée pour reproduire le document à l'identique.
+  sourceTypst String
+  /// Texte extractible, tel qu'un ATS le lira. Sert aussi aux tests de
+  /// non-régression sur l'extractibilité.
+  plainText   String
+  /// Chemin du PDF, relatif à STORAGE_DIR. Absent si Typst est indisponible.
+  pdfPath     String?
+
+  /// Mots-clés réellement injectés, tous issus du profil. Permet de vérifier
+  /// a posteriori qu'aucune affirmation inventée n'a été produite.
+  injectedKeywords Json @default("[]")
+  /// Empreinte du profil au moment de la génération : détecte qu'un document
+  /// ne reflète plus le profil courant.
+  profileHash      String
+
+  createdAt DateTime @default(now())
+
+  @@index([profileId, kind, createdAt])
+  @@index([applicationId])
+  @@map("generated_documents")
+}
+
+// ---------------------------------------------------------------------------
+// Audit
+// ---------------------------------------------------------------------------
+
+/// Journal en ajout seul : « qu'est-ce que cet outil a fait en mon nom ? ».
+/// Ne contient jamais de valeur sensible, seulement la nature de l'action et
+/// des références.
+model AuditEvent {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action     String
+  actor      String @default("user")
+  targetType String?
+  targetId   String?
+  metadata   Json   @default("{}")
+  summary    String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action])
+  @@map("audit_events")
+}

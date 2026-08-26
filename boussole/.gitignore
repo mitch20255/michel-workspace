@@ -17,7 +17,9 @@ artifacts/
 *.pdf
 !docs/**/*.pdf
 
-# Prisma
+# Prisma — le client est régénéré à l'installation (`pnpm db:generate`).
+# Le commiter figerait du code machine dépendant de la plateforme.
+packages/db/generated/
 packages/db/prisma/*.db
 packages/db/prisma/migrations/dev.db*
 
