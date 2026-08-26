@@ -70,6 +70,12 @@ importers:
         specifier: ^6.19.1
         version: 6.19.3(magicast@0.3.5)(typescript@5.9.3)
 
+  packages/documents:
+    dependencies:
+      '@boussole/core':
+        specifier: workspace:*
+        version: link:../core
+
 packages:
 
   '@ampproject/remapping@2.3.0':

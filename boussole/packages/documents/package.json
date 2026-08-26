@@ -1,0 +1,22 @@
+{
+  "name": "@boussole/documents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Forge documentaire : CV et lettres ATS-compatibles générés avec Typst.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@boussole/core": "workspace:*"
+  }
+}

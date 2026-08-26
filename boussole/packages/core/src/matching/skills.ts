@@ -33,11 +33,19 @@ function escapeRegExp(input: string): string {
  * Construit le motif d'un alias. Les frontières `\b` de JavaScript ne
  * fonctionnent pas après « + » ou « # » (ce sont déjà des non-mots) : pour
  * « C++ » et « C# » on exige donc un séparateur ou une fin de chaîne.
+ *
+ * Le point compte comme caractère de mot **à gauche** : sans cela, l'alias
+ * « js » se déclenche à l'intérieur de « node.js » et toute offre mentionnant
+ * Node.js se voit attribuer JavaScript. Une compétence peut légitimement en
+ * impliquer une autre, mais cela doit être une relation explicite de la
+ * taxonomie, jamais un effet de bord de la découpe des mots.
+ * À droite en revanche, le point reste un séparateur : « Node » doit continuer
+ * à être reconnu dans « node.js ».
  */
 function aliasPattern(alias: string): RegExp {
   const escaped = escapeRegExp(alias);
   const endsWithSymbol = /[+#.]$/.test(alias);
-  const prefix = /^[a-z0-9]/i.test(alias) ? '(?<![a-z0-9])' : '';
+  const prefix = /^[a-z0-9]/i.test(alias) ? '(?<![a-z0-9.+#])' : '';
   const suffix = endsWithSymbol ? '(?![a-z0-9])' : '(?![a-z0-9+#])';
   return new RegExp(`${prefix}${escaped}${suffix}`, 'gi');
 }
