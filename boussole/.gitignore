@@ -1,0 +1,29 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Secrets & local config — never commit
+.env
+.env.*
+!.env.example
+
+# Generated artefacts (documents produced for real applications contain PII)
+storage/
+artifacts/
+*.pdf
+!docs/**/*.pdf
+
+# Prisma
+packages/db/prisma/*.db
+packages/db/prisma/migrations/dev.db*
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json

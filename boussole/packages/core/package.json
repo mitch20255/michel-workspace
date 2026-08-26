@@ -1,0 +1,29 @@
+{
+  "name": "@boussole/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Domaine métier pur : schémas, normalisation, déduplication, scoring, sécurité. Aucune I/O.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "default": "./dist/server/index.js"
+    }
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}

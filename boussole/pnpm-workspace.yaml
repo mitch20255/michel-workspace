@@ -1,0 +1,14 @@
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+# Seules ces dépendances sont autorisées à exécuter des scripts d'installation.
+# Tout le reste est installé sans post-install : réduit la surface d'attaque
+# de la chaîne d'approvisionnement (supply chain).
+onlyBuiltDependencies:
+  - esbuild
+  - '@prisma/client'
+  - '@prisma/engines'
+  - prisma
+  - sharp
+  - unrs-resolver

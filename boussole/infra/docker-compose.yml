@@ -1,0 +1,45 @@
+# Environnement de développement local.
+# Rien n'est exposé au-delà de 127.0.0.1 : les données candidat ne doivent pas
+# être accessibles depuis le réseau local.
+name: boussole
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: boussole-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: boussole
+      POSTGRES_PASSWORD: boussole
+      POSTGRES_DB: boussole
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U boussole -d boussole']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Utilisé à partir de la V1 pour les files d'attente (ingestion planifiée,
+  # génération documentaire en arrière-plan). Inoffensif à laisser tourner.
+  redis:
+    image: redis:7-alpine
+    container_name: boussole-redis
+    restart: unless-stopped
+    command: ['redis-server', '--save', '60', '1', '--loglevel', 'warning']
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres-data:
+  redis-data:
