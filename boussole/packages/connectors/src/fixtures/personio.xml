@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workzag-jobs>
+  <position>
+    <id>1580001</id>
+    <subcompany>Groupe Cartier Fictif</subcompany>
+    <office>Montréal</office>
+    <department>Technologies</department>
+    <recruitingCategory/>
+    <name>Développeur intégration</name>
+    <jobDescriptions>
+      <jobDescription>
+        <name><![CDATA[Tâches]]></name>
+        <value><![CDATA[<ul><li>Intégrer des systèmes tiers via API REST.</li><li>Maintenir la documentation technique.</li></ul>]]></value>
+      </jobDescription>
+      <jobDescription>
+        <name><![CDATA[Exigences]]></name>
+        <value><![CDATA[<ul><li>3 ans d'expérience en Java ou Python.</li><li>Connaissance de SQL.</li></ul>]]></value>
+      </jobDescription>
+      <jobDescription>
+        <name><![CDATA[Avantages]]></name>
+        <value><![CDATA[<ul><li>Assurance collective.</li></ul>]]></value>
+      </jobDescription>
+    </jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <seniority>experienced</seniority>
+    <schedule>full-time</schedule>
+    <yearsOfExperience>2-5</yearsOfExperience>
+    <keywords>java,python,api</keywords>
+    <occupation>it_software_development</occupation>
+    <occupationCategory>it_and_software_development</occupationCategory>
+    <createdAt>2026-01-15T08:00:00+01:00</createdAt>
+  </position>
+  <position>
+    <id>1580002</id>
+    <subcompany/>
+    <office>Québec</office>
+    <department/>
+    <name>Technicienne comptable</name>
+    <jobDescriptions>
+      <jobDescription>
+        <name><![CDATA[Tâches]]></name>
+        <value><![CDATA[<p>Tenue de livres et conciliations bancaires.</p>]]></value>
+      </jobDescription>
+    </jobDescriptions>
+    <employmentType>permanent</employmentType>
+    <schedule>part-time</schedule>
+    <createdAt>2026-02-02T08:00:00+01:00</createdAt>
+  </position>
+</workzag-jobs>

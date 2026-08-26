@@ -1,19 +1,15 @@
 {
-  "name": "@boussole/core",
+  "name": "@boussole/connectors",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Domaine métier pur : schémas, normalisation, déduplication, scoring, sécurité. Aucune I/O.",
+  "description": "Connecteurs d'ingestion vers les ATS publics (Greenhouse, Lever, Ashby, Personio).",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./server": {
-      "types": "./dist/server/index.d.ts",
-      "default": "./dist/server/index.js"
     }
   },
   "scripts": {
@@ -21,6 +17,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@boussole/core": "workspace:*",
+    "fast-xml-parser": "^5.3.0",
     "zod": "^4.4.3"
   }
 }

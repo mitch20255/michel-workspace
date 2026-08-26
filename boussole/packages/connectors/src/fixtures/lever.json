@@ -1,0 +1,45 @@
+[
+  {
+    "id": "a1b2c3d4-0000-4000-8000-000000000001",
+    "text": "Développeuse back-end senior",
+    "hostedUrl": "https://jobs.lever.co/lumenfictif/a1b2c3d4-0000-4000-8000-000000000001",
+    "applyUrl": "https://jobs.lever.co/lumenfictif/a1b2c3d4-0000-4000-8000-000000000001/apply",
+    "createdAt": 1769904000000,
+    "workplaceType": "hybrid",
+    "categories": {
+      "commitment": "Temps plein",
+      "department": "Ingénierie",
+      "location": "Montréal",
+      "allLocations": ["Montréal", "Québec"],
+      "team": "Plateforme"
+    },
+    "description": "<p>Rejoignez notre équipe plateforme.</p>",
+    "descriptionPlain": "Rejoignez notre équipe plateforme.",
+    "lists": [
+      {
+        "text": "Exigences",
+        "content": "<li>5 ans en Node.js</li><li>Expérience avec PostgreSQL et Docker</li>"
+      },
+      {
+        "text": "Responsabilités",
+        "content": "<li>Concevoir des API REST</li>"
+      }
+    ],
+    "additional": "<p>Nous offrons une assurance collective.</p>",
+    "salaryRange": {
+      "min": 105000,
+      "max": 130000,
+      "currency": "CAD",
+      "interval": "per-year-salary"
+    }
+  },
+  {
+    "id": "a1b2c3d4-0000-4000-8000-000000000002",
+    "text": "Designer produit",
+    "hostedUrl": "https://jobs.lever.co/lumenfictif/a1b2c3d4-0000-4000-8000-000000000002",
+    "createdAt": 1770076800000,
+    "categories": { "location": "Remote", "department": "Design" },
+    "descriptionPlain": "Poste de design produit entièrement à distance.",
+    "salaryRange": { "min": null, "max": null, "currency": null, "interval": null }
+  }
+]

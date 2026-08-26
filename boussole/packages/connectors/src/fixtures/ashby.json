@@ -1,0 +1,68 @@
+{
+  "apiVersion": "1",
+  "jobs": [
+    {
+      "id": "f0000000-0000-4000-8000-000000000001",
+      "title": "Ingénieure données",
+      "location": "Montréal, QC",
+      "secondaryLocations": [{ "location": "Toronto, ON" }],
+      "department": "Data",
+      "team": "Plateforme données",
+      "isListed": true,
+      "isRemote": true,
+      "employmentType": "FullTime",
+      "publishedAt": "2026-02-01T00:00:00.000Z",
+      "updatedAt": "2026-02-12T00:00:00.000Z",
+      "jobUrl": "https://jobs.ashbyhq.com/borealfictif/f0000000-0000-4000-8000-000000000001",
+      "applyUrl": "https://jobs.ashbyhq.com/borealfictif/f0000000-0000-4000-8000-000000000001/application",
+      "descriptionHtml": "<p>Construire nos pipelines de données.</p><h3>Exigences</h3><ul><li>Python et Spark</li><li>Airflow en production</li></ul>",
+      "descriptionPlain": "Construire nos pipelines de données.",
+      "compensation": {
+        "compensationTierSummary": "120 000 $ – 145 000 $ CAD",
+        "compensationTiers": [
+          {
+            "id": "tier-1",
+            "title": "Montréal",
+            "components": [
+              {
+                "summary": "120 000 $ – 145 000 $",
+                "compensationType": "Salary",
+                "interval": "YEAR",
+                "currencyCode": "CAD",
+                "minValue": 120000,
+                "maxValue": 145000
+              },
+              {
+                "summary": "0,05 % – 0,1 %",
+                "compensationType": "EquityPercentage",
+                "interval": "NONE",
+                "minValue": 0.05,
+                "maxValue": 0.1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "f0000000-0000-4000-8000-000000000002",
+      "title": "Poste retiré du tableau",
+      "location": "Montréal, QC",
+      "isListed": false,
+      "isRemote": false,
+      "jobUrl": "https://jobs.ashbyhq.com/borealfictif/f0000000-0000-4000-8000-000000000002",
+      "descriptionHtml": "<p>Ne doit pas apparaître.</p>"
+    },
+    {
+      "id": "f0000000-0000-4000-8000-000000000003",
+      "title": "Adjointe administrative",
+      "location": "Québec, QC",
+      "isListed": true,
+      "isRemote": false,
+      "employmentType": "PartTime",
+      "jobUrl": "https://jobs.ashbyhq.com/borealfictif/f0000000-0000-4000-8000-000000000003",
+      "descriptionHtml": "<p>Soutien administratif à l'équipe.</p>",
+      "compensation": { "compensationTiers": [] }
+    }
+  ]
+}
