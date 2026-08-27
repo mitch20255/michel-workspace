@@ -125,7 +125,9 @@ en **ajout seul** : aucune route ne permet de modifier ou supprimer une
 entrée. Un journal effaçable ne prouve rien.
 
 Il ne contient **jamais** de valeur sensible — seulement la nature de
-l'action, des références et des compteurs. « Champ `salary_expectation`
+l'action, des références et des compteurs. Une génération documentaire y
+laisse « CV v3, ton offensif, 4 puces réécrites dont 2 de portée », jamais le
+texte des puces. « Champ `salary_expectation`
 mis à jour », jamais le montant. « Appel au modèle pour
 `interview_questions`, 1 240 jetons », jamais le prompt : un journal qui
 contient les prompts est une copie intégrale du profil sous un autre nom.

@@ -53,10 +53,14 @@ export interface CriterionScore {
 
 export interface KeywordGapItem {
   keyword: string;
-  status: 'matched' | 'missing_from_cv' | 'not_in_profile';
+  status: 'matched' | 'missing_from_cv' | 'not_in_profile' | 'transferable';
   required: boolean;
   category: string;
   profileEvidence?: string;
+  /** Compétence voisine réellement possédée, sur le statut `transferable`. */
+  transferable?: { missing: string; via: string; domain: string; strength: number };
+  /** Phrase prête pour la lettre : compétence possédée **et** écart assumé. */
+  bridge?: string;
   advice: string;
 }
 
@@ -106,6 +110,7 @@ export interface JobDetailResponse {
       matched: KeywordGapItem[];
       safeToAdd: KeywordGapItem[];
       realGaps: KeywordGapItem[];
+      transferable: KeywordGapItem[];
       coverage: number;
       requiredCoverage: number;
     };
@@ -172,6 +177,25 @@ export interface SettingsResponse {
     available: Array<{ id: string; label: string; local: boolean; defaultModel: string }>;
   };
   scoring: { weights: Record<string, number>; defaults: Record<string, number> };
+  documents: {
+    tone: ImpactTone;
+    available: Array<{ id: ImpactTone; label: string; caveat: string }>;
+  };
+}
+
+export type ImpactTone = 'factual' | 'confident' | 'assertive';
+
+export interface ImpactEdit {
+  kind: 'outcome_first' | 'weakener_removed' | 'hedge_removed' | 'term_aligned' | 'tidied';
+  before: string;
+  after: string;
+  rationale: string;
+}
+
+export interface RewrittenBullet {
+  original: string;
+  text: string;
+  edits: ImpactEdit[];
 }
 
 export interface StatusResponse {
@@ -249,4 +273,23 @@ export interface SensitiveFieldStatus {
   state: 'answered' | 'needs_input' | 'declined';
   hasValue: boolean;
   note?: string;
+}
+
+export interface GeneratedDocumentSummary {
+  id: string;
+  kind: 'cv' | 'cover_letter';
+  language: string;
+  version: number;
+  pdfPath: string | null;
+  injectedKeywords: string[];
+  tone: ImpactTone;
+  createdAt: string;
+  applicationId: string | null;
+}
+
+export interface GeneratedDocumentDetail extends GeneratedDocumentSummary {
+  plainText: string;
+  sourceTypst: string;
+  profileHash: string;
+  rewrites: RewrittenBullet[];
 }

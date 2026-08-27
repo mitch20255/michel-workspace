@@ -40,10 +40,13 @@ const DEMO_PROFILE = {
       title: 'Développeuse senior',
       startDate: '2021-03',
       endDate: null,
+      // Puces volontairement écrites comme la plupart des gens les écrivent :
+      // le résultat rejeté en fin de phrase, la part personnelle bornée par un
+      // verbe d'excuse. C'est le matériau que le cadran d'impact travaille.
       bullets: [
         'Conception et livraison d’une plateforme React/Node.js utilisée par 12 000 usagers.',
-        'Migration de l’infrastructure vers Docker et Kubernetes sur AWS.',
-        'Encadrement de 3 développeuses et développeurs juniors.',
+        'Migration de l’infrastructure vers Docker et Kubernetes sur AWS, réduisant les coûts d’hébergement.',
+        'Encadrement de 3 développeuses et développeurs juniors, dans le cadre de mes fonctions.',
       ],
       skills: ['TypeScript', 'React', 'Node.js', 'AWS', 'Docker'],
       metrics: ['12 000 usagers', '3 personnes encadrées'],
@@ -54,7 +57,10 @@ const DEMO_PROFILE = {
       title: 'Développeuse web',
       startDate: '2017-06',
       endDate: '2021-02',
-      bullets: ['Développement d’API REST en Python (Django) pour un portail citoyen.'],
+      bullets: [
+        'Participé au développement d’API REST en Python (Django) pour un portail citoyen.',
+        'Responsable de la migration de la base vers PostgreSQL.',
+      ],
       skills: ['Python', 'Django', 'PostgreSQL'],
       metrics: [],
     },

@@ -86,11 +86,19 @@ PDF. Un document qui échoue n'est jamais produit, même temporairement.
 L'analyse d'écart de mots-clés distingue trois statuts, et un seul autorise
 une action automatique :
 
-| Statut            | Signification                            | Ce que Boussole peut faire           |
-| ----------------- | ---------------------------------------- | ------------------------------------ |
-| `matched`         | Présente au profil et visible dans le CV | Rien à faire                         |
-| `missing_from_cv` | Présente au profil, absente du CV envoyé | La faire ressortir                   |
-| `not_in_profile`  | Absente de votre profil                  | **Rien** — signalée comme écart réel |
+| Statut            | Signification                            | Ce que Boussole peut faire            |
+| ----------------- | ---------------------------------------- | ------------------------------------- |
+| `matched`         | Présente au profil et visible dans le CV | Rien à faire                          |
+| `missing_from_cv` | Présente au profil, absente du CV envoyé | La faire ressortir                    |
+| `transferable`    | Absente, mais vous pratiquez une voisine | Une phrase honnête pour **la lettre** |
+| `not_in_profile`  | Absente de votre profil                  | **Rien** — signalée comme écart réel  |
+
+Un **cadran d'impact** règle la fermeté des formulations, de « mot pour mot »
+à « offensif ». Aucun cran ne peut ajouter un fait : la réécriture ne sait que
+supprimer, réordonner et renommer une compétence en son synonyme, et chaque
+puce est vérifiée mot à mot contre son original. Ce qui change vraiment de
+portée est affiché avant envoi. Détails dans
+[`docs/modules/documents.md`](docs/modules/documents.md).
 
 ### 2. Vous gardez la main
 

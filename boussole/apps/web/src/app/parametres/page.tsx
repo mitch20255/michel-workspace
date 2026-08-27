@@ -2,6 +2,7 @@ import { apiSafe } from '@/lib/api';
 import type { SettingsResponse } from '@/lib/types';
 import { Card, Empty } from '@/components/ui';
 import { LlmSettingsForm } from './form';
+import { DocumentToneForm } from './tone';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,26 @@ export default async function SettingsPage() {
           prérequis.
         </p>
       </div>
+
+      <Card
+        title="Ton des documents"
+        subtitle="Jusqu’où Boussole reformule vos puces — sans jamais ajouter un fait"
+      >
+        {!settings ? (
+          <Empty>Paramètres indisponibles : vérifier que l’API est démarrée.</Empty>
+        ) : (
+          <>
+            <DocumentToneForm settings={settings} />
+            <p className="mt-4 border-t border-(--color-border-subtle) pt-3 text-xs text-(--color-ink-faint)">
+              Quel que soit le niveau, la réécriture ne peut que supprimer, réordonner, ou remplacer
+              le nom d’une compétence par un synonyme de la même compétence. Aucun niveau ne peut
+              introduire un chiffre, un employeur, un diplôme ou une technologie absents de votre
+              profil : chaque puce réécrite est vérifiée mot à mot contre son original, et une puce
+              qui échouerait fait échouer la génération.
+            </p>
+          </>
+        )}
+      </Card>
 
       <Card title="Modèle de langage" subtitle="Votre clé, votre décision — désactivé par défaut">
         {!settings ? (

@@ -89,10 +89,72 @@ function normalizeNumber(raw: string): string {
  *        autorisés (statut `missing_from_cv` : présents au profil mais absents
  *        du CV). Aucun autre mot-clé technique ne peut être introduit.
  */
+export interface VerifyOptions {
+  /**
+   * Compétences que le candidat ne possède pas et qui peuvent néanmoins être
+   * **nommées, à condition d'être niées**.
+   *
+   * Le besoin est réel : une lettre qui écrit « pas encore de Kubernetes en
+   * poste » est honnête et utile, mais le contrôle des compétences la
+   * rejetterait, Kubernetes étant absent du profil. L'exception est donc
+   * volontairement étroite — chaque occurrence du terme doit se trouver dans
+   * la portée d'une négation explicite. Une seule occurrence affirmative
+   * suffit à faire échouer le document.
+   *
+   * Ce n'est pas un assouplissement de la garantie : « je ne connais pas X »
+   * et « je connais X » sont deux affirmations différentes, et seule la
+   * première est autorisée ici.
+   */
+  negatable?: readonly string[];
+}
+
+/**
+ * Marqueurs de négation reconnus.
+ *
+ * La portée d'une négation est bornée deux fois : elle ne remonte jamais
+ * au-delà du début de la phrase courante, et jamais plus loin que
+ * `NEGATION_WINDOW` caractères. La première borne est la plus importante —
+ * sans elle, « Pas encore de Terraform. Compétences : Terraform » passait,
+ * la négation de la première phrase couvrant l'affirmation de la seconde.
+ */
+const NEGATION_MARKERS = [
+  'pas encore',
+  "n'ai pas",
+  'ne connais pas',
+  'pas de',
+  "pas d'",
+  'aucune expérience',
+  'sans expérience',
+  'jamais utilisé',
+  'que je n',
+  'not yet',
+  'no professional',
+  'have not',
+  "haven't",
+  'no experience',
+  'never used',
+  'that i have not',
+];
+const NEGATION_WINDOW = 90;
+
+function isNegated(text: string, index: number): boolean {
+  const preceding = text.slice(Math.max(0, index - NEGATION_WINDOW), index);
+  const sentenceStart = Math.max(
+    preceding.lastIndexOf('.'),
+    preceding.lastIndexOf(';'),
+    preceding.lastIndexOf('!'),
+    preceding.lastIndexOf('?'),
+    preceding.lastIndexOf('\n'),
+  );
+  const window = preceding.slice(sentenceStart + 1).toLowerCase();
+  return NEGATION_MARKERS.some((marker) => window.includes(marker));
+}
+
 export function verifyDocument(
   documentText: string,
   profile: CandidateProfile,
   allowedKeywords: string[] = [],
+  options: VerifyOptions = {},
 ): GuardrailReport {
   const violations: GuardrailViolation[] = [];
 
@@ -115,19 +177,35 @@ export function verifyDocument(
   }
 
   const allowed = new Set(normalizeSkillNames(allowedKeywords));
+  const negatable = normalizeSkillNames([...(options.negatable ?? [])]);
 
   for (const found of extractSkills(documentText)) {
     const known =
       [...profileSkillNames].some((name) => isSameSkill(name, found.canonical)) ||
       [...allowed].some((name) => isSameSkill(name, found.canonical));
 
-    if (!known) {
+    if (known) continue;
+
+    // Compétence citée sous négation : autorisée, mais uniquement si *toutes*
+    // ses occurrences le sont. Une mention affirmative ailleurs dans le
+    // document annule l'exception.
+    if (negatable.some((name) => isSameSkill(name, found.canonical))) {
+      const affirmative = findAffirmativeMention(documentText, found.canonical);
+      if (!affirmative) continue;
+
       violations.push({
         kind: 'unknown_skill',
         fragment: found.canonical,
-        explanation: `« ${found.canonical} » n'apparaît nulle part dans votre profil. Boussole n'ajoute jamais une compétence que vous n'avez pas déclarée.`,
+        explanation: `« ${found.canonical} » est absente de votre profil. Elle ne peut être citée que niée explicitement ; ici elle apparaît affirmée : « …${affirmative}… ».`,
       });
+      continue;
     }
+
+    violations.push({
+      kind: 'unknown_skill',
+      fragment: found.canonical,
+      explanation: `« ${found.canonical} » n'apparaît nulle part dans votre profil. Boussole n'ajoute jamais une compétence que vous n'avez pas déclarée.`,
+    });
   }
 
   // --- 2. Employeurs -----------------------------------------------------
@@ -223,6 +301,25 @@ function extractCredentialMentions(text: string): string[] {
   return [...found];
 }
 
+/**
+ * Première occurrence d'un terme hors de la portée d'une négation, avec son
+ * contexte. Retourne `undefined` si toutes les occurrences sont niées.
+ */
+function findAffirmativeMention(text: string, term: string): string | undefined {
+  const pattern = new RegExp(
+    `(?<![\\p{L}\\p{N}])${term.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?![\\p{L}\\p{N}])`,
+    'giu',
+  );
+
+  for (const match of text.matchAll(pattern)) {
+    const index = match.index ?? 0;
+    if (isNegated(text, index)) continue;
+    return text.slice(Math.max(0, index - 40), index + term.length + 20).trim();
+  }
+
+  return undefined;
+}
+
 /** Mentions ressemblant à un employeur (« chez X », « at X »). */
 function extractEmployerMentions(text: string): string[] {
   const found = new Set<string>();
@@ -242,8 +339,9 @@ export function verifyLetter(
   profile: CandidateProfile,
   targetCompany: string,
   allowedKeywords: string[] = [],
+  options: VerifyOptions = {},
 ): GuardrailReport {
-  const report = verifyDocument(letterText, profile, allowedKeywords);
+  const report = verifyDocument(letterText, profile, allowedKeywords, options);
   const canonicalTarget = canonicalize(targetCompany);
 
   const filtered = report.violations.filter((violation) => {

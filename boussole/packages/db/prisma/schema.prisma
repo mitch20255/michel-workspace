@@ -70,6 +70,12 @@ model UserSettings {
   /// Pondérations personnalisées du scoring, sérialisées.
   scoringWeights Json @default("{}")
 
+  /// factual | confident | assertive. Niveau de réécriture d'impact appliqué
+  /// aux puces des documents générés. `factual` reproduit le profil mot pour
+  /// mot ; `assertive` retire les atténuateurs de rôle. Aucun niveau ne peut
+  /// introduire un fait : voir `packages/documents/src/impact.ts`.
+  documentTone String @default("confident")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -283,6 +289,7 @@ model Job {
 
   scores       JobScore[]
   applications Application[]
+  documents    GeneratedDocument[]
 
   /// Une offre est identifiée de façon unique par sa source et son
   /// identifiant chez cette source.
@@ -446,6 +453,19 @@ model GeneratedDocument {
   applicationId String?
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
 
+  /// Offre pour laquelle le document a été produit.
+  ///
+  /// Distinct de `applicationId` : un CV est souvent généré pour évaluer une
+  /// offre avant toute décision de postuler. Sans ce lien, ces documents
+  /// n'étaient rattachés à rien et l'écran d'une offre ne pouvait pas montrer
+  /// ce qu'il avait lui-même produit.
+  ///
+  /// Nullable et `SetNull` : les offres sont purgeables indépendamment du
+  /// profil, et perdre l'offre ne doit pas effacer la trace de ce qui a été
+  /// envoyé.
+  jobId String?
+  job   Job?    @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
   /// cv | cover_letter
   kind     String
   language String @default("fr")
@@ -466,10 +486,20 @@ model GeneratedDocument {
   /// ne reflète plus le profil courant.
   profileHash      String
 
+  /// Niveau de réécriture appliqué à ce document précis. Conservé par
+  /// document et non déduit des paramètres courants : changer le réglage ne
+  /// doit pas réécrire l'histoire d'un CV déjà envoyé.
+  tone             String @default("factual")
+  /// Puces modifiées, avec original et détail des transformations. C'est la
+  /// pièce justificative : elle permet de répondre en entretien à « d'où
+  /// vient cette formulation ? » des mois après l'envoi.
+  rewrites         Json   @default("[]")
+
   createdAt DateTime @default(now())
 
   @@index([profileId, kind, createdAt])
   @@index([applicationId])
+  @@index([jobId, createdAt])
   @@map("generated_documents")
 }
 

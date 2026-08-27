@@ -410,6 +410,146 @@ describeApi('documents', () => {
   });
 });
 
+describeApi('ton des documents', () => {
+  /** Profil dont les puces se sous-vendent : le cas que le cadran vise. */
+  const HEDGED_PROFILE = {
+    ...TEST_PROFILE,
+    experiences: [
+      {
+        ...TEST_PROFILE.experiences[0]!,
+        bullets: [
+          "Participé à la refonte de l'interface React.",
+          'Responsable de la migration vers TypeScript.',
+        ],
+      },
+    ],
+  };
+
+  async function seedJob(): Promise<string> {
+    await harness.request('POST', '/jobs/manual', {
+      atsProvider: 'manual',
+      sourceJobId: 'tone-1',
+      companyName: 'Northwind Technologies Inc.',
+      title: 'Développeuse senior',
+      descriptionRaw: '<h3>Exigences</h3><ul><li>React et TypeScript.</li></ul>',
+    });
+    const jobs = (await harness.request('GET', '/jobs')).body as { jobs: Array<{ id: string }> };
+    return jobs.jobs[0]!.id;
+  }
+
+  beforeEach(async () => {
+    await seedUser();
+    await harness.request('PUT', '/profile', HEDGED_PROFILE);
+  });
+
+  it('reproduit le profil mot pour mot au niveau fidèle', async () => {
+    await harness.request('PUT', '/settings', { documentTone: 'factual' });
+    const jobId = await seedJob();
+
+    const { status, body } = await harness.request('POST', '/documents/generate', {
+      jobId,
+      kinds: ['cv'],
+    });
+
+    expect(status).toBe(201);
+    const { documents } = body as {
+      documents: Array<{ tone: string; plainText: string; rewrites: unknown[] }>;
+    };
+    expect(documents[0]!.tone).toBe('factual');
+    expect(documents[0]!.rewrites).toHaveLength(0);
+    expect(documents[0]!.plainText).toContain("Participé à la refonte de l'interface React.");
+  });
+
+  it('retire les atténuateurs de rôle au niveau offensif', async () => {
+    await harness.request('PUT', '/settings', { documentTone: 'assertive' });
+    const jobId = await seedJob();
+
+    const { body } = await harness.request('POST', '/documents/generate', {
+      jobId,
+      kinds: ['cv'],
+    });
+
+    const { documents } = body as {
+      documents: Array<{
+        tone: string;
+        plainText: string;
+        scopeChangingEdits: unknown[];
+      }>;
+    };
+
+    expect(documents[0]!.tone).toBe('assertive');
+    expect(documents[0]!.plainText).not.toContain('Participé à');
+    expect(documents[0]!.plainText).toContain("Refonte de l'interface React.");
+    // Le déplacement de portée est remonté séparément : c'est ce que
+    // l'utilisateur doit relire avant d'envoyer.
+    expect(documents[0]!.scopeChangingEdits.length).toBeGreaterThan(0);
+  });
+
+  it('n’introduit aucun terme absent du profil, même au niveau offensif', async () => {
+    await harness.request('PUT', '/settings', { documentTone: 'assertive' });
+    const jobId = await seedJob();
+
+    const { body } = await harness.request('POST', '/documents/generate', {
+      jobId,
+      kinds: ['cv'],
+    });
+    const { documents } = body as {
+      documents: Array<{ rewrites: Array<{ original: string; text: string }> }>;
+    };
+
+    // Chaque mot du texte réécrit doit exister dans la puce d'origine : la
+    // réécriture ne sait que supprimer et permuter.
+    for (const rewrite of documents[0]!.rewrites) {
+      const source = new Set(rewrite.original.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []);
+      for (const word of rewrite.text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []) {
+        expect(source.has(word)).toBe(true);
+      }
+    }
+  });
+
+  it('conserve le ton de chaque document, même après changement de réglage', async () => {
+    // Changer le réglage ne doit pas réécrire l'histoire d'un CV déjà envoyé.
+    await harness.request('PUT', '/settings', { documentTone: 'factual' });
+    const jobId = await seedJob();
+    await harness.request('POST', '/documents/generate', { jobId, kinds: ['cv'] });
+
+    await harness.request('PUT', '/settings', { documentTone: 'assertive' });
+    await harness.request('POST', '/documents/generate', { jobId, kinds: ['cv'] });
+
+    const { body } = await harness.request('GET', `/documents?jobId=${jobId}&withRewrites=true`);
+    const documents = body as Array<{ tone: string; version: number }>;
+
+    expect(documents).toHaveLength(2);
+    expect(documents.map((d) => d.tone).sort()).toEqual(['assertive', 'factual']);
+  });
+
+  it('surcharge ponctuellement le réglage enregistré', async () => {
+    await harness.request('PUT', '/settings', { documentTone: 'factual' });
+    const jobId = await seedJob();
+
+    const { body } = await harness.request('POST', '/documents/generate', {
+      jobId,
+      kinds: ['cv'],
+      tone: 'confident',
+    });
+
+    expect((body as { documents: Array<{ tone: string }> }).documents[0]!.tone).toBe('confident');
+  });
+
+  it('ne journalise que des compteurs, jamais le texte réécrit', async () => {
+    await harness.request('PUT', '/settings', { documentTone: 'assertive' });
+    const jobId = await seedJob();
+    await harness.request('POST', '/documents/generate', { jobId, kinds: ['cv'] });
+
+    const { body } = await harness.request('GET', '/audit');
+    const serialized = JSON.stringify(body);
+
+    expect(serialized).toContain('document.generated');
+    expect(serialized).not.toContain('Participé à');
+    expect(serialized).not.toContain("Refonte de l'interface");
+  });
+});
+
 describeApi('paramètres et modèle de langage', () => {
   beforeEach(seedUser);
 

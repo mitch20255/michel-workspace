@@ -94,6 +94,45 @@ describe('garde-fous anti-invention', () => {
     expect(report.ok).toBe(true);
   });
 
+  it('accepte une compétence absente si elle est explicitement niée', () => {
+    // Dire « pas encore de Terraform » est honnête et utile dans une lettre.
+    // L'interdire pousserait au silence, qui laisse conclure au pire.
+    const report = verifyDocument(
+      "J'automatise l'infrastructure au quotidien ; pas encore de Terraform en poste.",
+      makeProfile(),
+      [],
+      { negatable: ['Terraform'] },
+    );
+    expect(report.ok).toBe(true);
+  });
+
+  it('refuse la même compétence dès qu’une mention est affirmative', () => {
+    // L'exception ne porte que sur la négation. Une seule occurrence affirmée
+    // ailleurs dans le document annule l'autorisation.
+    const report = verifyDocument(
+      'Pas encore de Terraform en poste. Compétences : Terraform, React.',
+      makeProfile(),
+      [],
+      { negatable: ['Terraform'] },
+    );
+    expect(report.ok).toBe(false);
+    expect(report.violations.map((v) => v.fragment)).toContain('Terraform');
+  });
+
+  it('ne considère pas une négation lointaine comme couvrante', () => {
+    // Un « pas » situé trois phrases plus haut ne nie pas la compétence citée
+    // ici : la portée d'une négation est courte.
+    const report = verifyDocument(
+      "Je n'ai pas de préférence sur les outils. " +
+        'Mon parcours couvre le développement web, la mise en production, la revue de code, ' +
+        "l'encadrement d'équipe et la relation client. Expertise en Terraform.",
+      makeProfile(),
+      [],
+      { negatable: ['Terraform'] },
+    );
+    expect(report.ok).toBe(false);
+  });
+
   it('refuse une compétence absente du profil', () => {
     const report = verifyDocument('Expertise en Terraform et Scala.', makeProfile());
     expect(report.ok).toBe(false);

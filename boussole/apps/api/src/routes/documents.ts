@@ -15,6 +15,8 @@ const GenerateInput = z.object({
   recipientName: z.string().optional(),
   customParagraphs: z.array(z.string()).optional(),
   applicationId: z.string().optional(),
+  /** Surcharge ponctuelle ; sinon le réglage des paramètres s'applique. */
+  tone: z.enum(['factual', 'confident', 'assertive']).optional(),
 });
 
 export async function registerDocumentRoutes(
@@ -35,7 +37,10 @@ export async function registerDocumentRoutes(
     const query = z
       .object({
         applicationId: z.string().optional(),
+        jobId: z.string().optional(),
         kind: z.enum(['cv', 'cover_letter']).optional(),
+        /** Inclure les puces réécrites : plus volumineux, demandé explicitement. */
+        withRewrites: z.coerce.boolean().optional(),
       })
       .parse(request.query);
 
@@ -43,6 +48,7 @@ export async function registerDocumentRoutes(
       where: {
         userId: context.userId,
         ...(query.applicationId ? { applicationId: query.applicationId } : {}),
+        ...(query.jobId ? { jobId: query.jobId } : {}),
         ...(query.kind ? { kind: query.kind } : {}),
       },
       select: {
@@ -52,8 +58,11 @@ export async function registerDocumentRoutes(
         version: true,
         pdfPath: true,
         injectedKeywords: true,
+        tone: true,
         createdAt: true,
         applicationId: true,
+        jobId: true,
+        ...(query.withRewrites ? { rewrites: true } : {}),
       },
       orderBy: { createdAt: 'desc' },
     });

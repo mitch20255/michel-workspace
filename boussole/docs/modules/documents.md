@@ -6,10 +6,11 @@ inventer.
 ## Chaîne de production
 
 ```
-profil + offre ──► sélection ──► gabarit Typst ──► vérification ──► PDF
-                       │                                │
-                       │                                └─ échec ⇒ rien n'est produit
-                       └─ ne modifie jamais le texte d'une puce
+profil + offre ──► sélection ──► réécriture ──► gabarit Typst ──► vérification ──► PDF
+                       │             │                                  │
+                       │             │                                  └─ échec ⇒ rien n'est produit
+                       │             └─ ne peut que supprimer et permuter
+                       └─ choisit quoi montrer, jamais quoi dire
 ```
 
 La **vérification précède la compilation**, délibérément : un document qui
@@ -38,20 +39,87 @@ mais non enregistrée dans la liste des certifications est refusée. Le résumé
 fait partie du profil, mais rien ne distinguerait alors une qualification
 réelle d'une formule d'affichage.
 
-## Sélection, pas réécriture
+## Sélection
 
 Le module choisit **quelles** expériences, quels projets et quelles puces
-retenir, et dans quel ordre. Il ne modifie **jamais** le texte d'une puce.
-
-Sélectionner et réordonner sont des opérations honnêtes ; réécrire ne l'est
-qu'encadré. La reformulation par modèle est prévue en V1, sous les mêmes
-garde-fous et avec relecture humaine obligatoire.
+retenir, et dans quel ordre. La sélection ne touche pas au texte : c'est la
+couche de réécriture, ci-dessous, qui le fait — et seulement dans les limites
+qu'elle s'impose.
 
 Deux règles d'affichage :
 
 - l'ordre final est antichronologique, pas par pertinence : un CV trié par
   score déroute le lecteur ;
 - un diplôme non terminé est signalé comme tel, jamais présenté comme obtenu.
+
+## Le cadran d'impact
+
+La plupart des gens se sous-vendent dans la forme, pas dans le fond.
+« Participé à la migration de l'infrastructure, réduisant les coûts de 30 % »
+contient un excellent résultat, enterré derrière un verbe d'excuse et rejeté
+en fin de phrase. Un recruteur qui balaie six secondes par CV ne le verra pas.
+
+Trois niveaux, choisis par l'utilisateur dans les paramètres :
+
+| Niveau      | Ce qu'il fait                                                | Ce qu'il déplace                      |
+| ----------- | ------------------------------------------------------------ | ------------------------------------- |
+| `factual`   | Rien. Texte du profil mot pour mot                           | —                                     |
+| `confident` | Résultat en tête, remplissage retiré, vocabulaire de l'offre | Rien : aucune affirmation ne change   |
+| `assertive` | Retire en plus les atténuateurs de rôle                      | **La portée** de ce que vous affirmez |
+
+`confident` est le défaut. Ses transformations sont des permutations et des
+suppressions de formules creuses : « dans le cadre de mes fonctions »
+n'affirmait rien, et hisser le résultat en tête ne change pas ce qui est dit.
+
+`assertive` déplace réellement quelque chose : « participé à la refonte »
+devient « refonte ». Le fait reste vrai — vous y avez bien travaillé — mais
+votre part n'est plus bornée par la phrase. C'est un choix légitime, et c'est
+pour cela qu'il est isolé, nommé, et jamais activé par défaut.
+
+### Ce qui rend le niveau offensif défendable
+
+Deux mécanismes, pas une intention :
+
+**Le module ne peut pas inventer.** Ses seules opérations sont supprimer,
+permuter, et remplacer un libellé de compétence par un synonyme reconnu comme
+désignant la même compétence. `assertNoNewFacts` le vérifie à chaque puce :
+tout jeton du texte produit doit exister dans l'original, aux connecteurs
+près. Une violation lève une erreur et fait échouer la génération — ce n'est
+pas un filet optionnel, c'est ce qui autorise l'affirmation.
+
+Cette contrainte a un coût assumé : les tournures relatives (« ce qui a permis
+de… ») ne sont pas déplacées, parce que les déplacer exigerait de reformuler,
+donc d'introduire des mots absents. L'invariant passe avant la permutation.
+
+**Rien ne part sans avoir été vu.** Chaque transformation est enregistrée avec
+son avant, son après et sa justification. L'écran de l'offre affiche
+l'avant/après, et sort du repli les transformations qui déplacent une portée.
+Une exagération assumée et relue se défend en entretien ; la même, découverte
+au moment où le recruteur la lit à voix haute, ne se défend pas.
+
+Le ton est **conservé par document**. Changer le réglage ne réécrit pas
+l'histoire d'un CV déjà envoyé.
+
+## Compétences transférables dans la lettre
+
+L'analyse d'écart distingue « absente du profil » de « absente, mais vous
+pratiquez une compétence voisine » (voir [scoring](scoring.md)). Pour la
+seconde, la lettre peut porter une phrase que le CV ne portera jamais :
+
+> React en production (interfaces à composants) ; pas encore d'expérience
+> professionnelle sur Vue.js.
+
+Les deux moitiés sont indissociables et générées ensemble : impossible de
+garder la première en supprimant la seconde. Inverser l'ordre produirait une
+phrase d'excuse ; omettre la seconde serait un mensonge par insinuation.
+
+Le garde-fou l'autorise par une exception étroite : une compétence absente du
+profil peut être **nommée si elle est niée**, et une seule mention affirmative
+ailleurs dans le document annule l'autorisation. La portée d'une négation ne
+franchit pas la fin de sa phrase.
+
+Le silence, lui, est la pire option : un recruteur qui ne voit pas Kubernetes
+dans le dossier conclut à l'absence totale d'expérience de conteneurs.
 
 ## Extractibilité ATS
 

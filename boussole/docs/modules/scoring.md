@@ -74,17 +74,38 @@ consultable pour que l'utilisateur puisse contester.
 
 ## Analyse d'écart de mots-clés
 
-Trois statuts, et **un seul autorise une action automatique** :
+Quatre statuts, et **un seul autorise une action sur le CV** :
 
-| Statut            | Ce que Boussole peut faire                  |
-| ----------------- | ------------------------------------------- |
-| `matched`         | Rien                                        |
-| `missing_from_cv` | Faire ressortir — l'affirmation reste vraie |
-| `not_in_profile`  | **Rien** — signalé comme écart réel         |
+| Statut            | Ce que Boussole peut faire                      |
+| ----------------- | ----------------------------------------------- |
+| `matched`         | Rien                                            |
+| `missing_from_cv` | Faire ressortir — l'affirmation reste vraie     |
+| `transferable`    | **Rien dans le CV** — une phrase pour la lettre |
+| `not_in_profile`  | **Rien** — signalé comme écart réel             |
 
 Cette séparation est la barrière anti-hallucination du produit. Seule la liste
 `safeToAdd` est transmise à la forge documentaire ; `realGaps` ne l'atteint
-jamais.
+jamais, et `transferable` en fait partie.
+
+### Compétences voisines
+
+`transferable` n'est pas un adoucissement de `not_in_profile` : c'est un
+sous-cas documenté. Le problème qu'il résout : « Kubernetes exigé, absent du
+profil » était classé exactement comme « SAP exigé, absent du profil ». Pour
+quelqu'un qui opère des conteneurs sur ECS depuis trois ans, c'est faux — et
+c'est une occasion perdue à chaque candidature.
+
+Les groupes de voisinage (`adjacency.ts`) sont curatés selon un critère
+strict : deux compétences ne sont voisines que si quelqu'un qui maîtrise l'une
+devient productif sur l'autre en quelques semaines, sans repartir de zéro
+conceptuellement.
+
+Une exigence approchée compte pour **la moitié** dans la couverture. Compter
+plein ferait passer un candidat sans Kubernetes pour un candidat avec
+Kubernetes ; compter zéro nierait trois ans de conteneurs.
+
+La phrase produite pour la lettre nomme la compétence possédée **et** l'écart,
+en un seul bloc indissociable. Voir [forge documentaire](documents.md).
 
 Une offre sans exigence identifiable retourne une couverture de 0, pas de 1 :
 on ne sait rien, ce n'est pas une adéquation parfaite.

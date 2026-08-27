@@ -24,6 +24,7 @@ comment tout récupérer ou tout effacer.
 | Réponses aux questions sensibles | **Oui**  | Autorisation de travail, EEO, salaire…      |
 | Candidatures, notes, rappels     | Non      | Votre CRM                                   |
 | Documents générés                | Non      | Trace de ce qui a été envoyé                |
+| Puces réécrites (avant/après)    | Non      | Pièce justificative de chaque reformulation |
 | Clé API du modèle                | **Oui**  | Vous appartient                             |
 | Journal d'audit                  | Non      | Ne contient aucune valeur sensible          |
 

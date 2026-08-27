@@ -1,7 +1,15 @@
 import type { CandidateProfile } from '../schemas/profile.js';
 import type { NormalizedJob } from '../schemas/job.js';
 import { canonicalize } from '../text/normalize.js';
+import { bridgePhrasing, findTransferable, type TransferableMatch } from './adjacency.js';
 import { extractSkills, isSameSkill, normalizeSkillNames } from './skills.js';
+
+/**
+ * Ce que vaut une compétence voisine face à une exigence, dans le calcul de
+ * couverture. La moitié, pas plus : c'est un pari sur la capacité du candidat
+ * à monter en compétence, pas une équivalence.
+ */
+export const TRANSFERABLE_CREDIT = 0.5;
 
 /**
  * Analyse d'écart de mots-clés entre une offre et le profil candidat.
@@ -16,13 +24,19 @@ import { extractSkills, isSameSkill, normalizeSkillNames } from './skills.js';
  *  - `not_in_profile`  : le candidat ne déclare pas cette compétence. Boussole
  *    la signale comme un écart réel à combler (formation, projet), et n'écrit
  *    JAMAIS ce mot-clé dans un document. L'ajouter serait un mensonge.
+ *  - `transferable`    : le candidat ne déclare pas cette compétence, mais en
+ *    déclare une voisine proche (voir `adjacency.ts`). C'est un sous-cas de
+ *    `not_in_profile`, pas un adoucissement : le mot-clé reste interdit dans
+ *    un CV. Ce que ce statut ajoute, c'est une phrase vraie pour la lettre,
+ *    qui nomme la compétence réellement possédée **et** l'absence de l'autre.
  *  - `matched`         : présente des deux côtés.
  *
  * Cette séparation est la barrière anti-hallucination du produit. Toute
- * évolution du module doit la préserver.
+ * évolution du module doit la préserver. En particulier, `safeToAdd` ne
+ * contient que `missing_from_cv` : ni `not_in_profile`, ni `transferable`.
  */
 
-export type GapStatus = 'matched' | 'missing_from_cv' | 'not_in_profile';
+export type GapStatus = 'matched' | 'missing_from_cv' | 'not_in_profile' | 'transferable';
 
 export interface KeywordGapItem {
   keyword: string;
@@ -33,6 +47,14 @@ export interface KeywordGapItem {
   category: string;
   /** Où la compétence a été trouvée côté candidat, s'il y a lieu. */
   profileEvidence?: string;
+  /** Compétence voisine réellement possédée, pour le statut `transferable`. */
+  transferable?: TransferableMatch;
+  /**
+   * Phrase prête à l'emploi pour une lettre, sur le statut `transferable`.
+   * Elle nomme la compétence possédée et l'absence de celle exigée : les deux
+   * moitiés sont indissociables.
+   */
+  bridge?: string;
   /** Action autorisée pour ce mot-clé. */
   advice: string;
 }
@@ -42,8 +64,16 @@ export interface KeywordGapReport {
   matched: KeywordGapItem[];
   /** Vrais, à réintégrer dans le CV. Utilisables par la forge documentaire. */
   safeToAdd: KeywordGapItem[];
-  /** Écarts réels. Jamais insérés dans un document. */
+  /**
+   * Écarts réels. Jamais insérés dans un document.
+   * Inclut les `transferable` : ils restent des écarts.
+   */
   realGaps: KeywordGapItem[];
+  /**
+   * Sous-ensemble de `realGaps` pour lequel une compétence voisine existe au
+   * profil. Utile pour la lettre et l'entretien, jamais pour le CV.
+   */
+  transferable: KeywordGapItem[];
   /** Part des exigences couvertes par le profil, 0–1. */
   coverage: number;
   /** Part des exigences *obligatoires* couvertes, 0–1. */
@@ -111,6 +141,24 @@ export function analyzeKeywordGap(
     const profileMatch = profileNames.find((name) => isSameSkill(name, jobSkill.canonical));
 
     if (!profileMatch) {
+      const neighbour = findTransferable(jobSkill.canonical, profileNames);
+
+      if (neighbour) {
+        return {
+          keyword: jobSkill.canonical,
+          status: 'transferable',
+          required: jobSkill.required,
+          occurrencesInJob: jobSkill.occurrences,
+          category: jobSkill.category,
+          profileEvidence: profileIndex.get(
+            profileNames.find((name) => isSameSkill(name, neighbour.via)) ?? '',
+          ),
+          transferable: neighbour,
+          bridge: bridgePhrasing(neighbour),
+          advice: `Non déclarée, mais vous pratiquez ${neighbour.via} (${neighbour.domain}). À porter dans la lettre avec la phrase proposée — jamais dans le CV.`,
+        };
+      }
+
       return {
         keyword: jobSkill.canonical,
         status: 'not_in_profile',
@@ -151,13 +199,23 @@ export function analyzeKeywordGap(
 
   const matched = items.filter((i) => i.status === 'matched');
   const safeToAdd = items.filter((i) => i.status === 'missing_from_cv');
-  const realGaps = items.filter((i) => i.status === 'not_in_profile');
+  const transferable = items.filter((i) => i.status === 'transferable');
+  const realGaps = items.filter(
+    (i) => i.status === 'not_in_profile' || i.status === 'transferable',
+  );
 
   const covered = matched.length + safeToAdd.length;
   const coverage = items.length === 0 ? 0 : covered / items.length;
 
   const requiredItems = items.filter((i) => i.required);
-  const requiredCovered = requiredItems.filter((i) => i.status !== 'not_in_profile').length;
+  // Une compétence transférable compte pour la moitié : la nier serait faux,
+  // la compter pleine ferait passer un candidat sans Kubernetes pour un
+  // candidat avec Kubernetes — exactement ce que ce produit refuse.
+  const requiredCovered = requiredItems.reduce((sum, item) => {
+    if (item.status === 'not_in_profile') return sum;
+    if (item.status === 'transferable') return sum + TRANSFERABLE_CREDIT;
+    return sum + 1;
+  }, 0);
   // Une offre sans exigence identifiable ne peut pas être « couverte à 100 % » :
   // on retourne 0 et le scoring traite ce cas comme une inconnue, pas comme un succès.
   const requiredCoverage = requiredItems.length === 0 ? 0 : requiredCovered / requiredItems.length;
@@ -167,6 +225,7 @@ export function analyzeKeywordGap(
     matched,
     safeToAdd,
     realGaps,
+    transferable,
     coverage: Number(coverage.toFixed(3)),
     requiredCoverage: Number(requiredCoverage.toFixed(3)),
   };

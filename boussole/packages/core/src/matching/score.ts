@@ -5,7 +5,7 @@ import { toAnnual } from '../jobs/salary.js';
 import { seniorityDistance } from '../jobs/seniority.js';
 import { canonicalize } from '../text/normalize.js';
 import { jaroWinkler, trigramSimilarity } from '../dedup/similarity.js';
-import { analyzeKeywordGap, type KeywordGapReport } from './keywordGap.js';
+import { analyzeKeywordGap, TRANSFERABLE_CREDIT, type KeywordGapReport } from './keywordGap.js';
 
 /**
  * Moteur de scoring déterministe.
@@ -207,12 +207,22 @@ export function scoreJob(
     score = Math.min(score, CONFIDENCE_CAP_PARTIAL);
   }
 
-  if (keywordGap.realGaps.some((g) => g.required)) {
-    const missing = keywordGap.realGaps
-      .filter((g) => g.required)
-      .map((g) => g.keyword)
-      .slice(0, 5);
+  const hardGaps = keywordGap.realGaps.filter((g) => g.required && g.status === 'not_in_profile');
+  if (hardGaps.length > 0) {
+    const missing = hardGaps.map((g) => g.keyword).slice(0, 5);
     warnings.push(`Exigences non couvertes par votre profil : ${missing.join(', ')}.`);
+  }
+
+  // Les exigences transférables méritent leur propre message : les mêler aux
+  // écarts francs pousserait à écarter des offres réellement accessibles.
+  const bridgeable = keywordGap.transferable.filter((g) => g.required);
+  if (bridgeable.length > 0) {
+    const pairs = bridgeable
+      .slice(0, 4)
+      .map((g) => `${g.keyword} (via ${g.transferable?.via ?? 'compétence voisine'})`);
+    warnings.push(
+      `Exigences approchées par des compétences voisines : ${pairs.join(', ')}. À défendre dans la lettre, jamais à écrire dans le CV.`,
+    );
   }
 
   // --- Décision ----------------------------------------------------------
@@ -291,8 +301,16 @@ function scoreRequiredSkills(gap: KeywordGapReport, weight: number): CriterionSc
       "Aucune exigence explicite identifiable dans l'offre.",
     );
   }
-  const covered = required.filter((i) => i.status !== 'not_in_profile');
-  const score = covered.length / required.length;
+  const held = required.filter((i) => i.status === 'matched' || i.status === 'missing_from_cv');
+  const bridged = required.filter((i) => i.status === 'transferable');
+  // Demi-crédit pour une compétence voisine : voir `TRANSFERABLE_CREDIT`.
+  const covered = held.length + bridged.length * TRANSFERABLE_CREDIT;
+  const score = covered / required.length;
+
+  const bridgeNote =
+    bridged.length > 0
+      ? ` — ${bridged.length} approchée(s) par une compétence voisine, comptée(s) à moitié`
+      : '';
 
   return {
     key: 'required_skills',
@@ -300,8 +318,8 @@ function scoreRequiredSkills(gap: KeywordGapReport, weight: number): CriterionSc
     score: round(score),
     weight,
     evaluated: true,
-    explanation: `${covered.length}/${required.length} exigences couvertes par votre profil${
-      covered.length < required.length
+    explanation: `${held.length}/${required.length} exigences couvertes par votre profil${bridgeNote}${
+      held.length + bridged.length < required.length
         ? ` — manquantes : ${required
             .filter((i) => i.status === 'not_in_profile')
             .map((i) => i.keyword)

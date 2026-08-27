@@ -1,7 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { apiSafe } from '@/lib/api';
-import type { InterviewPrepResponse, JobDetailResponse, KeywordGapItem } from '@/lib/types';
+import type {
+  GeneratedDocumentDetail,
+  InterviewPrepResponse,
+  JobDetailResponse,
+  KeywordGapItem,
+} from '@/lib/types';
 import {
   Card,
   Confidence,
@@ -16,15 +21,17 @@ import {
   seniorityLabel,
 } from '@/components/ui';
 import { generateDocuments, rescoreOne, trackJob } from '../actions';
+import { DocumentsCard } from './documents';
 
 export const dynamic = 'force-dynamic';
 
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [detail, prep] = await Promise.all([
+  const [detail, prep, documents] = await Promise.all([
     apiSafe<JobDetailResponse>(`/jobs/${id}`),
     apiSafe<InterviewPrepResponse>(`/jobs/${id}/interview-prep`),
+    apiSafe<GeneratedDocumentDetail[]>(`/documents?jobId=${id}&withRewrites=true`),
   ]);
 
   if (!detail) notFound();
@@ -164,14 +171,25 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                   items={gap.safeToAdd}
                   tone="accent"
                 />
+                <TransferableGroup items={gap.transferable} />
                 <KeywordGroup
                   title="Écarts réels"
-                  hint="Absentes de votre profil. Boussole ne les écrira jamais dans un document."
-                  items={gap.realGaps}
+                  hint="Absentes de votre profil, sans compétence voisine. Boussole ne les écrira jamais dans un document."
+                  items={gap.realGaps.filter((item) => item.status === 'not_in_profile')}
                   tone="warn"
                 />
                 <KeywordGroup title="Déjà couvertes" items={gap.matched} tone="muted" collapsed />
               </div>
+            </Card>
+          )}
+
+          {/* --- Documents générés ---------------------------------------- */}
+          {documents && documents.length > 0 && (
+            <Card
+              title="Documents générés"
+              subtitle="Ce qui a été reformulé, et ce que cela déplace"
+            >
+              <DocumentsCard documents={documents} />
             </Card>
           )}
 
@@ -345,6 +363,54 @@ function Section({ title, items }: { title: string; items: string[] }) {
               —
             </span>
             <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * Exigences approchées par une compétence voisine.
+ *
+ * Affichées à part, et avec leur phrase complète plutôt qu'en pastilles : ce
+ * groupe ne sert pas à compter, il sert à **copier**. La phrase proposée
+ * nomme la compétence possédée et l'écart dans la même ligne — c'est ce
+ * couple qui la rend défendable, et c'est pour ça qu'elle n'est jamais
+ * proposée à moitié.
+ */
+function TransferableGroup({ items }: { items: KeywordGapItem[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-(--color-ink-muted)">
+        Approchées par une compétence voisine ({items.length})
+      </h3>
+      <p className="mb-2 text-xs text-(--color-ink-faint)">
+        Absentes de votre profil, donc jamais écrites dans le CV. Mais vous pratiquez quelque chose
+        de proche : le dire dans la lettre vaut mieux que le silence, qui laisse conclure au pire.
+      </p>
+      <ul className="space-y-2">
+        {items.map((item) => (
+          <li
+            key={item.keyword}
+            className="rounded-lg border border-(--color-border-subtle) bg-(--color-surface-sunken) p-2.5 text-sm"
+          >
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="font-medium">{item.keyword}</span>
+              {item.required && <span className="text-xs text-(--color-warn)">exigée</span>}
+              {item.transferable && (
+                <span className="text-xs text-(--color-ink-faint)">
+                  via {item.transferable.via} — {item.transferable.domain}
+                </span>
+              )}
+            </div>
+            {item.bridge && (
+              <p className="mt-1.5 border-l-2 border-(--color-accent) pl-2 text-xs italic text-(--color-ink-muted)">
+                {item.bridge}
+              </p>
+            )}
           </li>
         ))}
       </ul>

@@ -38,6 +38,7 @@ export * from './ghost/score.js';
 // --- Correspondance et scoring ------------------------------------------
 export * from './matching/taxonomy.js';
 export * from './matching/skills.js';
+export * from './matching/adjacency.js';
 export * from './matching/keywordGap.js';
 export * from './matching/score.js';
 

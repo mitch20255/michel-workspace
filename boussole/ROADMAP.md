@@ -32,12 +32,17 @@ Utilisable de bout en bout aujourd'hui.
 - **Écart de mots-clés** séparant strictement « déjà au profil » de « absent ».
 - **Forge documentaire** Typst avec garde-fous anti-invention et
   extractibilité ATS vérifiée par réextraction du PDF.
+- **Cadran d'impact** à trois niveaux, de la reprise mot pour mot au retrait
+  des atténuateurs de rôle. Aucun niveau ne peut introduire un fait :
+  l'invariant est vérifié à chaque puce. L'avant/après est affiché avant envoi.
+- **Compétences transférables** : une exigence approchée par une compétence
+  voisine produit une phrase honnête pour la lettre, jamais une ligne de CV.
 - **CRM Kanban** à onze colonnes, transitions validées, aucune soumission
   automatique.
 - **Préparation d'entretien** entièrement fonctionnelle sans modèle.
 - **Passerelle LLM** BYOK, désactivée par défaut.
 - **Interface** en français : sept écrans.
-- 382 tests, dont 28 d'intégration sur une vraie base.
+- 423 tests, dont 34 d'intégration sur une vraie base.
 
 ---
 
@@ -52,12 +57,19 @@ requête HTTP. Elle deviendra asynchrone quand elle sera planifiée.
 assumé : le modèle de données est complet, c'est l'interface qui manque. Le
 travail est réel — quelques dizaines de champs imbriqués — mais sans risque.
 
-**Reformulation par modèle, sous garde-fous.** Les puces de CV sont
-aujourd'hui reprises mot pour mot : sélectionner et réordonner sont des
-opérations honnêtes, réécrire ne l'est qu'encadré. La reformulation passera
-par `verifyDocument`, exactement comme le texte assemblé par le code — c'est
-précisément pour cela que le contrôle est déterministe et hors LLM. Relecture
-humaine obligatoire avant tout envoi.
+**Reformulation par modèle, sous garde-fous.** La réécriture actuelle est
+déterministe et bornée : elle supprime et permute, elle ne rédige pas. Un
+modèle pourrait produire des formulations que ces règles n'atteignent pas —
+notamment sur les puces dont la structure ne correspond à aucun motif connu.
+Il passera par `verifyDocument` **et** par `assertNoNewFacts`, exactement
+comme le texte assemblé par le code : c'est précisément pour cela que les deux
+contrôles sont déterministes et hors LLM. Relecture humaine obligatoire avant
+tout envoi.
+
+**Voisinages de compétences élargis.** La table d'adjacence est curatée à la
+main, donc courte et fiable. L'étendre suppose un critère d'admission tenu :
+deux compétences ne sont voisines que si le transfert est réel en quelques
+semaines. Une table laxiste produirait des passerelles ridicules en entretien.
 
 **Recherche sémantique.** pgvector est déjà installé. À n'activer que si le
 recouvrement lexical montre ses limites sur un corpus réel : une dépendance

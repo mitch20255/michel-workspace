@@ -1,6 +1,13 @@
 import type { CandidateProfile, KeywordGapReport, NormalizedJob } from '@boussole/core';
 import { allowedKeywordsForDocuments, stableHash } from '@boussole/core';
 import { GuardrailError, verifyDocument, type GuardrailReport } from './guardrails.js';
+import {
+  rewriteBullets,
+  summarizeEdits,
+  type ImpactEdit,
+  type ImpactTone,
+  type RewrittenBullet,
+} from './impact.js';
 import { orderSkillsForJob, selectExperiences, selectProjects } from './selection.js';
 import { formatMonth, renderCvTypst } from './templates/cv.js';
 import { compileTypst, TypstUnavailableError } from './typst.js';
@@ -22,6 +29,11 @@ export interface BuildCvOptions {
   language?: 'fr' | 'en';
   maxExperiences?: number;
   maxBulletsPerExperience?: number;
+  /**
+   * Niveau de réécriture d'impact. `factual` reproduit le profil mot pour mot.
+   * Voir `impact.ts` pour ce que chaque niveau déplace exactement.
+   */
+  tone?: ImpactTone;
   /** Produire le PDF. Faux pour prévisualiser sans dépendre de Typst. */
   renderPdf?: boolean;
   typstBinary?: string;
@@ -42,6 +54,20 @@ export interface BuiltDocument {
   /** Empreinte du profil au moment de la génération. */
   profileHash: string;
   guardrails: GuardrailReport;
+  /** Niveau de réécriture appliqué. */
+  tone: ImpactTone;
+  /**
+   * Chaque puce réécrite, avec son original et le détail des transformations.
+   * L'interface l'affiche avant tout envoi : une réécriture assumée et relue
+   * est défendable, une réécriture silencieuse ne l'est pas.
+   */
+  rewrites: RewrittenBullet[];
+  /**
+   * Transformations ayant déplacé la portée d'une affirmation (niveau
+   * `assertive` uniquement). Signalées à part parce que ce sont les seules
+   * que l'utilisateur doit pouvoir défendre en entretien.
+   */
+  scopeChangingEdits: ImpactEdit[];
 }
 
 /** Langue du document : celle de l'offre prime, le profil sert de repli. */
@@ -79,16 +105,36 @@ export async function buildCv(
 ): Promise<BuiltDocument> {
   const language = resolveLanguage(job, profile, options.language);
 
-  const experiences = selectExperiences(profile, job, {
+  const tone = options.tone ?? 'confident';
+
+  const selected = selectExperiences(profile, job, {
     maxExperiences: options.maxExperiences,
     maxBulletsPerExperience: options.maxBulletsPerExperience,
   });
-  const projects = selectProjects(profile, job);
+  const selectedProjects = selectProjects(profile, job);
   const skills = orderSkillsForJob(profile, job);
 
   // Seuls les mots-clés que le candidat possède réellement peuvent être mis en
   // avant. `realGaps` n'est jamais transmis ici — c'est la garantie du produit.
   const allowedKeywords = options.keywordGap ? allowedKeywordsForDocuments(options.keywordGap) : [];
+
+  // La réécriture d'impact ne peut que supprimer, permuter et renommer une
+  // compétence en son synonyme : `assertNoNewFacts` le vérifie à chaque puce.
+  // Les garde-fous s'appliquent ensuite au texte réécrit, comme au texte brut.
+  const rewrites: RewrittenBullet[] = [];
+  const rewriteOptions = { tone, language, jobSkills: job.skills } as const;
+
+  const experiences = selected.map((entry) => {
+    const rewritten = rewriteBullets(entry.bullets, rewriteOptions);
+    rewrites.push(...rewritten);
+    return { ...entry, bullets: rewritten.map((r) => r.text) };
+  });
+
+  const projects = selectedProjects.map((entry) => {
+    const rewritten = rewriteBullets(entry.bullets, rewriteOptions);
+    rewrites.push(...rewritten);
+    return { ...entry, bullets: rewritten.map((r) => r.text) };
+  });
 
   const sourceTypst = renderCvTypst({
     profile,
@@ -115,6 +161,9 @@ export async function buildCv(
     ),
     profileHash: hashProfile(profile),
     guardrails,
+    tone,
+    rewrites: rewrites.filter((r) => r.edits.length > 0),
+    scopeChangingEdits: summarizeEdits(rewrites).scopeChanging,
   };
 
   if (options.renderPdf === false) return document;
