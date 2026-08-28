@@ -1,0 +1,864 @@
+<title>Checklist Camping Granby</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --bg: #EDEFE9;
+    --surface: #F9FAF6;
+    --surface-2: #E4E8DE;
+    --ink: #18211C;
+    --muted: #5A6860;
+    --line: #D3D9CD;
+    --line-soft: #E1E6DB;
+    --accent: #1D6B72;
+    --accent-soft: #D7E5E4;
+    --alert: #A9491A;
+    --alert-soft: #F2DFD2;
+    --done: #7E8C82;
+
+    --f-display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+    --f-body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+    --radius: 10px;
+    --wrap: 44rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121711;
+      --surface: #1A211A;
+      --surface-2: #222A21;
+      --ink: #E6EBE2;
+      --muted: #97A497;
+      --line: #2C352C;
+      --line-soft: #232B23;
+      --accent: #7EC6C3;
+      --accent-soft: #1E3130;
+      --alert: #E9975C;
+      --alert-soft: #33241A;
+      --done: #6C7A6E;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #121711;
+    --surface: #1A211A;
+    --surface-2: #222A21;
+    --ink: #E6EBE2;
+    --muted: #97A497;
+    --line: #2C352C;
+    --line-soft: #232B23;
+    --accent: #7EC6C3;
+    --accent-soft: #1E3130;
+    --alert: #E9975C;
+    --alert-soft: #33241A;
+    --done: #6C7A6E;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap {
+    max-width: var(--wrap);
+    margin: 0 auto;
+    padding: 0 1.15rem 5rem;
+  }
+
+  /* ---------- header ---------- */
+
+  header.masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 2.4rem 0 1.5rem;
+  }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 8vw, 2.9rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .standfirst {
+    color: var(--muted);
+    max-width: 34rem;
+    margin: 0;
+  }
+
+  /* ---------- meteo ---------- */
+
+  .meteo {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin: 0.4rem 0 2.2rem;
+  }
+
+  .day {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.75rem 0.7rem 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+
+  .day-name {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .temps {
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+  }
+
+  .t-max { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.03em; }
+  .t-min { font-size: 0.85rem; color: var(--muted); }
+
+  .sky { font-size: 0.8rem; font-weight: 500; }
+
+  .implique {
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: var(--muted);
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.42rem;
+    margin-top: 0.15rem;
+  }
+
+  /* ---------- rules ---------- */
+
+  .regles {
+    background: var(--alert-soft);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .regles h2 {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--alert);
+    margin: 0;
+  }
+
+  .regles ul { margin: 0; padding-left: 1.05rem; }
+  .regles li { font-size: 0.85rem; line-height: 1.45; margin-bottom: 0.22rem; }
+  .regles li:last-child { margin-bottom: 0; }
+
+  /* ---------- progress ---------- */
+
+  .progress {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    padding: 0.7rem 0 0.55rem;
+    margin-bottom: 0.4rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .progress-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-count {
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .progress-count b { font-size: 1.05rem; font-weight: 600; }
+
+  .reset {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    cursor: pointer;
+  }
+
+  .reset:hover { color: var(--ink); border-color: var(--muted); }
+  .reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+
+  .bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 220ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar { transition: none; }
+  }
+
+  /* ---------- phases + sections ---------- */
+
+  .phase {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 2.4rem 0 0.9rem;
+  }
+
+  .phase span {
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .phase::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding: 0.85rem 1rem 0.7rem;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .card-head h3 {
+    font-family: var(--f-display);
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .card-head p {
+    margin: 0.15rem 0 0;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+
+  .tally {
+    font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface-2);
+    border-radius: 999px;
+    padding: 0.18rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .tally.full { color: var(--accent); background: var(--accent-soft); }
+
+  /* ---------- rows ---------- */
+
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.72rem;
+    padding: 0.62rem 1rem;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+  }
+
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: var(--surface-2); }
+  .row:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  .row input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+  }
+
+  .box {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    border: 1.5px solid var(--muted);
+    border-radius: 5px;
+    display: grid;
+    place-items: center;
+  }
+
+  .box svg { width: 12px; height: 12px; opacity: 0; }
+  .box svg path { stroke: var(--surface); stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  .row input:checked + .box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .row input:checked + .box svg { opacity: 1; }
+
+  .txt { display: flex; flex-direction: column; gap: 0.08rem; min-width: 0; }
+
+  .name { font-size: 0.94rem; line-height: 1.35; }
+  .note { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+
+  .row input:checked ~ .txt .name {
+    text-decoration: line-through;
+    text-decoration-color: var(--done);
+    color: var(--done);
+  }
+
+  .row input:checked ~ .txt .note { opacity: 0.55; }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.36rem;
+    border-radius: 4px;
+    margin-left: 0.4rem;
+    vertical-align: 1px;
+    white-space: nowrap;
+  }
+
+  .tag.buy { color: var(--alert); background: var(--alert-soft); }
+  .tag.key { color: var(--accent); background: var(--accent-soft); }
+
+  footer.foot {
+    margin-top: 2.5rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.76rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 400px) {
+    .meteo { grid-template-columns: 1fr; }
+    .day { flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 0.55rem; }
+    .implique { border-top: none; padding-top: 0; margin-top: 0; flex-basis: 100%; }
+  }
+
+  @media print {
+    .progress, .reset { position: static; }
+    body { background: #fff; color: #000; }
+    section.card { break-inside: avoid; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Camping de Granby &middot; 28 au 30 août</p>
+    <h1>Trois nuits sous la tente</h1>
+    <p class="standfirst">Tente au sol, site avec eau et électricité, poêle Martin. Maman, papa et le petit de 3 ans. Coche au fur et à mesure que ça entre dans l'auto — la liste se souvient de tes coches.</p>
+  </header>
+
+  <div class="meteo">
+    <div class="day">
+      <span class="day-name">Ven 28</span>
+      <span class="temps"><span class="t-max">23°</span><span class="t-min">nuit 9°</span></span>
+      <span class="sky">Averses, 60 %</span>
+      <span class="implique">Monte la bâche <em>avant</em> la tente. Nuit froide au sol.</span>
+    </div>
+    <div class="day">
+      <span class="day-name">Sam 29</span>
+      <span class="temps"><span class="t-max">22°</span><span class="t-min">nuit 10°</span></span>
+      <span class="sky">Ensoleillé</span>
+      <span class="implique">La journée pour faire sécher ce qui a pris l'eau vendredi.</span>
+    </div>
+    <div class="day">
+      <span class="day-name">Dim 30</span>
+      <span class="temps"><span class="t-max">19°</span><span class="t-min">nuit 11°</span></span>
+      <span class="sky">Pluie</span>
+      <span class="implique">Démontage mouillé. Prévois des sacs et du linge sec dans l'auto.</span>
+    </div>
+  </div>
+
+  <div class="regles">
+    <h2>Les trois règles d'or</h2>
+    <ul>
+      <li><strong>Le poêle Martin ne rentre jamais</strong> dans la tente ni sous une bâche fermée — même éteint, même pour le ranger au sec.</li>
+      <li><strong>Le bois de chauffage s'achète sur place.</strong> Transporter son bois est interdit au Québec (agrile du frêne).</li>
+      <li><strong>La toile de sol ne doit pas dépasser</strong> du plancher de la tente : replie-la en dessous, sinon la pluie de vendredi s'accumule et passe par le fond.</li>
+    </ul>
+  </div>
+
+  <div class="progress">
+    <div class="progress-top">
+      <span class="progress-count"><b id="pDone">0</b> / <span id="pTotal">0</span> items cochés</span>
+      <button class="reset" id="reset" type="button">Tout décocher</button>
+    </div>
+    <div class="track"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <div id="list"></div>
+
+  <footer class="foot">
+    Météo d'Environnement Canada pour Granby (23°/9° avec averses vendredi, 22°/10° ensoleillé samedi, 19°/11° avec pluie dimanche). Tes coches sont gardées dans ce navigateur seulement — sur un autre téléphone, la liste repart à zéro.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DATA = [
+    {
+      phase: "Avant de sortir de la cour",
+      sections: [
+        {
+          name: "Les arrêts en route",
+          sub: "À régler avant d'arriver au camping — après, c'est un aller-retour en ville.",
+          items: [
+            { n: "2 bouteilles de propane 1 lb", t: "buy", d: "Une seule ne suffit pas pour 3 jours de repas. Prends-en 2, garde la 2e scellée." },
+            { n: "Glace ou blocs réfrigérants", t: "buy", d: "Blocs congelés la veille + un sac de glace acheté en route." },
+            { n: "Plein d'essence", d: "" },
+            { n: "Argent comptant", t: "key", d: "Bois de chauffage, douches, dépanneur du camping — pas toujours de terminal." },
+            { n: "Corde et bungees si tu en manques", t: "buy", d: "Il te faut au moins 30 m de corde pour gréer la bâche sans poteaux." },
+            { n: "Confirmation de réservation + numéro de site", d: "Capture d'écran, au cas où il n'y a pas de réseau à l'arrivée." },
+            { n: "Cartes d'assurance maladie (3)", d: "" },
+            { n: "Téléphones et batterie externe chargés", d: "" }
+          ]
+        },
+        {
+          name: "La maison avant de partir",
+          sub: "",
+          items: [
+            { n: "Poubelles et compost sortis", d: "Trois jours d'août dans une cuisine fermée." },
+            { n: "Thermostat et climatiseur baissés", d: "" },
+            { n: "Portes, fenêtres, cabanon verrouillés", d: "" },
+            { n: "Frigo : sortir ce qui va périmer", d: "" }
+          ]
+        }
+      ]
+    },
+    {
+      phase: "Le matériel à embarquer",
+      sections: [
+        {
+          name: "Abri de pluie",
+          sub: "Ta bâche n'a pas de poteaux : c'est du montage à la corde. Prépare la quincaillerie, pas juste la toile.",
+          items: [
+            { n: "Bâche 12 × 16 pi ou plus", t: "key", d: "Assez grande pour couvrir la table à pique-nique et le coin cuisine." },
+            { n: "30 m de corde (nylon 6 mm ou paracorde)", t: "key", d: "Coupée en 4 longueurs de 7-8 m pour les coins." },
+            { n: "Bungees et 2 sangles à cliquet", d: "Les bungees absorbent les coups de vent, la corde seule déchire les œillets." },
+            { n: "2 perches de rechange (manche à balai, branche droite)", t: "key", d: "Sans un point haut au centre, l'eau s'accumule et la bâche cède en pleine nuit." },
+            { n: "8 piquets robustes pour les haubans", d: "Pas les piquets fins de la tente — des piquets d'acier." },
+            { n: "Maillet avec crochet arrache-piquets", d: "" },
+            { n: "Deuxième petite bâche", d: "Pour couvrir le bois de chauffage et les bacs dehors." },
+            { n: "Ruban gorille (duct tape)", t: "key", d: "Répare une déchirure de bâche ou de double toit en 30 secondes." },
+            { n: "Attaches autobloquantes (tie-wraps)", d: "Dépannent un œillet arraché." }
+          ]
+        },
+        {
+          name: "Tente et couchage",
+          sub: "Nuits à 9-10 °C, à même le sol : c'est le point faible du week-end. Isole par en dessous, pas juste par-dessus.",
+          items: [
+            { n: "Tente + double toit + sac de piquets", t: "key", d: "Compte les arceaux avant de partir." },
+            { n: "Toile de sol / prélart", t: "key", d: "Repliée pour ne pas dépasser du plancher." },
+            { n: "Piquets supplémentaires (au moins 12)", d: "" },
+            { n: "Matelas gonflable double + pompe électrique", d: "Tu as l'électricité : profites-en, la pompe à pied prend 10 minutes." },
+            { n: "Pompe manuelle de secours", d: "Si la borne électrique lâche ou est déjà occupée." },
+            { n: "Trousse de réparation de matelas gonflable", d: "Rustines et colle. Un matelas à plat à 9 °C, c'est une nuit blanche." },
+            { n: "Matelas séparé pour le petit + son drap", t: "key", d: "" },
+            { n: "Couverture ou tapis de mousse SOUS son matelas", t: "key", d: "Le froid monte du sol. C'est ça qui le réveille à 4 h, pas l'air." },
+            { n: "3 sacs de couchage 3 saisons", d: "Cote de confort 5 °C ou moins, pas des sacs d'été." },
+            { n: "2 couvertures de laine ou polar supplémentaires", t: "key", d: "" },
+            { n: "Oreillers (3)", d: "" },
+            { n: "Pyjamas chauds + bas de laine pour dormir", d: "Bas secs réservés à la nuit, jamais ceux de la journée." },
+            { n: "Tuque légère pour le petit", d: "" },
+            { n: "Doudou, toutou, veilleuse", t: "key", d: "Le non-négociable. Vérifie-le deux fois." },
+            { n: "Couverture opaque + pinces pour la sieste", t: "key", d: "Suspendue dans la tente, ça fait le noir l'après-midi." },
+            { n: "Tapis ou carpette pour l'entrée de la tente", d: "Garde la terre et le sable dehors." },
+            { n: "Petit balai et porte-poussière", d: "" },
+            { n: "Sac pour le linge sale", d: "" }
+          ]
+        },
+        {
+          name: "Cuisine (poêle Martin)",
+          sub: "Site avec eau : tu peux laver sur place. Nourriture exclue de la liste.",
+          items: [
+            { n: "Poêle Martin + les 2 bouteilles de propane", t: "key", d: "" },
+            { n: "Table pliante pour le poêle", t: "key", d: "Le poêle ne va pas directement sur le bois de la table à pique-nique." },
+            { n: "Briquet + allumettes dans un pot étanche", d: "" },
+            { n: "Chaudrons, poêlon, couvercle", d: "" },
+            { n: "Vaisselle incassable (3) + assiette et gobelet à bec du petit", d: "" },
+            { n: "Ustensiles, couteau de cuisine, planche à découper", d: "" },
+            { n: "Spatule, cuillère de bois, pinces, ouvre-boîte, ouvre-bouteille", d: "" },
+            { n: "Papier d'aluminium + pellicule plastique", d: "" },
+            { n: "Glacière + blocs", d: "" },
+            { n: "Bac à vaisselle, savon biodégradable, éponge, linges", d: "" },
+            { n: "Essuie-tout + sacs à ordures et de recyclage", d: "" },
+            { n: "Nappe + pinces à nappe", d: "" },
+            { n: "Cafetière de camping", t: "key", d: "" },
+            { n: "Boyau d'eau potable (blanc, qualité alimentaire)", d: "Site avec eau : un boyau de jardin ordinaire donne un goût de plastique." },
+            { n: "Cruche 4 L + gourdes réutilisables", d: "" },
+            { n: "Bacs de plastique avec couvercle", t: "key", d: "Pour tout ce qui doit rester dehors et au sec vendredi et dimanche." }
+          ]
+        },
+        {
+          name: "Électricité et éclairage",
+          sub: "",
+          items: [
+            { n: "Rallonge extérieure 15 m, calibre 12", t: "key", d: "Les bornes sont souvent loin de la tente." },
+            { n: "Barre d'alimentation extérieure", d: "" },
+            { n: "Adaptateur 30 A → 15 A", d: "Certaines bornes de camping sont de type VR seulement." },
+            { n: "Lanterne LED", d: "" },
+            { n: "2 lampes frontales", t: "key", d: "Les mains libres pour monter la bâche à la noirceur." },
+            { n: "Veilleuse ou petite lampe pour la tente", d: "" },
+            { n: "Petite lampe de poche pour le petit", d: "Ça évite bien des crises au retour des toilettes." },
+            { n: "Guirlande lumineuse", d: "Repérer votre site le soir avec un enfant fatigué." },
+            { n: "Piles de rechange AA et AAA", d: "" },
+            { n: "Chargeurs et fils", d: "" }
+          ]
+        },
+        {
+          name: "Feu de camp",
+          sub: "Le bois s'achète à l'accueil du camping.",
+          items: [
+            { n: "Allume-feu + papier journal + petit bois sec", t: "key", d: "Après les averses de vendredi, rien sur le sol ne s'allume." },
+            { n: "Briquet longue portée", d: "" },
+            { n: "Hachette + gants de travail", d: "" },
+            { n: "Seau (eau pour éteindre)", t: "key", d: "" },
+            { n: "Grille de cuisson + 3 bâtons à guimauve", d: "" },
+            { n: "3 chaises pliantes dont une petite", d: "" },
+            { n: "Couverture pour les genoux", d: "Les soirées tombent à 12-14 °C avant même le coucher." }
+          ]
+        },
+        {
+          name: "Baignade",
+          sub: "",
+          items: [
+            { n: "2 maillots pour le petit", t: "key", d: "Un maillot mouillé ne sèche pas d'une journée à l'autre en août pluvieux." },
+            { n: "Maillots des parents", d: "" },
+            { n: "Couche de bain", d: "" },
+            { n: "Veste de flottaison (VFI) à sa taille", t: "key", d: "" },
+            { n: "Serviettes de plage (3)", d: "" },
+            { n: "Sac étanche pour le linge mouillé", d: "" },
+            { n: "Gougounes / sandales", d: "" },
+            { n: "Crème solaire FPS 50 + chapeaux", d: "" }
+          ]
+        },
+        {
+          name: "Douches et hygiène",
+          sub: "",
+          items: [
+            { n: "Sandales de douche (3 paires)", t: "key", d: "" },
+            { n: "Serviettes et débarbouillettes", d: "" },
+            { n: "Trousse : savon, shampooing, brosses à dents, dentifrice, déodorant, peigne", d: "" },
+            { n: "Panier ou sac de douche", d: "" },
+            { n: "Rouleau de papier de toilette de secours", t: "key", d: "" },
+            { n: "Monnaie de 25 ¢", d: "Plusieurs campings font encore payer les douches à la pièce." },
+            { n: "Désinfectant à mains", d: "" }
+          ]
+        },
+        {
+          name: "Le petit de 3 ans",
+          sub: "Couches de nuit, sieste, son matelas à lui — plus ce qui sauve un après-midi de pluie.",
+          items: [
+            { n: "Couches de nuit (5-6)", t: "key", d: "3 nuits + les imprévus." },
+            { n: "Lingettes + sacs pour les couches usées", d: "" },
+            { n: "Pot portatif ou siège de toilette d'appoint", d: "Les toilettes du camping sont loin et hautes à 3 h du matin." },
+            { n: "Bracelet d'identification avec ton numéro de cell et le no de site", t: "key", d: "Un camping, c'est grand et tous les sites se ressemblent." },
+            { n: "Rehausseur ou chaise portative pour la table à pique-nique", d: "" },
+            { n: "Vêtements : 2 tenues par jour + 1 de rechange", t: "key", d: "7 tenues. Il va être mouillé et sale, les deux." },
+            { n: "2 chandails chauds + kangourou + pantalons longs", d: "" },
+            { n: "Bas de laine (4 paires)", d: "" },
+            { n: "Imperméable et bottes de pluie", t: "key", d: "" },
+            { n: "Livres, cahier à colorier, crayons", d: "Le plan B de l'après-midi pluvieux de dimanche." },
+            { n: "Jouets d'extérieur : seau, pelle, ballon, bulles", d: "" },
+            { n: "Poussette ou porte-bébé", d: "" }
+          ]
+        },
+        {
+          name: "Vêtements des parents",
+          sub: "De 9 °C la nuit à 23 °C le jour : c'est du multicouche.",
+          items: [
+            { n: "3 t-shirts + 2 chandails manches longues chacun", d: "" },
+            { n: "1 polar ou laine chacun", t: "key", d: "" },
+            { n: "Manteau imperméable à capuchon", t: "key", d: "Averses vendredi, pluie dimanche." },
+            { n: "2 pantalons longs + 1 short", d: "" },
+            { n: "Sous-vêtements et bas (4 de chaque, dont 2 paires de laine)", d: "" },
+            { n: "Pyjama chaud", d: "" },
+            { n: "Souliers de marche + sandales + bottes de pluie", t: "key", d: "Deux paires fermées : une va être mouillée." },
+            { n: "Casquette et lunettes de soleil", d: "" }
+          ]
+        },
+        {
+          name: "Coffre à outils",
+          sub: "Ce qui répare une tente, une bâche ou un matelas à 21 h sous la pluie.",
+          items: [
+            { n: "Maillet à piquets avec arrache-piquets", t: "key", d: "" },
+            { n: "Marteau", d: "" },
+            { n: "Multi-outil ou couteau de poche (pinces, tournevis, scie)", t: "key", d: "" },
+            { n: "Tournevis multi-embouts", d: "" },
+            { n: "Pinces", d: "" },
+            { n: "Hachette + scie pliante", d: "" },
+            { n: "Gants de travail", d: "" },
+            { n: "Pelle pliante", d: "Creuser une rigole autour de la tente si l'eau s'accumule vendredi." },
+            { n: "Ciseaux", d: "" },
+            { n: "Ruban gorille + ruban électrique", d: "" },
+            { n: "Corde de rechange (15 m de paracorde)", d: "" },
+            { n: "Trousse de réparation de tente", t: "key", d: "Pièces autocollantes, section d'arceau de rechange, aiguille et fil solide." },
+            { n: "Sacs Ziploc assortis", d: "" },
+            { n: "Guenilles et vieilles serviettes", t: "key", d: "Éponger le fond de tente, essuyer la bâche avant de la plier." },
+            { n: "Vérifier le pneu de secours, le cric et la clé", d: "" },
+            { n: "Câbles de survoltage", d: "" }
+          ]
+        },
+        {
+          name: "Santé et sécurité",
+          sub: "",
+          items: [
+            { n: "Trousse de premiers soins", t: "key", d: "Pansements, gaze, ruban, désinfectant, gants." },
+            { n: "Pince à écharde et pince à tiques", t: "key", d: "La Montérégie est une zone à tiques : inspection des jambes et du cuir chevelu chaque soir." },
+            { n: "Acétaminophène adulte + version enfant", t: "key", d: "Vérifie la dose pour 3 ans et la date d'expiration." },
+            { n: "Thermomètre", d: "" },
+            { n: "Antihistaminique + crème contre les piqûres", d: "" },
+            { n: "Crème pour les brûlures / aloès", d: "" },
+            { n: "Chasse-moustiques adulte et version enfant douce", t: "key", d: "" },
+            { n: "Chandelle de citronnelle", d: "" },
+            { n: "Baume à lèvres", d: "" },
+            { n: "Médicaments personnels", d: "" }
+          ]
+        }
+      ]
+    },
+    {
+      phase: "Dimanche, sous la pluie",
+      sections: [
+        {
+          name: "Le démontage mouillé",
+          sub: "À préparer maintenant : dimanche, il sera trop tard pour aller chercher ces affaires-là.",
+          items: [
+            { n: "3 gros sacs à ordures de contracteur", t: "key", d: "Pour la tente et la bâche trempées, séparées du reste." },
+            { n: "Un bac vide réservé au matériel mouillé", d: "" },
+            { n: "Vêtements secs pour tout le monde, laissés dans l'auto", t: "key", d: "Y compris des bas et des souliers." },
+            { n: "Vieille serviette dans l'auto pour les sièges", d: "" },
+            { n: "Faire le tour du site avant de partir", t: "key", d: "Sous la table, les cordes dans les arbres, les piquets dans l'herbe." },
+            { n: "Glacière vidée et laissée ouverte", d: "" },
+            { n: "Étendre la tente à sécher en rentrant, dans les 24 h", t: "key", d: "Une tente rangée mouillée moisit et l'odeur ne part plus." }
+          ]
+        }
+      ]
+    }
+  ];
+
+  var KEY = "camping-granby-2026-08-28";
+
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function save(state) {
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(state));
+    } catch (e) { /* mode privé, stockage bloqué : la liste marche quand même */ }
+  }
+
+  var state = load();
+  var list = document.getElementById("list");
+  var bar = document.getElementById("bar");
+  var pDone = document.getElementById("pDone");
+  var pTotal = document.getElementById("pTotal");
+  var boxes = [];
+  var sectionRefs = [];
+  var total = 0;
+
+  var CHECK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 4.5"/></svg>';
+
+  function slug(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
+  }
+
+  DATA.forEach(function (phase) {
+    var ph = document.createElement("div");
+    ph.className = "phase";
+    var phSpan = document.createElement("span");
+    phSpan.textContent = phase.phase;
+    ph.appendChild(phSpan);
+    list.appendChild(ph);
+
+    phase.sections.forEach(function (sec) {
+      var card = document.createElement("section");
+      card.className = "card";
+
+      var head = document.createElement("div");
+      head.className = "card-head";
+
+      var headTxt = document.createElement("div");
+      var h3 = document.createElement("h3");
+      h3.textContent = sec.name;
+      headTxt.appendChild(h3);
+      if (sec.sub) {
+        var p = document.createElement("p");
+        p.textContent = sec.sub;
+        headTxt.appendChild(p);
+      }
+
+      var tally = document.createElement("span");
+      tally.className = "tally";
+
+      head.appendChild(headTxt);
+      head.appendChild(tally);
+      card.appendChild(head);
+
+      var inputs = [];
+
+      sec.items.forEach(function (item) {
+        var id = slug(sec.name) + "--" + slug(item.n);
+        var label = document.createElement("label");
+        label.className = "row";
+
+        var input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = state[id] === true;
+
+        var box = document.createElement("span");
+        box.className = "box";
+        box.innerHTML = CHECK;
+
+        var txt = document.createElement("span");
+        txt.className = "txt";
+
+        var name = document.createElement("span");
+        name.className = "name";
+        name.textContent = item.n;
+        if (item.t) {
+          var tag = document.createElement("span");
+          tag.className = "tag " + item.t;
+          tag.textContent = item.t === "buy" ? "à acheter" : "essentiel";
+          name.appendChild(tag);
+        }
+        txt.appendChild(name);
+
+        if (item.d) {
+          var note = document.createElement("span");
+          note.className = "note";
+          note.textContent = item.d;
+          txt.appendChild(note);
+        }
+
+        label.appendChild(input);
+        label.appendChild(box);
+        label.appendChild(txt);
+        card.appendChild(label);
+
+        input.addEventListener("change", function () {
+          state[id] = input.checked;
+          save(state);
+          render();
+        });
+
+        inputs.push(input);
+        boxes.push(input);
+        total++;
+      });
+
+      sectionRefs.push({ tally: tally, inputs: inputs });
+      list.appendChild(card);
+    });
+  });
+
+  function render() {
+    var done = 0;
+    boxes.forEach(function (i) { if (i.checked) done++; });
+    pDone.textContent = done;
+    pTotal.textContent = total;
+    bar.style.width = total ? (done / total * 100).toFixed(1) + "%" : "0%";
+
+    sectionRefs.forEach(function (ref) {
+      var d = 0;
+      ref.inputs.forEach(function (i) { if (i.checked) d++; });
+      ref.tally.textContent = d + "/" + ref.inputs.length;
+      ref.tally.className = "tally" + (d === ref.inputs.length ? " full" : "");
+    });
+  }
+
+  document.getElementById("reset").addEventListener("click", function () {
+    boxes.forEach(function (i) { i.checked = false; });
+    state = {};
+    save(state);
+    render();
+  });
+
+  render();
+})();
+</script>
