@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mindful-machines": {
+      "type": "http",
+      "url": "https://www.mindfulmachines.ai/api/mcp"
+    }
+  }
+}
