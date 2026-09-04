@@ -1,0 +1,15 @@
+{
+  "name": "civitai-explorer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Client web pour l'API Civitai (civitai.red) — recherche de modèles, images et créateurs.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:env": "node --env-file=.env server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

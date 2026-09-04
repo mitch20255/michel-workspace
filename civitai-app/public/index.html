@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Civitai Explorer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🎨</span>
+    <div>
+      <h1>Civitai Explorer</h1>
+      <p class="endpoint" id="endpoint">connexion…</p>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab is-active" data-tab="models">Modèles</button>
+    <button class="tab" data-tab="images">Images</button>
+    <button class="tab" data-tab="creators">Créateurs</button>
+    <button class="tab" data-tab="favorites">Favoris <span class="badge" id="favCount">0</span></button>
+  </nav>
+
+  <button class="icon-btn" id="settingsBtn" title="Réglages">⚙️</button>
+</header>
+
+<section class="controls">
+  <form class="searchbar" id="searchForm">
+    <input type="search" id="searchInput" placeholder="Rechercher un modèle, un tag, un créateur…" autocomplete="off">
+    <button type="submit" class="primary">Rechercher</button>
+  </form>
+
+  <div class="filters" id="filters">
+    <label class="field" data-for="models">
+      <span>Type</span>
+      <select id="fType">
+        <option value="">Tous</option>
+        <option>Checkpoint</option>
+        <option>LORA</option>
+        <option>LoCon</option>
+        <option>TextualInversion</option>
+        <option>Hypernetwork</option>
+        <option>Controlnet</option>
+        <option>VAE</option>
+        <option>Poses</option>
+        <option>Wildcards</option>
+        <option>Workflows</option>
+        <option>Other</option>
+      </select>
+    </label>
+
+    <label class="field" data-for="models">
+      <span>Base</span>
+      <select id="fBaseModel">
+        <option value="">Toutes</option>
+        <option>SD 1.5</option>
+        <option>SDXL 1.0</option>
+        <option>Pony</option>
+        <option>Illustrious</option>
+        <option>Flux.1 D</option>
+        <option>Flux.1 S</option>
+        <option>SD 3.5</option>
+        <option>Hunyuan Video</option>
+        <option>Wan Video</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Tri</span>
+      <select id="fSort"></select>
+    </label>
+
+    <label class="field">
+      <span>Période</span>
+      <select id="fPeriod">
+        <option>AllTime</option>
+        <option>Year</option>
+        <option>Month</option>
+        <option selected>Week</option>
+        <option>Day</option>
+      </select>
+    </label>
+
+    <label class="switch" title="Inclure le contenu adulte">
+      <input type="checkbox" id="fNsfw">
+      <span>NSFW</span>
+    </label>
+
+    <label class="switch" title="Flouter les vignettes marquées adultes">
+      <input type="checkbox" id="fBlur" checked>
+      <span>Flou</span>
+    </label>
+  </div>
+</section>
+
+<main id="main">
+  <div class="status" id="status" hidden></div>
+  <div class="grid" id="grid"></div>
+  <div class="loadmore">
+    <button id="loadMore" class="ghost" hidden>Charger la suite</button>
+    <p class="muted" id="resultInfo"></p>
+  </div>
+</main>
+
+<!-- Panneau de détail -->
+<div class="overlay" id="overlay" hidden>
+  <div class="drawer" role="dialog" aria-modal="true">
+    <button class="close" id="drawerClose" aria-label="Fermer">✕</button>
+    <div id="drawerBody"></div>
+  </div>
+</div>
+
+<!-- Réglages -->
+<div class="overlay" id="settingsOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>Réglages</h2>
+    <label class="field block">
+      <span>Clé d'API Civitai (optionnelle)</span>
+      <input type="password" id="apiKeyInput" placeholder="conservée dans ce navigateur uniquement">
+    </label>
+    <p class="muted small">
+      Une clé permet d'accéder aux modèles restreints et augmente les quotas.
+      Elle est envoyée au serveur local, qui la transmet à l'API. Tu peux aussi
+      la définir côté serveur via la variable <code>CIVITAI_API_KEY</code>.
+    </p>
+    <label class="field block">
+      <span>Résultats par page</span>
+      <select id="pageSizeInput">
+        <option>20</option><option selected>24</option><option>48</option><option>100</option>
+      </select>
+    </label>
+    <div class="row-end">
+      <button class="ghost" id="settingsCancel">Annuler</button>
+      <button class="primary" id="settingsSave">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
