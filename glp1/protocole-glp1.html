@@ -1,0 +1,710 @@
+<div id="root">
+  <div class="boot">Chargement de tes données…</div>
+</div>
+
+<style>
+  :root {
+    --ink: #1B2430;
+    --ink2: #59636F;
+    --ink3: #8A929B;
+    --paper: #E9E9E4;
+    --card: #FFFFFF;
+    --line: #D6D6CE;
+    --cobalt: #2743C4;
+    --cobalt-soft: #E4E8FA;
+    --moss: #3F7A55;
+    --moss-soft: #E3EEE6;
+    --ochre: #B4802A;
+    --ochre-soft: #F6EEDD;
+    --rose: #A63A46;
+    --rose-soft: #F7E5E6;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  }
+
+  #root * { box-sizing: border-box; }
+
+  #root {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    max-width: 560px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding-bottom: 84px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .boot { padding: 48px 20px; color: var(--ink2); font-size: 15px; }
+
+  /* ---------- header / week strip ---------- */
+  .top { padding: 18px 16px 14px; background: var(--card); border-bottom: 1px solid var(--line); }
+  .top-line { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .top-day { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .top-meta { font-size: 13px; color: var(--ink2); }
+
+  .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .wk { border: 1px solid var(--line); border-radius: 3px; padding: 7px 2px 6px; text-align: center; background: var(--card); position: relative; }
+  .wk-d { font-size: 10px; color: var(--ink3); margin-bottom: 3px; }
+  .wk-n { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .wk.filled { background: var(--moss-soft); border-color: #BFD8C7; }
+  .wk.today { background: var(--cobalt); border-color: var(--cobalt); }
+  .wk.today .wk-d, .wk.today .wk-n { color: #fff; }
+  .wk .pen { position: absolute; top: -1px; right: -1px; width: 0; height: 0; border-top: 9px solid var(--cobalt); border-left: 9px solid transparent; }
+  .wk.today .pen { border-top-color: #fff; }
+
+  /* ---------- generic blocks ---------- */
+  .sec { padding: 18px 16px 4px; }
+  .sec h2 { font-size: 13px; font-weight: 600; color: var(--ink2); margin: 0 0 10px; letter-spacing: 0.01em; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 14px; margin-bottom: 12px; }
+
+  .num-row { display: flex; align-items: baseline; gap: 8px; }
+  .num { font-size: 34px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.025em; line-height: 1; }
+  .num-unit { font-size: 14px; color: var(--ink2); }
+  .num-sub { font-size: 13px; color: var(--ink2); margin-top: 6px; }
+
+  label.fld { display: block; font-size: 13px; color: var(--ink2); margin-bottom: 6px; }
+  input[type="number"], input[type="text"], input[type="date"], select, textarea {
+    font-family: var(--sans); font-size: 16px; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 3px; padding: 10px 11px;
+    width: 100%; background: #FCFCFA;
+  }
+  input:focus, select:focus, textarea:focus, button:focus-visible {
+    outline: 2px solid var(--cobalt); outline-offset: 1px;
+  }
+  textarea { min-height: 70px; resize: vertical; font-size: 15px; line-height: 1.5; }
+
+  .btn {
+    font-family: var(--sans); font-size: 14px; font-weight: 550; cursor: pointer;
+    border: 1px solid var(--ink); background: var(--ink); color: #fff;
+    border-radius: 3px; padding: 11px 16px;
+  }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn.small { padding: 7px 11px; font-size: 13px; }
+  .btn:active { transform: translateY(1px); }
+
+  /* ---------- protein meter ---------- */
+  .meter { height: 10px; background: #E4E4DE; border-radius: 2px; overflow: hidden; margin: 10px 0 4px; }
+  .meter i { display: block; height: 100%; background: var(--cobalt); transition: width .25s ease; }
+  .meter i.done { background: var(--moss); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip {
+    font-family: var(--sans); font-size: 13px; cursor: pointer;
+    border: 1px solid var(--line); background: #FCFCFA; color: var(--ink);
+    border-radius: 999px; padding: 7px 12px;
+  }
+  .chip b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .chip.on { background: var(--cobalt); border-color: var(--cobalt); color: #fff; }
+  .chip.warn.on { background: var(--ochre); border-color: var(--ochre); }
+
+  .dots { display: flex; gap: 6px; margin-top: 8px; }
+  .dot { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: #FCFCFA; cursor: pointer; }
+  .dot.on { background: var(--cobalt); border-color: var(--cobalt); }
+
+  .checks { display: grid; gap: 2px; }
+  .ck { display: flex; align-items: center; gap: 10px; padding: 9px 2px; cursor: pointer; border-bottom: 1px solid #F0F0EB; font-size: 15px; }
+  .ck:last-child { border-bottom: none; }
+  .ck .box { width: 20px; height: 20px; border: 1px solid var(--ink3); border-radius: 3px; flex: none; position: relative; }
+  .ck.on .box { background: var(--moss); border-color: var(--moss); }
+  .ck.on .box::after { content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .ck .why { font-size: 12px; color: var(--ink3); }
+
+  /* ---------- verdicts ---------- */
+  .verdict { border-left: 3px solid var(--ink3); background: var(--card); border-radius: 0 4px 4px 0; padding: 13px 14px; margin-bottom: 10px; border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .verdict h3 { margin: 0 0 5px; font-size: 15px; font-weight: 600; }
+  .verdict p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink2); }
+  .verdict.good { border-left-color: var(--moss); }
+  .verdict.warn { border-left-color: var(--ochre); }
+  .verdict.bad { border-left-color: var(--rose); }
+  .verdict.info { border-left-color: var(--cobalt); }
+
+  /* ---------- meals ---------- */
+  .meal { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 13px 14px; margin-bottom: 10px; }
+  .meal-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .meal-n { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .meal-m { font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .meal-b { font-size: 13px; color: var(--ink2); line-height: 1.5; margin-top: 8px; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 2px; background: var(--ochre-soft); color: #7C591C; margin-left: 6px; vertical-align: 2px; }
+
+  /* ---------- doctrine (serif) ---------- */
+  .doc { font-family: var(--serif); font-size: 16px; line-height: 1.62; color: #26313D; }
+  .doc h3 { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink); margin: 0 0 8px; }
+  .doc p { margin: 0 0 12px; }
+  .doc ul { margin: 0 0 12px; padding-left: 20px; }
+  .doc li { margin-bottom: 7px; }
+  .doc strong { font-weight: 700; }
+  .doc .rule { font-family: var(--sans); font-size: 14px; background: var(--cobalt-soft); border-radius: 3px; padding: 10px 12px; color: #1C2F8C; line-height: 1.5; }
+
+  /* ---------- chart ---------- */
+  .chart { width: 100%; height: 150px; display: block; }
+  .legend { font-size: 12px; color: var(--ink2); margin-top: 6px; }
+
+  table.meas { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.meas th { text-align: left; font-weight: 600; font-size: 12px; color: var(--ink2); padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  table.meas td { padding: 8px 4px; border-bottom: 1px solid #F0F0EB; font-variant-numeric: tabular-nums; }
+
+  /* ---------- nav ---------- */
+  .nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 560px; margin: 0 auto;
+         display: grid; grid-template-columns: repeat(5, 1fr); background: var(--card); border-top: 1px solid var(--line); }
+  .nav button { font-family: var(--sans); font-size: 11px; color: var(--ink3); background: none; border: none; padding: 11px 2px 13px; cursor: pointer; border-top: 2px solid transparent; }
+  .nav button.on { color: var(--cobalt); border-top-color: var(--cobalt); font-weight: 600; }
+  .nav .gl { display: block; font-size: 17px; margin-bottom: 3px; }
+
+  .toast { position: fixed; bottom: 92px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 14px; padding: 10px 16px; border-radius: 3px; z-index: 50; }
+  .muted { color: var(--ink2); font-size: 14px; line-height: 1.5; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .err { background: var(--rose-soft); color: #7E2A33; font-size: 13px; padding: 9px 12px; border-radius: 3px; margin: 12px 16px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------------------------------------------------------------- storage
+  var mem = {};
+  var storeOK = true;
+  function sGet(k, d) {
+    if (!window.storage) return Promise.resolve(mem[k] !== undefined ? mem[k] : d);
+    return window.storage.get(k).then(function (r) {
+      return r && r.value ? JSON.parse(r.value) : d;
+    }).catch(function () { return d; });
+  }
+  function sSet(k, v) {
+    mem[k] = v;
+    if (!window.storage) return Promise.resolve();
+    return window.storage.set(k, JSON.stringify(v)).catch(function () {
+      storeOK = false; render();
+    });
+  }
+
+  // ---------------------------------------------------------------- dates
+  function iso(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function parseISO(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+  function daysBetween(a, b) { return Math.round((parseISO(b) - parseISO(a)) / 86400000); }
+  var JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  var JCOURT = ["D", "L", "M", "M", "J", "V", "S"];
+  var MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+  var TODAY = iso(new Date());
+
+  // ---------------------------------------------------------------- state
+  var S = {
+    tab: "jour",
+    cfg: null,
+    log: {},
+    plats: [],
+    mesures: [],
+    ready: false,
+    toast: null
+  };
+
+  var DEFAULT_CFG = {
+    depart: "2026-09-03",
+    jourInjection: 4,          // 0 = dimanche
+    poidsDepart: 340,
+    unite: "lb",
+    cibleProt: 180,
+    cibleKcal: 2400,
+    cibleEau: 8,               // verres de 400 ml
+    cibleGym: 3,
+    doseActuelle: 2.5,
+    doseDepuis: "2026-09-03"
+  };
+
+  var SUPPS = [
+    { id: "crea", n: "Créatine 5 g", w: "masse maigre + force" },
+    { id: "multi", n: "Multivitamine", w: "l'apport chute avec les calories" },
+    { id: "d3", n: "Vitamine D3", w: "déficience quasi systématique" },
+    { id: "o3", n: "Oméga-3", w: "2–3 g EPA+DHA" },
+    { id: "mag", n: "Magnésium citrate", w: "crampes + transit" },
+    { id: "psy", n: "Psyllium + fibres", w: "le transit est l'irritant nº1" },
+    { id: "sel", n: "Sodium 4–5 g", w: "sinon: étourdissements" },
+    { id: "kal", n: "Potassium (bouffe)", w: "avocat, patate, épinards" }
+  ];
+
+  var EFFETS = ["Nausée", "Constipation", "Reflux", "Fatigue", "Crampes", "Étourdissements", "Rien à signaler"];
+  var ROUGES = ["Douleur abdo sévère", "Vomissements répétés", "Douleur côtes droites"];
+
+  var PLATS_SEED = [
+    { id: "p1", n: "Poulet-brocoli sur plaque", p: 53, l: 22, g: 12, k: 460, note: "250 g de cuisses désossées, brocoli, huile d'olive, ail. 30 min à 425 °F.", nausee: false },
+    { id: "p2", n: "Bœuf haché, patate douce, poivrons", p: 48, l: 40, g: 45, k: 730, note: "Bœuf 85 %, une poêle, tout ensemble. Cumin et paprika fumé.", nausee: false },
+    { id: "p3", n: "Saumon, asperges, grelots", p: 45, l: 28, g: 30, k: 560, note: "Une plaque, 18 min. Citron à la sortie.", nausee: false },
+    { id: "p4", n: "Porc effiloché + salade de chou", p: 52, l: 24, g: 14, k: 480, note: "Épaule à la mijoteuse le dimanche, sert 4 soupers.", nausee: false },
+    { id: "p5", n: "Chili bœuf et haricots noirs", p: 44, l: 20, g: 38, k: 510, note: "Gros chaudron, congèle en portions. Meilleur le lendemain.", nausee: false },
+    { id: "p6", n: "Frittata jambon-fromage", p: 40, l: 26, g: 6, k: 420, note: "6 œufs, jambon, cheddar. 12 min au four, zéro planification.", nausee: false },
+    { id: "p7", n: "Crevettes, riz, edamame", p: 46, l: 12, g: 48, k: 490, note: "Wok, 10 minutes. Le plat le plus rapide de la liste.", nausee: true },
+    { id: "p8", n: "Poulet shawarma, patates, yogourt", p: 55, l: 20, g: 40, k: 560, note: "Marine le matin, plaque le soir. Sauce yogourt grec-ail.", nausee: false },
+    { id: "p9", n: "Soupe poulet-lentilles", p: 38, l: 10, g: 30, k: 350, note: "Pour les 48 h après l'injection: liquide, tiède, faible en gras.", nausee: true },
+    { id: "p10", n: "Steak haché de dinde, courgettes", p: 47, l: 16, g: 10, k: 380, note: "Léger quand l'appétit est coupé mais que tu veux du solide.", nausee: true },
+    { id: "a1", n: "Shake isolat + lait", p: 40, l: 4, g: 12, k: 250, note: "Ancre sans cuisson. Le plan B des jours difficiles.", nausee: true },
+    { id: "a2", n: "Yogourt grec 0 % + whey", p: 45, l: 2, g: 14, k: 260, note: "Ancre sans cuisson. Déjeuner léger.", nausee: true },
+    { id: "a3", n: "Cottage + fruits", p: 28, l: 5, g: 18, k: 230, note: "Ancre sans cuisson. Caséine lente, bon avant le coucher.", nausee: true },
+    { id: "a4", n: "Thon + craquelins", p: 32, l: 8, g: 20, k: 290, note: "Ancre sans cuisson. Garde-manger, zéro préparation.", nausee: false },
+    { id: "a5", n: "3 œufs durs + fromage", p: 26, l: 20, g: 2, k: 290, note: "Ancre sans cuisson. Prépare-en 8 le dimanche.", nausee: false }
+  ];
+
+  // ---------------------------------------------------------------- helpers
+  function day(d) {
+    if (!S.log[d]) S.log[d] = { prot: 0, kcal: 0, eau: 0, supps: [], effets: [], gym: null, poids: null, dose: null, site: null, note: "" };
+    return S.log[d];
+  }
+  function has(d) { return !!S.log[d]; }
+  function save() { return sSet("glp1:log", S.log); }
+  function toast(t) {
+    S.toast = t; render();
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { S.toast = null; render(); }, 1800);
+  }
+  function poidsSerie() {
+    return Object.keys(S.log).filter(function (d) { return S.log[d].poids; })
+      .sort().map(function (d) { return { d: d, v: S.log[d].poids }; });
+  }
+  function moy(arr) { return arr.length ? arr.reduce(function (a, b) { return a + b; }, 0) / arr.length : 0; }
+
+  // moyenne mobile de poids sur une fenêtre finissant à `fin`
+  function ma(serie, fin, jours) {
+    var vals = serie.filter(function (x) {
+      var dd = daysBetween(x.d, fin);
+      return dd >= 0 && dd < jours;
+    }).map(function (x) { return x.v; });
+    return vals.length ? { v: moy(vals), n: vals.length } : null;
+  }
+
+  // ---------------------------------------------------------------- analyse
+  function analyse() {
+    var out = [];
+    var serie = poidsSerie();
+    var cfg = S.cfg;
+    var jour1 = daysBetween(cfg.depart, TODAY);
+
+    // --- rythme de perte
+    var recent = ma(serie, TODAY, 7);
+    var precedent = ma(serie, iso(addDays(new Date(), -7)), 7);
+    if (recent && precedent && precedent.n >= 2 && recent.n >= 2) {
+      var delta = precedent.v - recent.v;
+      var pct = (delta / precedent.v) * 100;
+      var txt = delta.toFixed(1) + " " + cfg.unite + " cette semaine (" + pct.toFixed(2) + " %/sem)";
+      if (pct > 1.3) {
+        out.push({ t: "bad", h: "Tu descends trop vite", p: txt + ". Au-dessus de 1 %/sem, la part de masse maigre perdue grimpe. Remonte de 250 kcal, vérifie que les protéines sont pleines, et ne monte pas la dose." });
+      } else if (pct > 1.0) {
+        out.push({ t: "warn", h: "Un peu rapide", p: txt + ". Tiens ta dose actuelle et ajoute 150 kcal, surtout si tes charges au gym stagnent." });
+      } else if (pct >= 0.4) {
+        out.push({ t: "good", h: "Dans la cible", p: txt + ". Ne change rien. C'est exactement le rythme qui protège le muscle." });
+      } else if (pct >= 0) {
+        out.push({ t: "info", h: "Perte lente", p: txt + ". Normal certaines semaines (eau, sel, sommeil). Attends 2 semaines avant de conclure quoi que ce soit." });
+      } else {
+        out.push({ t: "info", h: "Poids stable ou en hausse", p: "Une semaine isolée ne dit rien. Regarde plutôt ta moyenne sur 14 jours et ton tour de taille." });
+      }
+    } else {
+      out.push({ t: "info", h: "Pas assez de pesées", p: "Il faut au moins 2 pesées cette semaine et 2 la semaine dernière pour calculer un rythme fiable. Pèse-toi le matin, à jeun." });
+    }
+
+    // --- protéines
+    var last7 = [];
+    for (var i = 0; i < 7; i++) {
+      var d = iso(addDays(new Date(), -i));
+      if (has(d) && (S.log[d].prot > 0 || S.log[d].kcal > 0)) last7.push(S.log[d].prot);
+    }
+    if (last7.length >= 3) {
+      var mp = moy(last7);
+      if (mp >= S.cfg.cibleProt * 0.95) {
+        out.push({ t: "good", h: "Protéines tenues", p: Math.round(mp) + " g/jour en moyenne. C'est ton assurance-muscle et elle est payée." });
+      } else if (mp >= S.cfg.cibleProt * 0.8) {
+        out.push({ t: "warn", h: "Protéines un peu basses", p: Math.round(mp) + " g/jour contre une cible de " + S.cfg.cibleProt + " g. Ajoute une ancre sans cuisson en après-midi — c'est le trou habituel." });
+      } else {
+        out.push({ t: "bad", h: "Protéines nettement sous la cible", p: Math.round(mp) + " g/jour contre " + S.cfg.cibleProt + " g. C'est le levier nº1 de perte de muscle. Mange la protéine en premier dans l'assiette et garde du liquide en backup." });
+      }
+    }
+
+    // --- entraînement
+    var gyms = 0;
+    for (var j = 0; j < 7; j++) {
+      var dg = iso(addDays(new Date(), -j));
+      if (has(dg) && S.log[dg].gym) gyms++;
+    }
+    if (jour1 >= 0) {
+      if (gyms >= S.cfg.cibleGym) out.push({ t: "good", h: gyms + " séances cette semaine", p: "La charge mécanique est le signal qui dit à ton corps de garder le muscle. C'est fait." });
+      else if (gyms > 0) out.push({ t: "warn", h: gyms + " séance" + (gyms > 1 ? "s" : "") + " sur " + S.cfg.cibleGym, p: "Sans résistance, les protéines seules ne suffisent pas. Une séance courte compte plus qu'une séance parfaite reportée." });
+      else out.push({ t: "bad", h: "Aucune séance cette semaine", p: "C'est la variable qui décide si tu perds du gras ou du poids. Va faire 30 minutes, même léger." });
+    }
+
+    // --- titration
+    var semDose = Math.floor(daysBetween(cfg.doseDepuis, TODAY) / 7);
+    if (jour1 >= 0 && semDose >= 4) {
+      var pertePossible = recent && precedent && (precedent.v - recent.v) > 0.4;
+      if (pertePossible) {
+        out.push({ t: "info", h: semDose + " semaines à " + cfg.doseActuelle + " mg — et ça descend encore", p: "Tu n'as aucune raison de monter. La dose la plus basse qui produit une perte est la bonne dose. Monter par réflexe de calendrier, c'est acheter des effets secondaires pour rien." });
+      } else {
+        out.push({ t: "info", h: semDose + " semaines à " + cfg.doseActuelle + " mg, perte à plat", p: "Si le plateau tient encore 2 semaines avec des protéines et un déficit réels, c'est le moment d'en parler à ton prescripteur pour la dose suivante." });
+      }
+    }
+
+    // --- hydratation
+    var eaux = [];
+    for (var e = 0; e < 5; e++) {
+      var de = iso(addDays(new Date(), -e));
+      if (has(de) && S.log[de].eau) eaux.push(S.log[de].eau);
+    }
+    if (eaux.length >= 3 && moy(eaux) < S.cfg.cibleEau * 0.7) {
+      out.push({ t: "warn", h: "Hydratation basse", p: "Sous GLP-1, la soif est émoussée en même temps que la faim. Bois sur horaire, pas sur signal — et garde le sodium haut." });
+    }
+
+    // --- drapeaux rouges
+    var rouge = null;
+    for (var r = 0; r < 5; r++) {
+      var dr = iso(addDays(new Date(), -r));
+      if (has(dr)) S.log[dr].effets.forEach(function (x) { if (ROUGES.indexOf(x) >= 0) rouge = x; });
+    }
+    if (rouge) {
+      out.unshift({ t: "bad", h: "Signal à ne pas ignorer : " + rouge.toLowerCase(), p: "Ce symptôme sort du cadre des effets secondaires courants. Appelle ton prescripteur ou Info-Santé aujourd'hui, pas la semaine prochaine." });
+    }
+
+    return out;
+  }
+
+  // ---------------------------------------------------------------- render
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; }
+
+  function render() {
+    var root = document.getElementById("root");
+    if (!S.ready) return;
+    root.innerHTML = "";
+
+    root.appendChild(el(topHTML()));
+    if (!storeOK) root.appendChild(el('<div class="err">Tes données n\'ont pas pu être enregistrées. Note tes chiffres ailleurs pour aujourd\'hui.</div>'));
+
+    var body = document.createElement("div");
+    body.innerHTML = { jour: jourHTML, semaine: semaineHTML, plats: platsHTML, protocole: protocoleHTML, suivi: suiviHTML }[S.tab]();
+    root.appendChild(body);
+
+    root.appendChild(el(navHTML()));
+    if (S.toast) root.appendChild(el('<div class="toast">' + S.toast + "</div>"));
+    wire(root);
+  }
+
+  function topHTML() {
+    var now = new Date();
+    var start = addDays(now, -now.getDay());
+    var cells = "";
+    for (var i = 0; i < 7; i++) {
+      var d = addDays(start, i), k = iso(d);
+      var rempli = has(k) && (S.log[k].poids || S.log[k].prot > 0);
+      var cls = "wk" + (rempli ? " filled" : "") + (k === TODAY ? " today" : "");
+      var pen = (i === S.cfg.jourInjection) ? '<span class="pen"></span>' : "";
+      cells += '<div class="' + cls + '">' + pen + '<div class="wk-d">' + JCOURT[i] + '</div><div class="wk-n">' + d.getDate() + "</div></div>";
+    }
+    var j = daysBetween(S.cfg.depart, TODAY);
+    var meta = j < 0 ? "Départ dans " + (-j) + " jour" + (-j > 1 ? "s" : "") : "Jour " + (j + 1) + " · " + S.cfg.doseActuelle + " mg";
+    return '<div class="top"><div class="top-line"><div class="top-day">' + JOURS[new Date().getDay()] + " " + new Date().getDate() + " " + MOIS[new Date().getMonth()] +
+      '</div><div class="top-meta">' + meta + '</div></div><div class="week">' + cells + "</div></div>";
+  }
+
+  // ------------------------------------------------------- onglet Aujourd'hui
+  function jourHTML() {
+    var d = day(TODAY);
+    var pct = Math.min(100, Math.round((d.prot / S.cfg.cibleProt) * 100));
+    var estInj = new Date().getDay() === S.cfg.jourInjection;
+    var h = "";
+
+    h += '<div class="sec"><h2>Protéines</h2><div class="panel">';
+    h += '<div class="num-row"><span class="num">' + d.prot + '</span><span class="num-unit">g sur ' + S.cfg.cibleProt + " g</span></div>";
+    h += '<div class="meter"><i class="' + (pct >= 100 ? "done" : "") + '" style="width:' + pct + '%"></i></div>';
+    h += '<div class="num-sub">' + (pct >= 100 ? "Cible atteinte. C'est la journée qui compte le plus." : "Il te reste " + (S.cfg.cibleProt - d.prot) + " g. Mange la protéine en premier.") + "</div>";
+    h += '<div class="chips">';
+    S.plats.slice(0, 6).forEach(function (p) {
+      h += '<button class="chip" data-act="addprot" data-p="' + p.p + '" data-k="' + p.k + '">' + p.n.split(",")[0] + " <b>+" + p.p + "</b></button>";
+    });
+    h += '<button class="chip" data-act="addprot" data-p="10" data-k="60">+10 g</button>';
+    h += '<button class="chip" data-act="resetprot">Remettre à zéro</button>';
+    h += "</div></div></div>";
+
+    h += '<div class="sec"><h2>Pesée du matin</h2><div class="panel">';
+    h += '<div class="grid2"><div><label class="fld" for="fpoids">Poids (' + S.cfg.unite + ')</label><input type="number" step="0.1" inputmode="decimal" id="fpoids" value="' + (d.poids || "") + '"></div>';
+    h += '<div><label class="fld" for="fkcal">Calories (optionnel)</label><input type="number" inputmode="numeric" id="fkcal" value="' + (d.kcal || "") + '"></div></div>';
+    h += '<div style="margin-top:10px"><button class="btn" data-act="savepoids">Enregistrer</button></div></div></div>';
+
+    if (estInj) {
+      h += '<div class="sec"><h2>Jour d\'injection</h2><div class="panel">';
+      h += '<div class="grid2"><div><label class="fld" for="fdose">Dose (mg)</label><input type="number" step="0.5" inputmode="decimal" id="fdose" value="' + (d.dose || S.cfg.doseActuelle) + '"></div>';
+      h += '<div><label class="fld" for="fsite">Site</label><select id="fsite"><option' + (d.site === "Abdomen" ? " selected" : "") + '>Abdomen</option><option' + (d.site === "Cuisse" ? " selected" : "") + '>Cuisse</option><option' + (d.site === "Bras" ? " selected" : "") + '>Bras</option></select></div></div>';
+      h += '<div style="margin-top:10px"><button class="btn" data-act="saveinj">Marquer l\'injection faite</button></div>';
+      h += '<div class="num-sub" style="margin-top:10px">Prochaines 48 h : petites portions, faible en gras, mange lentement. Les plats marqués « jour creux » sont là pour ça.</div>';
+      h += "</div></div>";
+    }
+
+    h += '<div class="sec"><h2>Eau</h2><div class="panel"><div class="num-sub">' + d.eau + " verres de 400 ml sur " + S.cfg.cibleEau + '. La soif est émoussée — bois sur horaire.</div><div class="dots">';
+    for (var i = 1; i <= S.cfg.cibleEau; i++) h += '<button class="dot' + (d.eau >= i ? " on" : "") + '" data-act="eau" data-n="' + i + '" aria-label="Verre ' + i + '"></button>';
+    h += "</div></div></div>";
+
+    h += '<div class="sec"><h2>Le stack</h2><div class="panel"><div class="checks">';
+    SUPPS.forEach(function (s) {
+      var on = d.supps.indexOf(s.id) >= 0;
+      h += '<div class="ck' + (on ? " on" : "") + '" data-act="supp" data-id="' + s.id + '"><span class="box"></span><span>' + s.n + '<br><span class="why">' + s.w + "</span></span></div>";
+    });
+    h += "</div></div></div>";
+
+    h += '<div class="sec"><h2>Entraînement</h2><div class="panel"><div class="chips">';
+    ["Full body A", "Full body B", "Full body C", "Marche seulement"].forEach(function (g) {
+      h += '<button class="chip' + (d.gym === g ? " on" : "") + '" data-act="gym" data-g="' + g + '">' + g + "</button>";
+    });
+    h += "</div></div></div>";
+
+    h += '<div class="sec"><h2>Comment tu te sens</h2><div class="panel"><div class="chips">';
+    EFFETS.concat(ROUGES).forEach(function (e) {
+      var on = d.effets.indexOf(e) >= 0;
+      var warn = ROUGES.indexOf(e) >= 0 ? " warn" : "";
+      h += '<button class="chip' + warn + (on ? " on" : "") + '" data-act="effet" data-e="' + e + '">' + e + "</button>";
+    });
+    h += "</div></div></div>";
+
+    return h;
+  }
+
+  // ----------------------------------------------------------- onglet Semaine
+  function semaineHTML() {
+    var h = '<div class="sec"><h2>Ce que les chiffres disent</h2>';
+    var v = analyse();
+    v.forEach(function (x) {
+      h += '<div class="verdict ' + x.t + '"><h3>' + x.h + "</h3><p>" + x.p + "</p></div>";
+    });
+    h += "</div>";
+
+    var serie = poidsSerie();
+    h += '<div class="sec"><h2>Courbe de poids</h2><div class="panel">';
+    if (serie.length < 2) {
+      h += '<div class="muted">La courbe apparaît après deux pesées. Une seule donnée ne raconte rien.</div>';
+    } else {
+      h += chartSVG(serie);
+      var tot = S.cfg.poidsDepart - serie[serie.length - 1].v;
+      h += '<div class="legend">Trait plein : moyenne sur 7 jours. Points : pesées. Total perdu : ' + tot.toFixed(1) + " " + S.cfg.unite + ".</div>";
+    }
+    h += "</div></div>";
+
+    // récap 14 jours
+    h += '<div class="sec"><h2>Les 14 derniers jours</h2><div class="panel"><table class="meas"><tr><th>Jour</th><th>Poids</th><th>Prot</th><th>Gym</th></tr>';
+    for (var i = 0; i < 14; i++) {
+      var k = iso(addDays(new Date(), -i));
+      if (!has(k)) continue;
+      var l = S.log[k];
+      h += "<tr><td>" + k.slice(5) + "</td><td>" + (l.poids || "—") + "</td><td>" + (l.prot || "—") + "</td><td>" + (l.gym ? "✓" : "—") + "</td></tr>";
+    }
+    h += "</table></div></div>";
+    return h;
+  }
+
+  function chartSVG(serie) {
+    var W = 320, H = 150, pad = 22;
+    var vals = serie.map(function (x) { return x.v; });
+    var min = Math.min.apply(null, vals) - 1, max = Math.max.apply(null, vals) + 1;
+    var d0 = parseISO(serie[0].d), dN = parseISO(serie[serie.length - 1].d);
+    var span = Math.max(1, (dN - d0) / 86400000);
+    function X(d) { return pad + ((parseISO(d) - d0) / 86400000 / span) * (W - pad - 6); }
+    function Y(v) { return 10 + (1 - (v - min) / (max - min || 1)) * (H - 30); }
+
+    var pts = serie.map(function (x) { return '<circle cx="' + X(x.d).toFixed(1) + '" cy="' + Y(x.v).toFixed(1) + '" r="2.5" fill="#8A929B"/>'; }).join("");
+    var maPts = serie.map(function (x) {
+      var m = ma(serie, x.d, 7);
+      return X(x.d).toFixed(1) + "," + Y(m.v).toFixed(1);
+    }).join(" ");
+    return '<svg class="chart" viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" role="img" aria-label="Courbe de poids">' +
+      '<line x1="' + pad + '" y1="' + (H - 18) + '" x2="' + (W - 6) + '" y2="' + (H - 18) + '" stroke="#D6D6CE"/>' +
+      '<polyline points="' + maPts + '" fill="none" stroke="#2743C4" stroke-width="2" stroke-linejoin="round"/>' + pts +
+      '<text x="2" y="14" font-size="9" fill="#8A929B">' + max.toFixed(0) + '</text>' +
+      '<text x="2" y="' + (H - 22) + '" font-size="9" fill="#8A929B">' + min.toFixed(0) + "</text></svg>";
+  }
+
+  // ------------------------------------------------------------ onglet Plats
+  function platsHTML() {
+    var h = '<div class="sec"><h2>Soupers — un seul chaudron</h2>';
+    S.plats.filter(function (p) { return p.id[0] === "p"; }).forEach(function (p) { h += mealHTML(p); });
+    h += "</div>";
+    h += '<div class="sec"><h2>Ancres sans cuisson</h2><div class="muted" style="margin-bottom:10px">Le trou à protéines n\'est jamais au souper. Il est entre 14 h et 17 h.</div>';
+    S.plats.filter(function (p) { return p.id[0] === "a"; }).forEach(function (p) { h += mealHTML(p); });
+    h += "</div>";
+    h += '<div class="sec"><h2>Ajouter un plat</h2><div class="panel">';
+    h += '<label class="fld" for="mn">Nom</label><input type="text" id="mn" placeholder="Ce que tu as cuisiné">';
+    h += '<div class="grid2" style="margin-top:10px"><div><label class="fld" for="mp">Protéines (g)</label><input type="number" inputmode="numeric" id="mp"></div>';
+    h += '<div><label class="fld" for="mk">Calories</label><input type="number" inputmode="numeric" id="mk"></div></div>';
+    h += '<label class="fld" style="margin-top:10px" for="mnote">Comment tu le fais</label><textarea id="mnote" placeholder="La recette en deux phrases, pour le toi de mardi soir."></textarea>';
+    h += '<div style="margin-top:10px"><button class="btn" data-act="addplat">Ajouter à la rotation</button></div></div></div>';
+    return h;
+  }
+  function mealHTML(p) {
+    return '<div class="meal"><div class="meal-h"><div><div class="meal-n">' + p.n + (p.nausee ? '<span class="tag">jour creux</span>' : "") + "</div>" +
+      '<div class="meal-m">' + p.p + " g protéines · " + p.k + " kcal · " + p.l + " g lipides · " + p.g + " g glucides</div></div>" +
+      '<button class="btn ghost small" data-act="addprot" data-p="' + p.p + '" data-k="' + p.k + '">Mangé</button></div>' +
+      '<div class="meal-b">' + p.note + "</div></div>";
+  }
+
+  // -------------------------------------------------------- onglet Protocole
+  function protocoleHTML() {
+    return '<div class="sec"><h2>Pourquoi le protocole est ce qu\'il est</h2><div class="panel doc">' +
+      "<h3>Le seul paramètre qui décide de tout</h3>" +
+      "<p>Environ un quart du poids perdu sous tirzepatide est de la masse maigre. C'est une proportion normale — mais en valeur absolue, elle explose quand la perte est rapide. Ton objectif n'est pas de perdre vite. C'est d'arriver en bas avec le maximum de muscle intact, parce que ce que tu ne perds pas, tu n'auras pas à le rebâtir.</p>" +
+      '<div class="rule">Cible : 0,5 à 1 % du poids par semaine. Au-dessus, tu paies en muscle.</div>' +
+      "<h3>La dose n'est pas un escalier</h3>" +
+      "<p>L'erreur classique est de titrer par réflexe de calendrier. Si tu perds au rythme voulu à ta dose actuelle, tu n'as aucune raison de monter : tu achèterais des effets secondaires sans bénéfice. Tu montes quand la perte stagne trois ou quatre semaines de suite malgré des protéines et un déficit réels.</p>" +
+      "<h3>Protéines : quatre prises, pas une</h3>" +
+      "<p>Le seuil de leucine doit être franchi à chaque repas pour déclencher la synthèse protéique. Quatre prises de 45 g valent mieux qu'une seule de 180 g. Et sous GLP-1, la satiété arrive brutalement : mange la protéine avant tout le reste de l'assiette.</p>" +
+      "<p>Les jours où le solide ne passe pas, le liquide passe. Cinquante grammes de protéine en shake valent infiniment mieux que zéro gramme de poulet.</p>" +
+      "<h3>La charge mécanique, ou rien</h3>" +
+      "<p>Trois séances full-body par semaine, séries menées à une à trois répétitions de l'échec, dix séries par groupe musculaire. Les charges qui tiennent ou montent pendant que le poids descend : c'est la seule preuve en temps réel que tu perds du gras et pas autre chose.</p>" +
+      '<div class="rule">Si tes charges chutent deux semaines de suite, tu descends trop vite. Remonte les calories.</div>' +
+      "<h3>Électrolytes</h3>" +
+      "<p>Quand l'apport alimentaire s'effondre, le sodium s'effondre avec. Vise 4 à 5 g de sodium, 3500 à 4700 mg de potassium par l'alimentation, 300 à 400 mg de magnésium — en citrate, parce que la constipation sera ton irritant numéro un.</p>" +
+      "<h3>Le visage</h3>" +
+      "<p>Ce n'est pas un effet du médicament, c'est de la graisse sous-cutanée qui part vite d'une peau qui n'a pas le temps de se rétracter. Ce que tu contrôles : la vitesse, encore. Ne pas descendre plus bas que nécessaire. Dormir. Développer le cou et les trapèzes, qui changent réellement l'allure d'un visage.</p>" +
+      "<h3>Ce qui n'attend pas</h3>" +
+      "<ul><li>Douleur abdominale sévère irradiant au dos — pancréatite, urgence.</li>" +
+      "<li>Douleur sous les côtes à droite après un repas gras — calculs biliaires, fréquents en perte rapide.</li>" +
+      "<li>Vomissements qui ne passent pas, faiblesse, étourdissements persistants.</li>" +
+      "<li>Chute de cheveux vers le troisième mois : généralement transitoire, mais c'est souvent le signal que les protéines ou les calories sont trop basses.</li></ul>" +
+      "<p>Rien ici ne remplace ton prescripteur. Cet outil sert à lui arriver avec des données au lieu d'impressions.</p>" +
+      "</div></div>" +
+      '<div class="sec"><h2>Réglages</h2><div class="panel">' +
+      '<div class="grid2"><div><label class="fld" for="cprot">Cible protéines (g)</label><input type="number" id="cprot" value="' + S.cfg.cibleProt + '"></div>' +
+      '<div><label class="fld" for="ckcal">Cible calories</label><input type="number" id="ckcal" value="' + S.cfg.cibleKcal + '"></div></div>' +
+      '<div class="grid2" style="margin-top:10px"><div><label class="fld" for="cdose">Dose actuelle (mg)</label><input type="number" step="0.5" id="cdose" value="' + S.cfg.doseActuelle + '"></div>' +
+      '<div><label class="fld" for="cdepuis">Cette dose depuis</label><input type="date" id="cdepuis" value="' + S.cfg.doseDepuis + '"></div></div>' +
+      '<div class="grid2" style="margin-top:10px"><div><label class="fld" for="cpoids">Poids de départ</label><input type="number" step="0.1" id="cpoids" value="' + S.cfg.poidsDepart + '"></div>' +
+      '<div><label class="fld" for="cgym">Séances/semaine</label><input type="number" id="cgym" value="' + S.cfg.cibleGym + '"></div></div>' +
+      '<div class="grid2" style="margin-top:10px"><div><label class="fld" for="cdepart">Première injection</label><input type="date" id="cdepart" value="' + S.cfg.depart + '"></div>' +
+      '<div><label class="fld" for="cjour">Jour d\'injection</label><select id="cjour">' + JOURS.map(function (j, i) {
+        return '<option value="' + i + '"' + (i === S.cfg.jourInjection ? " selected" : "") + ">" + j.charAt(0).toUpperCase() + j.slice(1) + "</option>";
+      }).join("") + "</select></div></div>" +
+      '<div style="margin-top:12px"><button class="btn" data-act="savecfg">Enregistrer les réglages</button></div></div></div>';
+  }
+
+  // ----------------------------------------------------------- onglet Suivi
+  function suiviHTML() {
+    var h = '<div class="sec"><h2>Mesures</h2><div class="panel">';
+    h += '<div class="muted" style="margin-bottom:12px">Le tour de taille bouge quand la balance boude. Prends-les une fois par mois, le matin.</div>';
+    h += '<div class="grid2"><div><label class="fld" for="mtaille">Taille (po)</label><input type="number" step="0.25" id="mtaille"></div>';
+    h += '<div><label class="fld" for="mcou">Cou (po)</label><input type="number" step="0.25" id="mcou"></div></div>';
+    h += '<div class="grid2" style="margin-top:10px"><div><label class="fld" for="mbras">Bras (po)</label><input type="number" step="0.25" id="mbras"></div>';
+    h += '<div><label class="fld" for="mpoit">Poitrine (po)</label><input type="number" step="0.25" id="mpoit"></div></div>';
+    h += '<div style="margin-top:10px"><button class="btn" data-act="addmesure">Enregistrer les mesures</button></div></div>';
+
+    if (S.mesures.length) {
+      h += '<div class="panel"><table class="meas"><tr><th>Date</th><th>Taille</th><th>Cou</th><th>Bras</th><th>Poitrine</th></tr>';
+      S.mesures.slice().reverse().forEach(function (m) {
+        h += "<tr><td>" + m.date.slice(5) + "</td><td>" + (m.taille || "—") + "</td><td>" + (m.cou || "—") + "</td><td>" + (m.bras || "—") + "</td><td>" + (m.poitrine || "—") + "</td></tr>";
+      });
+      h += "</table></div>";
+    }
+    h += "</div>";
+
+    var d = day(TODAY);
+    h += '<div class="sec"><h2>Journal du jour</h2><div class="panel">';
+    h += '<textarea id="jnote" placeholder="Ce que tu veux que le toi du mois prochain sache. Une observation, une victoire, un truc qui a marché.">' + (d.note || "") + "</textarea>";
+    h += '<div style="margin-top:10px"><button class="btn" data-act="savenote">Enregistrer</button></div></div>';
+
+    var notes = Object.keys(S.log).filter(function (k) { return S.log[k].note; }).sort().reverse();
+    if (notes.length) {
+      h += '<h2 style="margin-top:20px">Entrées précédentes</h2>';
+      notes.slice(0, 20).forEach(function (k) {
+        h += '<div class="panel"><div class="meal-m" style="margin-bottom:6px">' + k + '</div><div class="muted">' + S.log[k].note + "</div></div>";
+      });
+    }
+    h += "</div>";
+    return h;
+  }
+
+  function navHTML() {
+    var tabs = [["jour", "Aujourd'hui", "◉"], ["semaine", "Semaine", "◔"], ["plats", "Plats", "▤"], ["protocole", "Protocole", "§"], ["suivi", "Suivi", "◈"]];
+    return '<nav class="nav">' + tabs.map(function (t) {
+      return '<button data-act="tab" data-t="' + t[0] + '" class="' + (S.tab === t[0] ? "on" : "") + '"><span class="gl">' + t[2] + "</span>" + t[1] + "</button>";
+    }).join("") + "</nav>";
+  }
+
+  // ---------------------------------------------------------------- events
+  function val(id) { var e = document.getElementById(id); return e ? e.value : ""; }
+
+  function wire(root) {
+    root.addEventListener("click", function (ev) {
+      var t = ev.target.closest("[data-act]");
+      if (!t) return;
+      var a = t.getAttribute("data-act");
+      var d = day(TODAY);
+
+      if (a === "tab") { S.tab = t.getAttribute("data-t"); render(); window.scrollTo(0, 0); return; }
+
+      if (a === "addprot") {
+        d.prot += parseInt(t.getAttribute("data-p"), 10);
+        d.kcal += parseInt(t.getAttribute("data-k"), 10);
+        save(); render(); return;
+      }
+      if (a === "resetprot") { d.prot = 0; d.kcal = 0; save(); render(); return; }
+
+      if (a === "savepoids") {
+        var p = parseFloat(val("fpoids"));
+        if (!isNaN(p)) d.poids = p;
+        var k = parseInt(val("fkcal"), 10);
+        if (!isNaN(k)) d.kcal = k;
+        save(); toast("Pesée enregistrée"); return;
+      }
+      if (a === "saveinj") {
+        d.dose = parseFloat(val("fdose")) || S.cfg.doseActuelle;
+        d.site = val("fsite");
+        save(); toast("Injection notée"); return;
+      }
+      if (a === "eau") { var n = +t.getAttribute("data-n"); d.eau = (d.eau === n) ? n - 1 : n; save(); render(); return; }
+      if (a === "supp") {
+        var id = t.getAttribute("data-id"), i = d.supps.indexOf(id);
+        if (i >= 0) d.supps.splice(i, 1); else d.supps.push(id);
+        save(); render(); return;
+      }
+      if (a === "gym") { var g = t.getAttribute("data-g"); d.gym = (d.gym === g) ? null : g; save(); render(); return; }
+      if (a === "effet") {
+        var e = t.getAttribute("data-e"), j = d.effets.indexOf(e);
+        if (j >= 0) d.effets.splice(j, 1); else d.effets.push(e);
+        save(); render(); return;
+      }
+      if (a === "savenote") { d.note = val("jnote"); save(); toast("Journal enregistré"); return; }
+
+      if (a === "addplat") {
+        var nom = val("mn").trim();
+        if (!nom) { toast("Il manque le nom du plat"); return; }
+        S.plats.push({ id: "p" + Date.now(), n: nom, p: +val("mp") || 0, l: 0, g: 0, k: +val("mk") || 0, note: val("mnote"), nausee: false });
+        sSet("glp1:plats", S.plats); render(); toast("Plat ajouté"); return;
+      }
+      if (a === "addmesure") {
+        S.mesures.push({ date: TODAY, taille: val("mtaille"), cou: val("mcou"), bras: val("mbras"), poitrine: val("mpoit") });
+        sSet("glp1:mesures", S.mesures); render(); toast("Mesures enregistrées"); return;
+      }
+      if (a === "savecfg") {
+        S.cfg.cibleProt = +val("cprot") || S.cfg.cibleProt;
+        S.cfg.cibleKcal = +val("ckcal") || S.cfg.cibleKcal;
+        S.cfg.doseActuelle = +val("cdose") || S.cfg.doseActuelle;
+        S.cfg.doseDepuis = val("cdepuis") || S.cfg.doseDepuis;
+        S.cfg.poidsDepart = +val("cpoids") || S.cfg.poidsDepart;
+        S.cfg.cibleGym = +val("cgym") || S.cfg.cibleGym;
+        S.cfg.depart = val("cdepart") || S.cfg.depart;
+        S.cfg.jourInjection = parseInt(val("cjour"), 10);
+        if (isNaN(S.cfg.jourInjection)) S.cfg.jourInjection = DEFAULT_CFG.jourInjection;
+        sSet("glp1:config", S.cfg); render(); toast("Réglages enregistrés"); return;
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------- boot
+  Promise.all([
+    sGet("glp1:config", DEFAULT_CFG),
+    sGet("glp1:log", {}),
+    sGet("glp1:plats", PLATS_SEED),
+    sGet("glp1:mesures", [])
+  ]).then(function (r) {
+    S.cfg = Object.assign({}, DEFAULT_CFG, r[0] || {});
+    S.log = r[1] || {};
+    S.plats = (r[2] && r[2].length) ? r[2] : PLATS_SEED;
+    S.mesures = r[3] || [];
+    S.ready = true;
+    render();
+  });
+})();
+</script>
